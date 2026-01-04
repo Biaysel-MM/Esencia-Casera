@@ -1,0 +1,183 @@
+Tengo un proyecto existente llamado Chefencasa, el cual fue generado inicialmente por una IA (DeepSeek), pero no está completado. Mi intención es continuar y finalizar este proyecto, no empezarlo desde cero. Es muy importante aclarar que no quiero rehacer la interfaz ni el diseño, ya que el diseño actual me gusta y quiero conservarlo completamente. Lo que deseo es migrar todo ese diseño y estructura actual al ecosistema de Vue.js, manteniendo la esencia visual y funcional del proyecto original.
+
+El objetivo final del proyecto es el siguiente:
+quiero migrar todo el frontend a Vue.js, desplegar ese frontend en Vercel, y luego migrar el backend a Supabase, de modo que la aplicación quede completamente funcional y lista. Sin embargo, antes de llegar a esa fase final, quiero empezar paso a paso, comenzando únicamente con lo básico: migrar todas las vistas y componentes actuales a Vue.js.
+
+Quiero que tú, como IA, primero leas y entiendas todo el contexto del proyecto, incluyendo su estructura, archivos y propósito general. Luego, necesito que me indiques exactamente qué archivos debo pasarte para que puedas comprender correctamente cómo funciona la aplicación. Ten en cuenta que probablemente solo podré pasarte alrededor de 10 archivos, así que necesito que selecciones los más esenciales y relevantes para entender el flujo, las vistas, los componentes y la lógica principal del proyecto.
+
+Es importante aclarar que yo no te subiré archivos por iniciativa propia. Tú debes guiarme paso a paso, indicándome qué archivo necesitas en cada momento y por qué. La idea es trabajar el proyecto de forma progresiva, entendiendo primero el contexto general y luego migrando el código poco a poco.
+
+En cuanto a las decisiones técnicas del nuevo proyecto, quiero dejar claros algunos puntos muy importantes. El proyecto debe estar hecho en Vue.js usando únicamente HTML, CSS y JavaScript. No quiero usar TypeScript bajo ninguna circunstancia; todo debe ser en JavaScript puro. Tampoco quiero utilizar Bootstrap, Tailwind u otros frameworks de CSS. Por el momento, todo el diseño debe manejarse con CSS tradicional.
+
+Para los íconos, puedes utilizar Font Awesome o la librería Iconify, específicamente desde la colección disponible en
+https://icones.js.org/collection/all
+, que es la que utilizo actualmente. Un ejemplo del uso de Iconify sería:
+
+<span
+  class="iconify"
+  data-icon="streamline:food-kitchenware-chef-toque-hat-cook-gear-chef-cooking-nutrition-tools-clothes-hat-clothing-food"
+  data-inline="false">
+</span>
+
+
+Otro punto muy importante es que el nombre del proyecto cambiará. El proyecto ya no se llamará Chefencasa, sino que pasará a llamarse Esencia Casera, y esto debe tomarse en cuenta tanto a nivel de estructura como de identidad del proyecto.
+
+A continuación, te muestro la estructura actual del proyecto original, la cual debes analizar cuidadosamente para entender el contexto completo antes de pedirme archivos:
+
+Chefencasa/
+├── .vscode/
+├── node_modules/
+├── src/
+│   ├── assets/
+│   │   ├── css/
+│   │   │   └── main.css
+│   │   └── images/
+│   ├── components/
+│   │   ├── ui/
+│   │   │   └── button.tsx
+│   │   │   ├── calendar.tsx
+│   │   │   ├── dialog.tsx
+│   │   │   ├── entre muchos otros
+│   │   ├── figma/
+│   │   │   ├── imageWithFalback.st
+│   │   │   ├── DailyMeals.tsx
+│   │   │   ├── IngredientSearchModal.tsx
+│   │   │   ├── MyPantry.tsx
+│   │   │   ├── Notifications.tsx
+│   │   │   ├── NotificationsDropdown.tsx
+│   │   │   ├── RecipeDetailModaltsx
+│   │   │   ├── Recommendedrecipes.tsx
+│   │   │   ├── ShoppingItemSearchModalt.tsx
+│   │   │   ├── Sidebar.tsx
+│   │   │   └── WheatherSuggestion.tsx
+│   ├── views/
+│   ├── contexts/
+│   │   ├── AppContext.tsx
+│   │   ├── AuthContext.tsx
+│   ├── guidelines/
+│   │   ├── Guidelines.md
+│   ├── styles/
+│   │   ├── global.css
+│   ├── attributions.md
+│   ├── styles.css
+│   ├── main.tsx
+│   ├── router
+│   ├── USSUARIOS_Y_BACKEND.md
+│   └── App.tsx
+├── index.html
+├── package-lock.json
+├── package.json
+├── README.md
+└── vite.config.js
+
+
+Una vez que tú hayas leído todo este contexto y me hayas indicado qué archivos esenciales debo pasarte, el siguiente paso será que me entregues la estructura final del proyecto ya migrado a Vue.js, usando el nuevo nombre Esencia Casera. Esa estructura debe estar alineada con una estructura típica y limpia de Vue.js usando Vite.
+
+Como referencia, esta es la estructura base que quiero que siga el nuevo proyecto en Vue.js:
+
+Esencia Casera/
+├── .vscode/
+├── node_modules/
+├── public/
+├── src/
+│   ├── assets/
+│   │   ├── css/
+│   │   │   └── global.css
+│   │   └── images/
+│   ├── components/
+│   │   ├── ui/
+│   │   └── layout/
+│   │   │   └── Header.vue
+│   │   │   ├── Sidebar.vue
+│   ├── views/
+│   │   │   └── ConfiguracionView.vue
+│   │   │   ├── FamiliarDashboardView.vue
+│   │   │   ├── FamiliarView.vue
+│   │   │   ├── FavoritasView.vue
+│   │   │   ├── HomeView.vue
+│   │   │   ├── ListaComprasView.vue
+│   │   │   ├── LoginView.vue
+│   │   │   ├── NotFoundView.vue
+│   │   │   ├── PlanificadorView.vue
+│   │   │   ├── RecetasView.vue
+│   │   │   ├── RegisterView.vue
+│   ├── router/
+│   │   └── index.js
+│   ├── stores/
+│   │   └── auth.js
+│   ├── main.js
+│   ├── supabase.js
+│   └── App.vue
+├── .gitignore
+├── index.html
+├── package-lock.json
+├── package.json
+├── README.md
+└── vite.config.js
+
+
+
+
+
+Después de eso, comenzaremos a trabajar archivo por archivo, de forma ordenada, clara y progresiva, donde yo te iré pidiendo cada archivo y tú me ayudarás a migrarlo correctamente a Vue.js, respetando siempre el diseño original, las decisiones técnicas mencionadas y la estructura definida.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ready: 
+
+Esencia Casera/
+├── .vscode/
+├── node_modules/
+├── public/
+│   ├── favicon.ico
+│   └── index.html
+├── src/
+│   ├── assets/
+│   │   ├── css/
+│   │   │   ├── main.css      # (migrado del original)
+│   │   │   └── global.css    # (migrado del original)
+│   │   └── images/           # (copiar todo el contenido del original)
+│   ├── components/
+│   │   ├── ui/              # Componentes UI reutilizables
+│   │   ├── layout/          # Componentes de layout
+│   │   │   ├── Sidebar.vue
+│   │   │   └── Header.vue
+│   │   └── features/        # Componentes por funcionalidad
+│   │       ├── DailyMeals.vue
+│   │       ├── MyPantry.vue
+│   │       └── etc...
+│   ├── views/               # Vistas/páginas completas
+│   │   ├── HomeView.vue
+│   │   ├── RecipesView.vue
+│   │   └── etc...
+│   ├── stores/              # Estado global (similar a contexts)
+│   │   ├── appStore.js
+│   │   └── authStore.js
+│   ├── router/              # Enrutamiento
+│   │   └── index.js
+│   ├── App.vue              # Componente raíz
+│   └── main.js              # Punto de entrada
+├── .gitignore
+├── index.html
+├── package.json
+├── package-lock.json
+├── README.md
+├── vite.config.js
+└── .env.example
+
+
