@@ -2,7 +2,7 @@
   "build": {
     "env": {
       "VITE_SUPABASE_URL": "https://zcgpfqvjvymtzpirriew.supabase.co",
-      "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpjZ3BmcXZqdnltdHpwaXJyaWV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU5OTk3MzcsImV4cCI6MjA1MTU3NTczN30.Zh3iJxR_2pO5C2qW7v8N9kLm1n4o5p6q7r8s9t0u1v2w3x4y5z6A7B8C9D0E1F"
+      "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpjZ3BmcXZqdnltdHpwaXJyaWV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc1NTEzODksImV4cCI6MjA4MzEyNzM4OX0.0FkMSoiDQAw8vV5t2duONK0FLYbt1tu-7pJEHPY716k"
     }
   },
   "rewrites": [
