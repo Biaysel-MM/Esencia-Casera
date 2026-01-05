@@ -20,8 +20,8 @@
       </div>
       <div class="user-info">
         <p class="user-name">{{ userName || 'Usuario' }}</p>
-        <p class="user-role" :class="userRole">
-          {{ userRole === 'admin' ? 'Administrador' : 'Familiar' }}
+        <p class="user-role familiar">
+          Familiar <!-- Por ahora todos son familiares, eliminamos roles -->
         </p>
       </div>
     </div>
@@ -46,7 +46,7 @@
 
     <!-- Logout Button -->
     <div class="sidebar-footer">
-      <button class="logout-btn" @click="bdleLogout">
+      <button class="logout-btn" @click="handleLogout">
         <span class="iconify" data-icon="mdi:logout"></span>
         <span>Cerrar Sesión</span>
       </button>
@@ -72,27 +72,20 @@ export default {
   setup(props, { emit }) {
     const router = useRouter()
     const authStore = useAuthStore()
-    const { userName, userRole } = storeToRefs(authStore)
-
-    // Navigation items
+    
+    // SOLUCIÓN: Solo usar userName, userRole no existe en el store simplificado
+    const { userName, userEmail } = storeToRefs(authStore)
+    
+    // Navigation items - SIN filtrar por rol (todos ven todo)
     const navItems = ref([
       { name: 'Inicio', path: '/home', icon: 'mdi:home' },
       { name: 'Planificador', path: '/planificador', icon: 'mdi:calendar' },
       { name: 'Lista de Compras', path: '/lista-compras', icon: 'mdi:cart', badge: '3' },
       { name: 'Recetas', path: '/recetas', icon: 'mdi:book-open' },
       { name: 'Favoritas', path: '/favoritas', icon: 'mdi:heart' },
-      { name: 'Familia', path: '/familia', icon: 'mdi:account-group' },
       { name: 'Configuración', path: '/configuracion', icon: 'mdi:cog' }
+      // NOTA: Eliminamos "Familia" temporalmente hasta implementar roles
     ])
-
-    // Filter items based on role if needed
-    const filteredNavItems = computed(() => {
-      if (userRole.value === 'admin') {
-        return navItems.value
-      }
-      // Hide "Familia" section for non-admin users
-      return navItems.value.filter(item => item.path !== '/familia')
-    })
 
     const closeSidebar = () => {
       emit('close')
@@ -107,10 +100,12 @@ export default {
     const handleLogout = async () => {
       try {
         await authStore.logout()
-        // Force redirect to login
+        // Redirigir a login
         router.push('/login')
-        // Reload to clear all state
-        window.location.reload()
+        // Recargar para limpiar estado
+        setTimeout(() => {
+          window.location.reload()
+        }, 100)
       } catch (error) {
         console.error('Logout error:', error)
       }
@@ -118,8 +113,8 @@ export default {
 
     return {
       userName,
-      userRole,
-      navItems: filteredNavItems,
+      userEmail,
+      navItems,
       closeSidebar,
       closeSidebarOnMobile,
       handleLogout
@@ -127,6 +122,7 @@ export default {
   }
 }
 </script>
+
 
 <style scoped>
 /* Sidebar Base Styles */

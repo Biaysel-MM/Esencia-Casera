@@ -1,3 +1,4 @@
+
 <template>
   <div class="register-container">
     <div class="register-wrapper">
@@ -46,6 +47,13 @@
         </div>
 
         <form class="register-form" @submit.prevent="handleRegister">
+          <!-- Mensaje de éxito -->
+          <div v-if="successMessage" class="success-message">
+            <span class="iconify" data-icon="mdi:check-circle"></span>
+            <span class="success-text">{{ successMessage }}</span>
+          </div>
+
+          <!-- Mensaje de error -->
           <div v-if="error" class="error-message">
             <span class="iconify" data-icon="mdi:alert-circle"></span>
             <span class="error-text">{{ error }}</span>
@@ -55,14 +63,15 @@
             <label class="input-label">Nombre completo</label>
             <div class="input-with-icon">
               <span class="iconify input-left-icon" data-icon="mdi:account"></span>
-<input 
-  type="text" 
-  class="text-input"
-  placeholder="María Contreras"
-  v-model="form.name"
-  required
-  autocomplete="name"
-/>
+              <input 
+                type="text" 
+                class="text-input"
+                placeholder="María Contreras"
+                v-model="form.name"
+                required
+                autocomplete="name"
+                :disabled="isLoading"
+              />
             </div>
           </div>
 
@@ -70,14 +79,15 @@
             <label class="input-label">Email</label>
             <div class="input-with-icon">
               <span class="iconify input-left-icon" data-icon="mdi:email"></span>
-<input 
-  type="email" 
-  class="text-input"
-  placeholder="tu@email.com"
-  v-model="form.email"
-  required
-  autocomplete="email"
-/>
+              <input 
+                type="email" 
+                class="text-input"
+                placeholder="tu@email.com"
+                v-model="form.email"
+                required
+                autocomplete="email"
+                :disabled="isLoading"
+              />
             </div>
           </div>
 
@@ -85,18 +95,21 @@
             <label class="input-label">Contraseña</label>
             <div class="input-with-icon">
               <span class="iconify input-left-icon" data-icon="mdi:lock"></span>
-<input 
-  type="password" 
-  class="text-input"
-  placeholder="••••••••"
-  v-model="form.password"
-  required
-  minlength="6"
-  autocomplete="new-password"
-/>
+              <input 
+                type="password" 
+                class="text-input"
+                placeholder="••••••••"
+                v-model="form.password"
+                required
+                minlength="6"
+                autocomplete="new-password"
+                :disabled="isLoading"
+              />
             </div>
+            <p class="input-hint">Mínimo 6 caracteres</p>
           </div>
 
+          <!-- Family code solo para "Unirse" -->
           <div v-if="role === 'familiar'" class="input-group">
             <label class="input-label">Código de familia</label>
             <div class="input-with-icon">
@@ -105,9 +118,10 @@
                 type="text" 
                 class="text-input"
                 placeholder="FAM-2024-ABC"
-                :value="familyCode"
+                v-model="form.familyCode"
                 @input="formatFamilyCode"
                 :required="role === 'familiar'"
+                :disabled="isLoading"
               />
             </div>
             <p class="input-hint">
@@ -121,14 +135,14 @@
             :disabled="isLoading"
           >
             <span v-if="isLoading" class="iconify spin-icon" data-icon="mdi:loading"></span>
-            <span v-else>Crear Cuenta</span>
+            <span v-else>{{ isLoading ? 'Procesando...' : 'Crear Cuenta' }}</span>
           </button>
         </form>
 
         <div class="login-link">
           <p class="login-text">
             ¿Ya tienes cuenta? 
-            <button type="button" class="link-button" @click="goToLogin">
+            <button type="button" class="link-button" @click="goToLogin" :disabled="isLoading">
               Inicia sesión
             </button>
           </p>
@@ -149,7 +163,7 @@ export default {
   setup() {
     const router = useRouter()
     const authStore = useAuthStore()
-    const { isLoading, error } = storeToRefs(authStore)
+    const { isLoading } = storeToRefs(authStore)
     
     const form = ref({
       email: '',
@@ -159,24 +173,86 @@ export default {
     })
     
     const role = ref('admin')
+    const error = ref('')
+    const successMessage = ref('')
     
     const formatFamilyCode = (event) => {
       form.value.familyCode = event.target.value.toUpperCase()
     }
     
     const handleRegister = async () => {
-      const success = await authStore.register(
-        form.value.email,
-        form.value.password,
-        form.value.name,
-        role.value,
-        role.value === 'familiar' ? form.value.familyCode : null
-      )
+      console.log('📝 Registro iniciado:', {
+        email: form.value.email,
+        name: form.value.name,
+        role: role.value,
+        hasFamilyCode: !!form.value.familyCode
+      })
       
-      if (success) {
-        // Mostrar mensaje de éxito y redirigir a login
-        alert('¡Registro exitoso! Por favor inicia sesión.')
-        router.push('/login')
+      // Reset messages
+      error.value = ''
+      successMessage.value = ''
+      
+      // Validación básica
+      if (!form.value.email || !form.value.password || !form.value.name) {
+        error.value = 'Por favor completa todos los campos obligatorios'
+        return
+      }
+      
+      // Validar contraseña
+      if (form.value.password.length < 6) {
+        error.value = 'La contraseña debe tener al menos 6 caracteres'
+        return
+      }
+      
+      // Validar email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(form.value.email.trim())) {
+        error.value = 'Formato de email inválido. Ejemplo: nombre@ejemplo.com'
+        return
+      }
+      
+      try {
+        // Registrar en Supabase
+        const result = await authStore.register(
+          form.value.email,
+          form.value.password,
+          form.value.name
+        )
+        
+        console.log('📊 Resultado del registro:', result)
+        
+        if (result.success) {
+          if (result.needsEmailConfirmation) {
+            // Caso: Requiere confirmación de email
+            successMessage.value = '¡Registro exitoso! Por favor revisa tu email para confirmar tu cuenta.'
+            
+            // Limpiar formulario
+            form.value.email = ''
+            form.value.password = ''
+            form.value.name = ''
+            form.value.familyCode = ''
+            
+            // Mostrar mensaje y opción para ir a login
+            setTimeout(() => {
+              router.push('/login')
+            }, 3000)
+            
+          } else {
+            // Caso: Sesión automática (email ya confirmado)
+            successMessage.value = `¡Bienvenido ${form.value.name}! Tu cuenta ha sido creada exitosamente.`
+            
+            // Redirigir a home después de un breve momento
+            setTimeout(() => {
+              router.push('/home')
+            }, 2000)
+          }
+        } else {
+          // Mostrar error
+          error.value = result.error || 'Error al crear la cuenta. Por favor, intenta nuevamente.'
+        }
+      } catch (err) {
+        console.error('❌ Error en handleRegister:', err)
+        error.value = 'Error inesperado. Por favor, intenta nuevamente.'
       }
     }
     
@@ -189,6 +265,7 @@ export default {
       role,
       isLoading,
       error,
+      successMessage,
       formatFamilyCode,
       handleRegister,
       goToLogin
@@ -198,6 +275,7 @@ export default {
 </script>
 
 <style scoped>
+/* Estilos existentes... */
 .register-container {
   min-height: 100vh;
   background: linear-gradient(135deg, 
@@ -329,6 +407,29 @@ export default {
   gap: 16px;
 }
 
+/* Mensaje de éxito */
+.success-message {
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #10b981;
+}
+
+.success-message .iconify {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.success-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Mensaje de error */
 .error-message {
   background-color: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.2);
@@ -396,6 +497,11 @@ export default {
 
 .text-input::placeholder {
   color: #9ca3af;
+}
+
+.text-input:disabled {
+  background-color: #f9fafb;
+  cursor: not-allowed;
 }
 
 .input-hint {
@@ -468,5 +574,10 @@ export default {
 
 .link-button:hover {
   text-decoration: underline;
+}
+
+.link-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

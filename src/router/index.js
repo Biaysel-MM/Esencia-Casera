@@ -1,21 +1,22 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const routes = [
   {
     path: '/',
-    redirect: '/login'  // Redirigir raíz a login
+    redirect: '/login'
   },
   {
     path: '/login',
     name: 'login',
     component: () => import('@/views/LoginView.vue'),
-    meta: { requiresAuth: false, hideForAuth: true }
+    meta: { requiresAuth: false }
   },
   {
     path: '/register',
     name: 'register',
     component: () => import('@/views/RegisterView.vue'),
-    meta: { requiresAuth: false, hideForAuth: true }
+    meta: { requiresAuth: false }
   },
   {
     path: '/home',
@@ -28,7 +29,7 @@ const routes = [
     name: 'planificador',
     component: () => import('@/views/PlanificadorView.vue'),
     meta: { requiresAuth: true }
-  },
+    },
   {
     path: '/lista-compras',
     name: 'lista de compras',
@@ -72,31 +73,30 @@ const router = createRouter({
   routes
 })
 
-// Guardia de navegación simplificada
+// Guardia de navegación MÁS SIMPLE
 router.beforeEach(async (to, from, next) => {
-  console.log('Navigation guard:', to.name)
+  console.log(`🛡️ Navegando a: ${to.name}`)
   
-  // Importar el store
-  const { useAuthStore } = await import('../stores/auth')
   const authStore = useAuthStore()
   
-  // Si no hay usuario y no está cargando, inicializar
+  // Si no hemos inicializado la autenticación, hazlo
   if (!authStore.user && !authStore.isLoading) {
     await authStore.initAuth()
   }
   
-  // Si la ruta requiere autenticación y no está autenticado
+  // Si la ruta requiere autenticación y no estamos autenticados
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    console.log('Redirecting to login (requires auth)')
+    console.log('❌ No autenticado, redirigiendo a login')
     next('/login')
   } 
-  // Si está autenticado y trata de ir a login/register
-  else if (to.meta.hideForAuth && authStore.isAuthenticated) {
-    console.log('Redirecting to home (already authenticated)')
+  // Si estamos autenticados y tratamos de ir a login/register
+  else if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
+    console.log('✅ Ya autenticado, redirigiendo a home')
     next('/home')
   } 
+  // Todo bien, permite la navegación
   else {
-    console.log('Navigation allowed')
+    console.log('✅ Navegación permitida')
     next()
   }
 })
