@@ -1,4 +1,3 @@
-
 import { defineStore } from 'pinia'
 import { supabase } from '@/supabase'
 
@@ -8,11 +7,12 @@ export const useAuthStore = defineStore('auth', {
     isLoading: false,
     error: null,
     isAuthenticated: false,
-    profile: null
+    profile: null,
+    userRole: 'familiar' // Valor por defecto
   }),
 
   actions: {
-    // Inicialización simplificada
+    // Inicialización con roles
     async initAuth() {
       try {
         console.log('🔄 Inicializando auth...')
@@ -37,7 +37,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Login con mejor manejo de errores
+    // Login con roles
     async login(email, password) {
       try {
         console.log('🔑 Intentando login con:', email)
@@ -99,21 +99,23 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Crear perfil de usuario
-    async createUserProfile() {
+    // Crear perfil de usuario con rol
+    async createUserProfile(role = 'familiar', familyCode = null) {
       try {
         if (!this.user) {
           console.warn('⚠️ No hay usuario para crear perfil')
           return null
         }
         
-        console.log('🔄 Creando/actualizando perfil para:', this.user.email)
+        console.log('🔄 Creando/actualizando perfil con rol:', role)
         
         const { data, error } = await supabase
           .from('profiles')
           .upsert({
             id: this.user.id,
             full_name: this.user.user_metadata?.full_name || this.user.email?.split('@')[0],
+            role: role,
+            family_code: familyCode,
             updated_at: new Date().toISOString()
           })
           .select()
@@ -131,6 +133,7 @@ export const useAuthStore = defineStore('auth', {
         }
         
         this.profile = data
+        this.userRole = data.role || 'familiar'
         console.log('✅ Perfil creado/actualizado:', data)
         return data
         
@@ -156,15 +159,16 @@ export const useAuthStore = defineStore('auth', {
         
         if (error) {
           console.error('❌ Error obteniendo perfil:', error.message)
-          // Si no existe, intentar crearlo
+          // Si no existe, intentar crearlo como familiar
           if (error.code === 'PGRST116') {
-            console.log('ℹ️ Perfil no encontrado, creando...')
+            console.log('ℹ️ Perfil no encontrado, creando como familiar...')
             return await this.createUserProfile()
           }
           throw error
         }
         
         this.profile = data
+        this.userRole = data.role || 'familiar'
         console.log('✅ Perfil obtenido:', data)
         return data
         
@@ -174,15 +178,16 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Función register mejorada
-    async register(email, password, fullName) {
+    // Función register mejorada con roles
+    async register(email, password, fullName, role = 'familiar', familyCode = null) {
       try {
         console.log('='.repeat(60))
         console.log('📝 REGISTRO DEBUG - Iniciando proceso de registro...')
         console.log('📝 Datos recibidos:', {
           email: email,
           fullName: fullName,
-          timestamp: new Date().toISOString()
+          role: role,
+          familyCode: familyCode
         })
         
         this.isLoading = true
@@ -224,7 +229,9 @@ export const useAuthStore = defineStore('auth', {
           password: password,
           options: {
             data: {
-              full_name: cleanName
+              full_name: cleanName,
+              role: role, // Guardar rol en metadata temporal
+              family_code: familyCode // Guardar código de familia temporal
             },
             emailRedirectTo: `${window.location.origin}/login`
           }
@@ -238,8 +245,7 @@ export const useAuthStore = defineStore('auth', {
         console.log('📊 RESPUESTA DE SUPABASE AUTH:', {
           usuario_creado: data?.user ? '✅ Sí' : '❌ No',
           email_usuario: data?.user?.email || 'N/A',
-          session_creada: data?.session ? '✅ Sí' : '❌ No',
-          error_presente: error ? '✅ Sí' : '❌ No'
+          session_creada: data?.session ? '✅ Sí' : '❌ No'
         })
         
         if (error) {
@@ -276,13 +282,14 @@ export const useAuthStore = defineStore('auth', {
           this.user = data.user
           this.isAuthenticated = true
           
-          // Crear perfil en la base de datos
-          await this.createUserProfile()
+          // Crear perfil en la base de datos con rol
+          await this.createUserProfile(role, familyCode)
           
           return {
             success: true,
             user: data.user,
             session: data.session,
+            role: role,
             needsEmailConfirmation: false,
             message: '¡Registro exitoso! Bienvenido/a.'
           }
@@ -295,6 +302,7 @@ export const useAuthStore = defineStore('auth', {
             success: true,
             user: data.user,
             session: null,
+            role: role,
             needsEmailConfirmation: true,
             message: '¡Registro exitoso! Por favor revisa tu email para confirmar tu cuenta.'
           }
@@ -327,6 +335,7 @@ export const useAuthStore = defineStore('auth', {
         
         this.user = null
         this.profile = null
+        this.userRole = 'familiar'
         this.isAuthenticated = false
         
         console.log('✅ Sesión cerrada exitosamente')
@@ -335,6 +344,12 @@ export const useAuthStore = defineStore('auth', {
         console.error('❌ Error en logout:', error.message)
         return false
       }
+    },
+
+    // Método para actualizar rol temporalmente (sin base de datos)
+    setUserRole(role) {
+      this.userRole = role
+      console.log(`🔄 Rol actualizado a: ${role}`)
     }
   },
 
@@ -345,6 +360,8 @@ export const useAuthStore = defineStore('auth', {
       }
       return state.user?.email?.split('@')[0] || 'Usuario'
     },
-    userEmail: (state) => state.user?.email || ''
+    userEmail: (state) => state.user?.email || '',
+    isAdmin: (state) => state.userRole === 'admin',
+    isFamilyMember: (state) => state.userRole === 'familiar'
   }
 })

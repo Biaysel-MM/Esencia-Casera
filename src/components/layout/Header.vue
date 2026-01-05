@@ -109,25 +109,11 @@ export default {
     const handleLogout = async () => {
       try {
         await authStore.logout()
-        // Force redirect
         window.location.href = '/login'
       } catch (error) {
         console.error('Logout error:', error)
       }
     }
-    
-    // Close menus when clicking outside
-    const closeMenus = (event) => {
-      if (!event.target.closest('.notifications-dropdown')) {
-        showNotifications.value = false
-      }
-      if (!event.target.closest('.user-avatar-header')) {
-        showUserMenu.value = false
-      }
-    }
-    
-    // Add event listener for clicks outside
-    document.addEventListener('click', closeMenus)
     
     return {
       searchQuery,

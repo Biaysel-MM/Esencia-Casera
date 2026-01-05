@@ -74,6 +74,7 @@
   </div>
 </template>
 
+
 <script>
 import { useAuthStore } from '../stores/auth'
 import { storeToRefs } from 'pinia'
@@ -85,7 +86,7 @@ export default {
   setup() {
     const router = useRouter()
     const authStore = useAuthStore()
-    const { isLoading, error } = storeToRefs(authStore)
+    const { isLoading, error, userRole } = storeToRefs(authStore)
     
     // CAMBIAR ESTO: Eliminar valores por defecto
     const form = ref({
@@ -98,8 +99,14 @@ export default {
       const success = await authStore.login(form.value.email, form.value.password)
       
       if (success) {
-        console.log('Login successful, redirecting...')
-        router.push('/home')
+        console.log('Login successful, redirecting based on role...')
+        
+        // Redirigir según el rol
+        if (userRole.value === 'admin') {
+          router.push('/home')
+        } else {
+          router.push('/familiar-dashboard')
+        }
       } else {
         console.log('Login failed')
       }
@@ -120,6 +127,7 @@ export default {
   }
 }
 </script>
+
 
 <style scoped>
 .login-container {

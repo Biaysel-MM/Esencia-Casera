@@ -22,49 +22,55 @@ const routes = [
     path: '/home',
     name: 'home',
     component: () => import('@/views/HomeView.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/planificador',
     name: 'planificador',
     component: () => import('@/views/PlanificadorView.vue'),
-    meta: { requiresAuth: true }
-    },
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
   {
     path: '/lista-compras',
     name: 'lista de compras',
     component: () => import('@/views/ListaComprasView.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/recetas',
     name: 'recetas',
     component: () => import('@/views/RecetasView.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/favoritas',
     name: 'favoritas',
     component: () => import('@/views/FavoritasView.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true } // Accesible para ambos roles
   },
   {
     path: '/familia',
     name: 'familia',
     component: () => import('@/views/FamiliaView.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/configuracion',
     name: 'configuracion',
     component: () => import('@/views/ConfiguracionView.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true } // Accesible para ambos roles
   },
   {
     path: '/familiar-dashboard',
     name: 'familiar dashboard',
     component: () => import('@/views/FamiliarDashboardView.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresFamily: true }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/NotFoundView.vue'),
+    meta: { requiresAuth: false }
   }
 ]
 
@@ -73,7 +79,7 @@ const router = createRouter({
   routes
 })
 
-// Guardia de navegación MÁS SIMPLE
+// Guardia de navegación con roles
 router.beforeEach(async (to, from, next) => {
   console.log(`🛡️ Navegando a: ${to.name}`)
   
@@ -84,21 +90,43 @@ router.beforeEach(async (to, from, next) => {
     await authStore.initAuth()
   }
   
-  // Si la ruta requiere autenticación y no estamos autenticados
+  // Verificar si la ruta requiere autenticación
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     console.log('❌ No autenticado, redirigiendo a login')
     next('/login')
-  } 
-  // Si estamos autenticados y tratamos de ir a login/register
-  else if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
-    console.log('✅ Ya autenticado, redirigiendo a home')
-    next('/home')
-  } 
-  // Todo bien, permite la navegación
-  else {
-    console.log('✅ Navegación permitida')
-    next()
+    return
   }
+  
+  // Verificar si está autenticado y trata de ir a login/register
+  if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
+    console.log('✅ Ya autenticado, redirigiendo según rol')
+    if (authStore.userRole === 'admin') {
+      next('/home')
+    } else {
+      next('/familiar-dashboard')
+    }
+    return
+  }
+  
+  // Verificar permisos de admin
+  if (to.meta.requiresAdmin && authStore.userRole !== 'admin') {
+    console.log('❌ Acceso denegado: Se requiere rol de admin')
+    alert('No tienes permisos para acceder a esta sección')
+    next('/familiar-dashboard')
+    return
+  }
+  
+  // Verificar permisos de familiar (si se especifica)
+  if (to.meta.requiresFamily && authStore.userRole !== 'familiar') {
+    console.log('❌ Acceso denegado: Se requiere rol de familiar')
+    alert('Esta sección es solo para familiares')
+    next('/home')
+    return
+  }
+  
+  // Todo bien, permite la navegación
+  console.log('✅ Navegación permitida')
+  next()
 })
 
 export default router

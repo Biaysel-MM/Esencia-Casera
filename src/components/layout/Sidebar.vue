@@ -1,3 +1,4 @@
+
 <template>
   <aside class="sidebar" :class="{ 'mobile-open': isMobileOpen }">
     <!-- Close button for mobile -->
@@ -20,8 +21,8 @@
       </div>
       <div class="user-info">
         <p class="user-name">{{ userName || 'Usuario' }}</p>
-        <p class="user-role familiar">
-          Familiar <!-- Por ahora todos son familiares, eliminamos roles -->
+        <p class="user-role" :class="userRole">
+          {{ userRole === 'admin' ? 'Administrador' : 'Familiar' }}
         </p>
       </div>
     </div>
@@ -29,16 +30,93 @@
     <!-- Navigation -->
     <nav class="sidebar-nav">
       <ul class="nav-list">
-        <li v-for="item in navItems" :key="item.path" class="nav-item">
+        <!-- Inicio para ambos roles -->
+        <li class="nav-item">
           <router-link 
-            :to="item.path" 
+            :to="userRole === 'admin' ? '/home' : '/familiar-dashboard'" 
             class="nav-link"
-            :class="{ 'active': $route.path === item.path }"
+            :class="{ 'active': $route.path === (userRole === 'admin' ? '/home' : '/familiar-dashboard') }"
             @click="closeSidebarOnMobile"
           >
-            <span class="iconify nav-icon" :data-icon="item.icon"></span>
-            <span class="nav-text">{{ item.name }}</span>
-            <span v-if="item.badge" class="nav-badge">{{ item.badge }}</span>
+            <span class="iconify nav-icon" data-icon="mdi:home"></span>
+            <span class="nav-text">Inicio</span>
+          </router-link>
+        </li>
+
+        <!-- Solo para admin -->
+        <li v-if="userRole === 'admin'" class="nav-item">
+          <router-link 
+            to="/planificador" 
+            class="nav-link"
+            :class="{ 'active': $route.path === '/planificador' }"
+            @click="closeSidebarOnMobile"
+          >
+            <span class="iconify nav-icon" data-icon="mdi:calendar"></span>
+            <span class="nav-text">Planificador</span>
+          </router-link>
+        </li>
+
+        <li v-if="userRole === 'admin'" class="nav-item">
+          <router-link 
+            to="/lista-compras" 
+            class="nav-link"
+            :class="{ 'active': $route.path === '/lista-compras' }"
+            @click="closeSidebarOnMobile"
+          >
+            <span class="iconify nav-icon" data-icon="mdi:cart"></span>
+            <span class="nav-text">Lista de Compras</span>
+            <span class="nav-badge">3</span>
+          </router-link>
+        </li>
+
+        <li v-if="userRole === 'admin'" class="nav-item">
+          <router-link 
+            to="/recetas" 
+            class="nav-link"
+            :class="{ 'active': $route.path === '/recetas' }"
+            @click="closeSidebarOnMobile"
+          >
+            <span class="iconify nav-icon" data-icon="mdi:book-open"></span>
+            <span class="nav-text">Recetas</span>
+          </router-link>
+        </li>
+
+        <!-- Para ambos roles -->
+        <li class="nav-item">
+          <router-link 
+            to="/favoritas" 
+            class="nav-link"
+            :class="{ 'active': $route.path === '/favoritas' }"
+            @click="closeSidebarOnMobile"
+          >
+            <span class="iconify nav-icon" data-icon="mdi:heart"></span>
+            <span class="nav-text">Favoritas</span>
+          </router-link>
+        </li>
+
+        <!-- Solo para admin -->
+        <li v-if="userRole === 'admin'" class="nav-item">
+          <router-link 
+            to="/familia" 
+            class="nav-link"
+            :class="{ 'active': $route.path === '/familia' }"
+            @click="closeSidebarOnMobile"
+          >
+            <span class="iconify nav-icon" data-icon="mdi:account-group"></span>
+            <span class="nav-text">Familia</span>
+          </router-link>
+        </li>
+
+        <!-- Para ambos roles -->
+        <li class="nav-item">
+          <router-link 
+            to="/configuracion" 
+            class="nav-link"
+            :class="{ 'active': $route.path === '/configuracion' }"
+            @click="closeSidebarOnMobile"
+          >
+            <span class="iconify nav-icon" data-icon="mdi:cog"></span>
+            <span class="nav-text">Configuración</span>
           </router-link>
         </li>
       </ul>
@@ -73,19 +151,7 @@ export default {
     const router = useRouter()
     const authStore = useAuthStore()
     
-    // SOLUCIÓN: Solo usar userName, userRole no existe en el store simplificado
-    const { userName, userEmail } = storeToRefs(authStore)
-    
-    // Navigation items - SIN filtrar por rol (todos ven todo)
-    const navItems = ref([
-      { name: 'Inicio', path: '/home', icon: 'mdi:home' },
-      { name: 'Planificador', path: '/planificador', icon: 'mdi:calendar' },
-      { name: 'Lista de Compras', path: '/lista-compras', icon: 'mdi:cart', badge: '3' },
-      { name: 'Recetas', path: '/recetas', icon: 'mdi:book-open' },
-      { name: 'Favoritas', path: '/favoritas', icon: 'mdi:heart' },
-      { name: 'Configuración', path: '/configuracion', icon: 'mdi:cog' }
-      // NOTA: Eliminamos "Familia" temporalmente hasta implementar roles
-    ])
+    const { userName, userRole } = storeToRefs(authStore)
 
     const closeSidebar = () => {
       emit('close')
@@ -100,9 +166,7 @@ export default {
     const handleLogout = async () => {
       try {
         await authStore.logout()
-        // Redirigir a login
         router.push('/login')
-        // Recargar para limpiar estado
         setTimeout(() => {
           window.location.reload()
         }, 100)
@@ -113,8 +177,7 @@ export default {
 
     return {
       userName,
-      userEmail,
-      navItems,
+      userRole,
       closeSidebar,
       closeSidebarOnMobile,
       handleLogout
@@ -122,7 +185,6 @@ export default {
   }
 }
 </script>
-
 
 <style scoped>
 /* Sidebar Base Styles */
@@ -351,7 +413,7 @@ export default {
     background: none;
     border: none;
     width: 40px;
-    height: 40px;
+  height: 40px;
     border-radius: 8px;
     display: flex;
     align-items: center;

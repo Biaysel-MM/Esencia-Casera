@@ -152,6 +152,7 @@
   </div>
 </template>
 
+
 <script>
 import { useAuthStore } from '../stores/auth'
 import { storeToRefs } from 'pinia'
@@ -172,7 +173,7 @@ export default {
       familyCode: ''
     })
     
-    const role = ref('admin')
+    const role = ref('admin') // Por defecto admin (crear familia)
     const error = ref('')
     const successMessage = ref('')
     
@@ -198,6 +199,12 @@ export default {
         return
       }
       
+      // Si es familiar, validar código de familia
+      if (role.value === 'familiar' && !form.value.familyCode) {
+        error.value = 'El código de familia es requerido para unirse'
+        return
+      }
+      
       // Validar contraseña
       if (form.value.password.length < 6) {
         error.value = 'La contraseña debe tener al menos 6 caracteres'
@@ -212,11 +219,13 @@ export default {
       }
       
       try {
-        // Registrar en Supabase
+        // Registrar en Supabase con rol
         const result = await authStore.register(
           form.value.email,
           form.value.password,
-          form.value.name
+          form.value.name,
+          role.value,
+          role.value === 'familiar' ? form.value.familyCode : null
         )
         
         console.log('📊 Resultado del registro:', result)
@@ -241,9 +250,13 @@ export default {
             // Caso: Sesión automática (email ya confirmado)
             successMessage.value = `¡Bienvenido ${form.value.name}! Tu cuenta ha sido creada exitosamente.`
             
-            // Redirigir a home después de un breve momento
+            // Redirigir según el rol
             setTimeout(() => {
-              router.push('/home')
+              if (result.role === 'admin') {
+                router.push('/home') // Vista de admin
+              } else {
+                router.push('/familiar-dashboard') // Vista de familiar
+              }
             }, 2000)
           }
         } else {
@@ -273,6 +286,7 @@ export default {
   }
 }
 </script>
+
 
 <style scoped>
 /* Estilos existentes... */
