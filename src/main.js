@@ -11,7 +11,6 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
-app.mount('#app')
 app.use(Toast, {
   position: "top-right",
   timeout: 3000,
@@ -26,3 +25,5 @@ app.use(Toast, {
   icon: true,
   rtl: false
 });
+
+app.mount('#app')
