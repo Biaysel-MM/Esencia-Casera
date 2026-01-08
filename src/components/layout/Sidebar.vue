@@ -65,7 +65,6 @@
           >
             <span class="iconify nav-icon" data-icon="mdi:cart"></span>
             <span class="nav-text">Lista de Compras</span>
-            <span class="nav-badge">3</span>
           </router-link>
         </li>
 
