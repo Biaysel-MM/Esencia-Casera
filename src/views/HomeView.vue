@@ -4419,4 +4419,6 @@ export default {
     gap: 2rem;
   }
 }
+
+
 </style>
