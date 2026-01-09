@@ -22,7 +22,7 @@ export default {
   name: 'NotFoundView',
   methods: {
     goHome() {
-      this.$router.push('/')
+      this.$router.push('/dashboard')
     }
   }
 }

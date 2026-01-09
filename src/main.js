@@ -26,4 +26,4 @@ app.use(Toast, {
   rtl: false
 });
 
-app.mount('#app')
+  app.mount('#app')

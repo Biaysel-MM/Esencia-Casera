@@ -11,6 +11,7 @@
       <!-- Scrollable Content -->
       <main class="content-main">
         <div class="content-container">
+          <!-- Contenido del planificador -->
           <div class="planificador-view">
             <!-- Header del planificador -->
             <div class="planificador-header">
@@ -133,103 +134,24 @@
                     <p class="outside-option-desc">No comeré en casa</p>
                   </div>
                 </button>
-                <button class="shopping-list-btn" @click="generateShoppingList">
-                  <span class="iconify" data-icon="mdi:cart"></span>
-                  Lista de compras
-                </button>
-                <div class="week-navigation">
-                  <button @click="previousWeek" class="nav-btn">
-                    <span class="iconify" data-icon="mdi:chevron-left"></span>
-                  </button>
-                  <span class="current-week">{{ formatWeekRange() }}</span>
-                  <button @click="nextWeek" class="nav-btn">
-                    <span class="iconify" data-icon="mdi:chevron-right"></span>
-                  </button>
-                  <button @click="goToCurrentWeek" class="today-btn">Esta semana</button>
-                </div>
-              </div>
-            </div>
 
-            <!-- Pestañas de vista -->
-            <div class="view-tabs">
-              <button class="tab-btn" :class="{ active: currentView === 'weekly' }" @click="currentView = 'weekly'">
-                <span class="iconify" data-icon="mdi:calendar-week"></span>
-                Vista Semanal
-              </button>
-              <button class="tab-btn" :class="{ active: currentView === 'monthly' }" @click="currentView = 'monthly'">
-                <span class="iconify" data-icon="mdi:calendar-month"></span>
-                Vista Mensual
-              </button>
-            </div>
-
-            <!-- Vista Semanal -->
-            <!-- REEMPLAZA TODO el weekly-view (desde línea ~210) -->
-            <div v-if="currentView === 'weekly'" class="weekly-view-simple">
-              <!-- Grid del planificador simplificado -->
-              <div class="planificador-grid-responsive">
-                <div v-for="(day, index) in weekDays" :key="day.date" class="day-card">
-                  <div class="day-header">
-                    <div class="day-info">
-                      <span class="day-name">{{ day.name }}</span>
-                      <span class="day-date">{{ formatDate(day.date) }}</span>
-                    </div>
-                    <button class="generate-day-btn" @click="generateDayMenu(day.date)"
-                      title="Generar menú para este día">
-                      <span class="iconify" data-icon="mdi:auto-fix"></span>
-                    </button>
-                  </div>
-
-                  <div class="meals-container">
-                    <div v-for="mealType in mealTypes" :key="`${day.date}-${mealType.key}`" class="meal-slot"
-                      @dragover.prevent @drop="handleDrop(day.date, mealType.key, $event)" @dragenter="handleDragEnter"
-                      @dragleave="handleDragLeave">
-                      <div class="meal-slot-header">
-                        <div class="meal-type">
-                          <span class="iconify" :data-icon="mealType.icon"></span>
-                          <span>{{ mealType.label }}</span>
-                          <span class="meal-time">{{ mealType.time }}</span>
-                        </div>
-                        <button class="add-meal-btn-small" @click="openRecipeSelection(day.date, mealType.key)"
-                          title="Agregar comida">
-                          <span class="iconify" data-icon="mdi:plus"></span>
-                        </button>
+                <!-- Lista de recetas -->
+                <div class="recipes-scroll-container">
+                  <div class="recipes-grid">
+                    <div v-for="recipe in allRecipes" 
+                         :key="recipe.id" 
+                         class="recipe-option-card"
+                         @click="selectRecipe(recipe)">
+                      <div class="recipe-option-image">
+                        <img :src="recipe.image" :alt="recipe.name" @error="handleImageError">
+                        <div class="recipe-badge">{{ recipe.type }}</div>
                       </div>
-
-                      <div v-if="getMealForSlot(day.date, mealType.key)" class="meal-content-responsive"
-                        draggable="true" @dragstart="handleDragStart(day.date, mealType.key, $event)"
-                        @click="openMealModal(day.date, mealType.key)">
-                        <button class="remove-btn-small" @click.stop="removeMeal(day.date, mealType.key)"
-                          title="Eliminar">
-                          <span class="iconify" data-icon="mdi:close"></span>
-                        </button>
-
-                        <div class="meal-preview">
-                          <div class="meal-preview-image">
-                            <img
-                              :src="getMealForSlot(day.date, mealType.key)?.recipe?.image_url || 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'"
-                              :alt="getMealForSlot(day.date, mealType.key)?.recipe?.title" @error="handleImageError">
-                          </div>
-                          <div class="meal-preview-info">
-                            <p class="meal-preview-name">
-                              {{ getMealForSlot(day.date, mealType.key)?.recipe?.title || getMealForSlot(day.date,
-                                mealType.key)?.name || 'Comida rápida' }}
-                            </p>
-                            <div v-if="getMealForSlot(day.date, mealType.key)?.recipe" class="meal-preview-details">
-                              <span>⏱️ {{ (getMealForSlot(day.date, mealType.key)?.recipe?.prep_time || 0) +
-                                (getMealForSlot(day.date, mealType.key)?.recipe?.cook_time || 0) }} min</span>
-                            </div>
-                            <div v-if="getMealForSlot(day.date, mealType.key)?.isOutside" class="outside-badge-small">
-                              <span class="iconify" data-icon="mdi:map-marker"></span>
-                              Fuera
-                            </div>
-                          </div>
+                      <div class="recipe-option-info">
+                        <h4>{{ recipe.name }}</h4>
+                        <div class="recipe-option-details">
+                          <span>⏱️ {{ recipe.time }}</span>
+                          <span>👥 {{ recipe.servings }} porciones</span>
                         </div>
-                      </div>
-
-                      <div v-else class="empty-slot" @click="openRecipeSelection(day.date, mealType.key)"
-                        @dragover.prevent @drop="handleDrop(day.date, mealType.key, $event)">
-                        <span class="iconify" data-icon="mdi:plus-circle-outline"></span>
-                        <p>Agregar {{ mealType.label.toLowerCase() }}</p>
                       </div>
                     </div>
                   </div>
@@ -381,303 +303,6 @@
           </div>
         </div>
       </main>
-    </div>
-
-    <!-- MODALES -->
-
-    <!-- Modal de selección de recetas -->
-    <div v-if="showRecipeModal" class="modal-overlay" @click="closeRecipeModal">
-      <div class="modal-content recipe-selection-modal" @click.stop>
-        <button class="modal-close" @click="closeRecipeModal">
-          <span class="iconify" data-icon="mdi:close"></span>
-        </button>
-
-        <div class="modal-header">
-          <h3 class="modal-title">Planificar comida para {{ formatDate(selectedDay) }}</h3>
-          <p class="modal-description">{{ formatMealType(selectedMeal) }} - {{ getMealTime(selectedMeal) }}</p>
-        </div>
-
-        <!-- Opciones rápidas -->
-        <div class="quick-options">
-          <button class="outside-option-btn" @click="setOutsideMeal">
-            <span class="iconify" data-icon="mdi:map-marker"></span>
-            <div class="outside-option-info">
-              <p class="outside-option-title">Marcar como salida</p>
-              <p class="outside-option-desc">No comeré en casa</p>
-            </div>
-          </button>
-
-          <button class="quick-recipe-btn" @click="openQuickRecipeModal">
-            <span class="iconify" data-icon="mdi:lightning-bolt"></span>
-            <div class="quick-option-info">
-              <p class="quick-option-title">Comida rápida</p>
-              <p class="quick-option-desc">Sin receta específica</p>
-            </div>
-          </button>
-        </div>
-
-        <!-- Lista de recetas -->
-        <div class="modal-recipes-section">
-          <div class="section-header">
-            <h4>Seleccionar receta</h4>
-            <button class="view-all-btn" @click="goToRecipes">
-              Ver todas
-              <span class="iconify" data-icon="mdi:chevron-right"></span>
-            </button>
-          </div>
-
-          <div v-if="loadingRecipes" class="loading-state">
-            <span class="iconify loading-icon" data-icon="mdi:loading"></span>
-            Cargando recetas...
-          </div>
-
-          <div v-else class="recipes-scroll-container">
-            <div class="recipes-grid">
-              <div v-for="recipe in modalRecipes" :key="recipe.id" class="recipe-option-card"
-                @click="selectRecipeForSlot(recipe)">
-                <div class="recipe-option-image">
-                  <img
-                    :src="recipe.image_url || 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'"
-                    :alt="recipe.title" @error="handleImageError">
-                  <div class="recipe-option-badge">{{ formatCategory(recipe.category) }}</div>
-                </div>
-                <div class="recipe-option-info">
-                  <h4>{{ recipe.title }}</h4>
-                  <div class="recipe-option-details">
-                    <span>⏱️ {{ recipe.prep_time + recipe.cook_time }} min</span>
-                    <span>👥 {{ recipe.servings }} porciones</span>
-                  </div>
-                  <div class="recipe-option-tags">
-                    <span v-if="recipe.is_vegetarian" class="tag vegetarian">🌿 Veg</span>
-                    <span v-if="recipe.is_healthy" class="tag healthy">🥗 Salud</span>
-                    <span v-if="recipe.is_quick" class="tag quick">⚡ Ráp</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal de comida rápida -->
-    <div v-if="showQuickRecipeModal" class="modal-overlay" @click="closeQuickRecipeModal">
-      <div class="modal-content quick-recipe-modal" @click.stop>
-        <button class="modal-close" @click="closeQuickRecipeModal">
-          <span class="iconify" data-icon="mdi:close"></span>
-        </button>
-
-        <h2 class="modal-title">Comida Rápida</h2>
-
-        <div class="quick-recipe-form">
-          <div class="form-group">
-            <label>Nombre de la comida *</label>
-            <input type="text" v-model="quickMealData.name" class="form-input"
-              placeholder="Ej: Pizza, Hamburguesas, Sándwiches" required>
-          </div>
-
-          <div class="form-group">
-            <label>Tipo de comida *</label>
-            <select v-model="quickMealData.type" class="form-select" required>
-              <option value="">Seleccionar tipo</option>
-              <option value="comida_rapida">Comida rápida</option>
-              <option value="delivery">Delivery/Pedido</option>
-              <option value="restaurante">Restaurante</option>
-              <option value="reunion_familiar">Reunión familiar</option>
-              <option value="evento_especial">Evento especial</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Notas adicionales (opcional)</label>
-            <textarea v-model="quickMealData.notes" class="form-textarea"
-              placeholder="Ej: Pedir por Glovo, llevar postre, etc." rows="3"></textarea>
-          </div>
-        </div>
-
-        <div class="modal-actions">
-          <button class="modal-btn cancel-btn" @click="closeQuickRecipeModal">Cancelar</button>
-          <button class="modal-btn confirm-btn" @click="saveQuickMeal" :disabled="!quickMealData.name">
-            Agregar al planificador
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal de generación de menú semanal -->
-    <div v-if="showGenerateWeeklyModal" class="modal-overlay" @click="closeGenerateWeeklyModal">
-      <div class="modal-content generate-weekly-modal" @click.stop>
-        <button class="modal-close" @click="closeGenerateWeeklyModal">
-          <span class="iconify" data-icon="mdi:close"></span>
-        </button>
-
-        <h2 class="modal-title">Generar Menú Semanal</h2>
-
-        <div class="preferences-section">
-          <h3>Preferencias de generación</h3>
-          <div class="preferences-grid">
-            <div class="preference-item">
-              <label class="preference-label">
-                <input type="checkbox" v-model="generationPreferences.vegetarian">
-                <span class="checkbox-custom"></span>
-                <span class="preference-text">Incluir opciones vegetarianas</span>
-              </label>
-            </div>
-            <div class="preference-item">
-              <label class="preference-label">
-                <input type="checkbox" v-model="generationPreferences.healthy">
-                <span class="checkbox-custom"></span>
-                <span class="preference-text">Priorizar opciones saludables</span>
-              </label>
-            </div>
-            <div class="preference-item">
-              <label class="preference-label">
-                <input type="checkbox" v-model="generationPreferences.quick">
-                <span class="checkbox-custom"></span>
-                <span class="preference-text">Incluir comidas rápidas</span>
-              </label>
-            </div>
-            <div class="preference-item">
-              <label class="preference-label">
-                <input type="checkbox" v-model="generationPreferences.variety">
-                <span class="checkbox-custom"></span>
-                <span class="preference-text">Maximizar variedad</span>
-              </label>
-            </div>
-            <div class="preference-item">
-              <label class="preference-label">
-                <input type="checkbox" v-model="generationPreferences.usePantry">
-                <span class="checkbox-custom"></span>
-                <span class="preference-text">Usar ingredientes disponibles</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div class="weekdays-section">
-          <h3>Días a planificar</h3>
-          <div class="weekdays-grid">
-            <div v-for="day in weekDays" :key="day.date" class="weekday-item">
-              <label class="weekday-label">
-                <input type="checkbox" v-model="generationPreferences.selectedDays[day.name]" :checked="true">
-                <span class="checkbox-custom"></span>
-                <span class="weekday-text">{{ day.name }}</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div class="generated-preview">
-          <h3>Vista previa del menú</h3>
-          <div v-if="generatedWeeklyMenu.length === 0" class="empty-state">
-            <p>Selecciona preferencias y genera el menú</p>
-          </div>
-          <div v-else class="preview-grid">
-            <div v-for="meal in generatedWeeklyMenu" :key="`${meal.date}-${meal.type}`" class="preview-meal">
-              <div class="preview-meal-header">
-                <h4>{{ formatDayName(meal.date) }}</h4>
-                <span class="meal-type-badge">{{ formatMealType(meal.type) }}</span>
-              </div>
-              <div class="preview-meal-content">
-                <img
-                  :src="meal.recipe?.image_url || 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'"
-                  :alt="meal.recipe?.title || 'Comida rápida'" @error="handleImageError">
-                <div class="preview-meal-info">
-                  <h5>{{ meal.recipe?.title || meal.name || 'Sin asignar' }}</h5>
-                  <div v-if="meal.recipe" class="preview-meal-details">
-                    <span>⏱️ {{ meal.recipe.prep_time + meal.recipe.cook_time }} min</span>
-                    <span>👥 {{ meal.recipe.servings }} porciones</span>
-                  </div>
-                  <div v-if="meal.isOutside" class="outside-badge-small">
-                    <span class="iconify" data-icon="mdi:map-marker"></span>
-                    Fuera
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-actions">
-          <button class="modal-btn cancel-btn" @click="closeGenerateWeeklyModal">Cancelar</button>
-          <button class="modal-btn generate-btn" @click="generateWeekPreview">
-            <span class="iconify" data-icon="mdi:sparkles"></span>
-            Generar Vista Previa
-          </button>
-          <button class="modal-btn confirm-btn" @click="applyGeneratedWeeklyMenu"
-            :disabled="generatedWeeklyMenu.length === 0">
-            Aplicar Menú Semanal
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal de lista de compras -->
-    <div v-if="showShoppingListModal" class="modal-overlay" @click="closeShoppingListModal">
-      <div class="modal-content shopping-list-modal" @click.stop>
-        <button class="modal-close" @click="closeShoppingListModal">
-          <span class="iconify" data-icon="mdi:close"></span>
-        </button>
-
-        <h2 class="modal-title">Lista de Compras Semanal</h2>
-        <p class="modal-subtitle">Ingredientes necesarios para la semana {{ formatWeekRange() }}</p>
-
-        <div v-if="loadingShoppingList" class="loading-state">
-          <span class="iconify loading-icon" data-icon="mdi:loading"></span>
-          Generando lista de compras...
-        </div>
-
-        <div v-else class="shopping-list-content">
-          <div class="shopping-list-stats">
-            <div class="stat-item">
-              <span class="stat-label">Total ingredientes</span>
-              <span class="stat-value">{{ shoppingList.length }}</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Recetas incluidas</span>
-              <span class="stat-value">{{ shoppingListStats.recipes }}</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Categorías</span>
-              <span class="stat-value">{{ shoppingListStats.categories }}</span>
-            </div>
-          </div>
-
-          <div class="shopping-list-items">
-            <div v-for="category in groupedShoppingList" :key="category.name" class="category-section">
-              <h4 class="category-title">{{ category.name }}</h4>
-              <div class="category-items">
-                <div v-for="item in category.items" :key="item.id" class="shopping-item">
-                  <label class="item-label">
-                    <input type="checkbox" v-model="item.purchased" @change="updateShoppingItem(item)">
-                    <span class="checkbox-custom"></span>
-                    <span class="item-name" :class="{ purchased: item.purchased }">{{ item.name }}</span>
-                  </label>
-                  <div class="item-quantity">
-                    <span class="quantity-value">{{ item.quantity }}</span>
-                    <span class="quantity-unit">{{ item.unit }}</span>
-                    <button class="item-delete-btn" @click="removeShoppingItem(item)">
-                      <span class="iconify" data-icon="mdi:trash-can-outline"></span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-actions">
-          <button class="modal-btn cancel-btn" @click="closeShoppingListModal">Cerrar</button>
-          <button class="modal-btn export-btn" @click="exportShoppingList">
-            <span class="iconify" data-icon="mdi:export"></span>
-            Exportar Lista
-          </button>
-          <button class="modal-btn add-all-btn" @click="addAllToShoppingList">
-            <span class="iconify" data-icon="mdi:cart-plus"></span>
-            Agregar todos a lista
-          </button>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -1158,6 +783,7 @@ export default {
   background-color: var(--background);
 }
 
+/* Sidebar - Fixed position */
 .sidebar-fixed {
   position: fixed;
   left: 0;
@@ -1171,6 +797,7 @@ export default {
   transition: transform 0.3s ease-in-out;
 }
 
+/* Header - Fixed con espacio para sidebar */
 .header-fixed {
   position: fixed;
   top: 0;
@@ -1184,6 +811,7 @@ export default {
   transition: left 0.3s ease-in-out;
 }
 
+/* Contenedor principal que compensa sidebar y header */
 .main-content-wrapper {
   margin-left: 260px;
   min-height: 100vh;
@@ -1191,6 +819,7 @@ export default {
   transition: margin-left 0.3s ease;
 }
 
+/* Contenido principal con espacio para el header */
 .content-main {
   padding-top: 70px;
   min-height: calc(100vh - 70px);
@@ -1538,6 +1167,7 @@ export default {
 
 .outside-content {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -1551,81 +1181,10 @@ export default {
   color: var(--secondary);
 }
 
-.recipe-drag-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.recipe-drag-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.recipe-drag-info h4 {
-  font-size: 0.875rem;
+.outside-content p {
+  font-size: 12px;
   font-weight: 500;
-  color: var(--foreground);
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.recipe-drag-details {
-  display: flex;
-  gap: 8px;
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-  margin-bottom: 4px;
-}
-
-.recipe-drag-tags {
-  display: flex;
-  gap: 4px;
-}
-
-.tag {
-  font-size: 0.625rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 500;
-}
-
-.tag.vegetarian {
-  background-color: rgba(93, 162, 113, 0.1);
-  color: var(--primary);
-}
-
-.tag.healthy {
-  background-color: rgba(139, 177, 116, 0.1);
   color: var(--secondary);
-}
-
-.tag.quick {
-  background-color: rgba(139, 92, 246, 0.1);
-  color: #8b5cf6;
-}
-
-/* Vista mensual */
-.monthly-view {
-  background-color: var(--card);
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.month-header {
-  padding: 20px;
-  background-color: rgba(168, 213, 186, 0.2);
-  border-bottom: 1px solid var(--border);
-}
-
-.month-header h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--foreground);
   text-align: center;
 }
 
@@ -1718,25 +1277,21 @@ export default {
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  padding: 1rem;
-  animation: fadeIn 0.3s ease;
+  padding: 20px;
+  backdrop-filter: blur(4px);
 }
 
-.modal-content {
+.recipe-modal {
   background-color: var(--card);
-  border-radius: 1rem;
-  max-width: 800px;
+  border-radius: 16px;
   width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
-  animation: slideIn 0.3s ease;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-.recipe-selection-modal {
-  max-width: 900px;
-  padding: 0;
+  max-width: 800px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border);
 }
 
 .modal-header {
@@ -1747,58 +1302,49 @@ export default {
 }
 
 .modal-title {
-  font-size: 1.5rem;
+  font-size: 18px;
   font-weight: 600;
   color: var(--foreground);
-  margin-bottom: 0.5rem;
+  margin-bottom: 4px;
 }
 
 .modal-description {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: var(--muted-foreground);
 }
 
 .modal-close {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 0.75rem;
-  background-color: var(--background);
-  border: 1px solid var(--border);
+  top: 20px;
+  right: 20px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 10;
+  color: var(--muted-foreground);
   transition: all 0.2s;
 }
 
 .modal-close:hover {
-  background-color: rgba(212, 24, 61, 0.1);
-  border-color: var(--destructive);
+  background-color: var(--muted);
 }
 
 .modal-close .iconify {
-  width: 1.25rem;
-  height: 1.25rem;
-  color: var(--foreground);
+  width: 20px;
+  height: 20px;
 }
 
-/* Opciones rápidas */
-.quick-options {
-  padding: 20px 24px;
-  display: flex;
-  gap: 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.outside-option-btn,
-.quick-recipe-btn {
-  flex: 1;
-  background-color: rgba(168, 213, 186, 0.2);
-  border: 2px dashed var(--border);
+/* Opción de salida en modal */
+.outside-option-btn {
+  width: calc(100% - 48px);
+  margin: 0 24px 16px 24px;
+  background-color: rgba(139, 177, 116, 0.2);
+  border: 2px dashed var(--secondary);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -1810,664 +1356,46 @@ export default {
 
 .outside-option-btn:hover {
   background-color: rgba(139, 177, 116, 0.3);
-  border-color: var(--secondary);
   transform: translateY(-1px);
-}
-
-.quick-recipe-btn:hover {
-  background-color: rgba(139, 92, 246, 0.1);
-  border-color: #8b5cf6;
-  transform: translateY(-1px);
-}
-
-.outside-option-btn .iconify,
-.quick-recipe-btn .iconify {
-  width: 24px;
-  height: 24px;
 }
 
 .outside-option-btn .iconify {
+  width: 24px;
+  height: 24px;
   color: var(--secondary);
 }
 
-.quick-recipe-btn .iconify {
-  color: #8b5cf6;
-}
-
-.quick-option-info,
 .outside-option-info {
   text-align: left;
 }
 
-.outside-option-title,
-.quick-option-title {
+.outside-option-title {
   font-size: 14px;
   font-weight: 500;
-  color: var(--foreground);
+  color: var(--secondary);
   margin-bottom: 2px;
 }
 
-.outside-option-desc,
-.quick-option-desc {
+.outside-option-desc {
   font-size: 12px;
   color: var(--muted-foreground);
 }
 
-/* ============================================
-   NUEVOS ESTILOS RESPONSIVE
-   ============================================ */
-
-/* Panel de recetas en móvil (arriba) */
-.mobile-top {
-  display: none;
-}
-
-/* Grid responsive */
-.planificador-grid-responsive {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
-  margin-bottom: 24px;
-}
-
-.day-card {
-  background-color: var(--card);
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.day-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.day-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.day-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--foreground);
-}
-
-.day-date {
-  font-size: 14px;
-  color: var(--muted-foreground);
-  margin-top: 2px;
-}
-
-.generate-day-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background-color: rgba(93, 162, 113, 0.1);
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.generate-day-btn:hover {
-  background-color: rgba(93, 162, 113, 0.2);
-  border-color: var(--primary);
-}
-
-.generate-day-btn .iconify {
-  width: 18px;
-  height: 18px;
-}
-
-.meals-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.meal-slot {
-  background-color: rgba(168, 213, 186, 0.05);
-  border-radius: 12px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  transition: all 0.2s;
-}
-
-.meal-slot:hover {
-  background-color: rgba(168, 213, 186, 0.1);
-}
-
-.meal-slot.drag-over {
-  background-color: rgba(93, 162, 113, 0.2);
-  border: 2px dashed var(--primary);
-}
-
-.meal-slot-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.meal-type {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--foreground);
-}
-
-.meal-type .iconify {
-  width: 16px;
-  height: 16px;
-  color: var(--primary);
-}
-
-.meal-time {
-  font-size: 12px;
-  color: var(--muted-foreground);
-  margin-left: 8px;
-}
-
-.add-meal-btn-small {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background-color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.add-meal-btn-small:hover {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: white;
-}
-
-.add-meal-btn-small .iconify {
-  width: 16px;
-  height: 16px;
-}
-
-.meal-content-responsive {
-  position: relative;
-  background-color: white;
-  border-radius: 10px;
-  padding: 12px;
-  border: 1px solid rgba(93, 162, 113, 0.2);
-  cursor: move;
-  transition: all 0.2s;
-}
-
-.meal-content-responsive:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-  border-color: var(--primary);
-}
-
-.remove-btn-small {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: var(--destructive);
-  color: white;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.2s;
-  z-index: 2;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.meal-content-responsive:hover .remove-btn-small {
-  opacity: 1;
-}
-
-.remove-btn-small .iconify {
-  width: 12px;
-  height: 12px;
-}
-
-.meal-preview {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.meal-preview-image {
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
-  overflow: hidden;
-  flex-shrink: 0;
-  border: 1px solid var(--border);
-}
-
-.meal-preview-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.meal-preview-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.meal-preview-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--foreground);
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.meal-preview-details {
-  font-size: 11px;
-  color: var(--muted-foreground);
-}
-
-.empty-slot {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px 12px;
-  border: 2px dashed var(--border);
-  border-radius: 10px;
-  background-color: rgba(168, 213, 186, 0.05);
-  color: var(--muted-foreground);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.empty-slot:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background-color: rgba(168, 213, 186, 0.1);
-}
-
-.empty-slot .iconify {
-  width: 24px;
-  height: 24px;
-  margin-bottom: 8px;
-}
-
-.empty-slot p {
-  font-size: 12px;
-  font-weight: 500;
-}
-
-/* Vista mensual responsive */
-.month-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  background-color: rgba(168, 213, 186, 0.2);
-  border-bottom: 1px solid var(--border);
-}
-
-.month-header h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin: 0;
-}
-
-.month-nav-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background-color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.month-nav-btn:hover {
-  background-color: rgba(168, 213, 186, 0.1);
-  border-color: var(--primary);
-}
-
-.month-nav-btn .iconify {
-  width: 20px;
-  height: 20px;
-  color: var(--foreground);
-}
-
-.weekdays-header {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  background-color: rgba(168, 213, 186, 0.1);
-  border-bottom: 1px solid var(--border);
-}
-
-.weekday {
-  padding: 12px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--foreground);
-}
-
-.month-grid-responsive {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  background-color: var(--border);
-}
-
-.month-day-responsive {
-  background-color: var(--card);
-  min-height: 120px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.month-day-responsive:hover {
-  background-color: rgba(168, 213, 186, 0.05);
-}
-
-.month-day-responsive.current-month {
-  background-color: var(--card);
-}
-
-.month-day-responsive:not(.current-month) {
-  background-color: rgba(168, 213, 186, 0.05);
-  opacity: 0.7;
-}
-
-.month-day-responsive.today {
-  background-color: rgba(93, 162, 113, 0.1);
-  border: 2px solid var(--primary);
-}
-
-.day-header-responsive {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--border);
-}
-
-.day-number {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--foreground);
-}
-
-.today-badge {
-  background-color: var(--primary);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 500;
-}
-
-.day-meals-responsive {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.month-meal-responsive {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  background-color: rgba(168, 213, 186, 0.2);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.month-meal-responsive:hover {
-  background-color: rgba(168, 213, 186, 0.3);
-}
-
-.meal-icon-responsive {
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.meal-icon-responsive .iconify {
-  width: 12px;
-  height: 12px;
-  color: var(--primary);
-}
-
-.meal-name-responsive {
-  font-size: 9px;
-  color: var(--foreground);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
-}
-
-.add-meal-month-btn {
-  width: 100%;
-  height: 24px;
-  border: 1px dashed var(--border);
-  border-radius: 6px;
-  background-color: rgba(168, 213, 186, 0.1);
-  color: var(--muted-foreground);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 4px;
-}
-
-.add-meal-month-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background-color: rgba(168, 213, 186, 0.2);
-}
-
-.add-meal-month-btn .iconify {
-  width: 12px;
-  height: 12px;
-}
-
-.month-summary {
-  margin-top: 24px;
-  padding: 20px;
-  background-color: rgba(168, 213, 186, 0.1);
-  border-radius: 16px;
-  border: 1px solid var(--border);
-}
-
-.month-summary h4 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-bottom: 16px;
-}
-
-.summary-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-.summary-stats .stat-item {
-  text-align: center;
-}
-
-.summary-stats .stat-value {
-  display: block;
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--primary);
-  margin-bottom: 4px;
-}
-
-.summary-stats .stat-label {
-  display: block;
-  font-size: 12px;
-  color: var(--muted-foreground);
-}
-
-/* Mostrar/ocultar según dispositivo */
-.desktop-only {
-  display: block;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .weekly-view {
-    flex-direction: column;
-  }
-
-  .mobile-top {
-    display: block;
-    margin-bottom: 24px;
-  }
-
-  .mobile-top .recipes-scroll {
-    display: none;
-    /* Ocultar la lista en móvil para no duplicar */
-  }
-
-  .desktop-only {
-    display: none;
-  }
-
-  .planificador-grid-responsive {
-    grid-template-columns: 1fr;
-  }
-
-  .month-grid-responsive {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .weekdays-header {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .weekday:nth-child(n+3) {
-    display: none;
-  }
-
-  .summary-stats {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-  .planificador-grid-responsive {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .month-grid-responsive {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (min-width: 1025px) {
-  .planificador-grid-responsive {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .weekly-view {
-    flex-direction: row;
-  }
-
-  .recipes-sidebar.desktop-only {
-    width: 300px;
-    display: block;
-  }
-}
-
-/* Sección de recetas en modal */
-.modal-recipes-section {
-  padding: 24px;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.section-header h4 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--foreground);
-}
-
-.view-all-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: transparent;
-  border: 1px solid var(--border);
-  color: var(--primary);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  border-radius: 0.75rem;
-  transition: all 0.2s;
-}
-
-.view-all-btn:hover {
-  background-color: rgba(93, 162, 113, 0.1);
-  border-color: var(--primary);
-}
-
+/* Lista de recetas en modal */
 .recipes-scroll-container {
-  max-height: 400px;
+  flex: 1;
   overflow-y: auto;
-  padding: 1rem;
+  padding: 0 24px 24px 24px;
 }
 
 .recipes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
+  gap: 16px;
 }
 
 .recipe-option-card {
-  background-color: white;
+  background-color: var(--card);
   border-radius: 12px;
   border: 1px solid var(--border);
   overflow: hidden;
@@ -2498,12 +1426,12 @@ export default {
   transform: scale(1.05);
 }
 
-.recipe-option-badge {
+.recipe-badge {
   position: absolute;
   top: 8px;
   left: 8px;
   background-color: var(--primary);
-  color: white;
+  color: var(--primary-foreground);
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 10px;
@@ -2526,537 +1454,6 @@ export default {
   gap: 12px;
   font-size: 11px;
   color: var(--muted-foreground);
-  margin-bottom: 8px;
-}
-
-.recipe-option-tags {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-/* Modal de comida rápida */
-.quick-recipe-modal {
-  max-width: 500px;
-  padding: 2rem;
-}
-
-.quick-recipe-form {
-  margin: 2rem 0;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--foreground);
-}
-
-.form-input,
-.form-select,
-.form-textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  background-color: white;
-  font-size: 1rem;
-  transition: all 0.2s;
-}
-
-.form-input:focus,
-.form-select:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(93, 162, 113, 0.1);
-}
-
-.form-textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
-/* Modal de generación semanal */
-.generate-weekly-modal {
-  max-width: 900px;
-  padding: 2rem;
-}
-
-.preferences-section {
-  margin-bottom: 2rem;
-}
-
-.preferences-section h3,
-.weekdays-section h3,
-.generated-preview h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-bottom: 1rem;
-}
-
-.preferences-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.preference-item {
-  display: flex;
-  align-items: center;
-}
-
-.preference-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  width: 100%;
-  transition: all 0.2s;
-}
-
-.preference-label:hover {
-  background-color: rgba(168, 213, 186, 0.1);
-}
-
-.preference-label input {
-  display: none;
-}
-
-.checkbox-custom {
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid var(--border);
-  border-radius: 0.375rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.preference-label input:checked+.checkbox-custom {
-  background-color: var(--primary);
-  border-color: var(--primary);
-}
-
-.preference-label input:checked+.checkbox-custom::after {
-  content: '✓';
-  color: white;
-  font-size: 0.875rem;
-}
-
-.preference-text {
-  font-weight: 500;
-}
-
-.weekdays-section {
-  margin-bottom: 2rem;
-}
-
-.weekdays-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-}
-
-.weekday-item {
-  display: flex;
-  align-items: center;
-}
-
-.weekday-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  width: 100%;
-  transition: all 0.2s;
-}
-
-.weekday-label:hover {
-  background-color: rgba(168, 213, 186, 0.1);
-}
-
-.weekday-text {
-  font-weight: 500;
-}
-
-.generated-preview {
-  margin-bottom: 2rem;
-}
-
-.preview-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
-  max-height: 300px;
-  overflow-y: auto;
-  padding: 1rem;
-  background-color: rgba(168, 213, 186, 0.1);
-  border-radius: 1rem;
-}
-
-.preview-meal {
-  background-color: white;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  overflow: hidden;
-}
-
-.preview-meal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  background-color: rgba(93, 162, 113, 0.1);
-  border-bottom: 1px solid var(--border);
-}
-
-.preview-meal-header h4 {
-  font-weight: 600;
-  color: var(--primary);
-  font-size: 0.875rem;
-}
-
-.meal-type-badge {
-  background-color: var(--primary);
-  color: white;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.preview-meal-content {
-  display: flex;
-  padding: 1rem;
-  gap: 1rem;
-  align-items: center;
-}
-
-.preview-meal-content img {
-  width: 60px;
-  height: 60px;
-  border-radius: 0.5rem;
-  object-fit: cover;
-}
-
-.preview-meal-info {
-  flex: 1;
-}
-
-.preview-meal-info h5 {
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.preview-meal-details {
-  display: flex;
-  gap: 0.75rem;
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-}
-
-.outside-badge-small {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 0.625rem;
-  color: var(--secondary);
-  background-color: rgba(139, 177, 116, 0.2);
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-top: 4px;
-}
-
-.outside-badge-small .iconify {
-  width: 8px;
-  height: 8px;
-}
-
-/* Modal de lista de compras */
-.shopping-list-modal {
-  max-width: 800px;
-  padding: 2rem;
-}
-
-.modal-subtitle {
-  color: var(--muted-foreground);
-  margin-bottom: 1.5rem;
-}
-
-.shopping-list-content {
-  margin: 2rem 0;
-}
-
-.shopping-list-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
-  background-color: rgba(168, 213, 186, 0.1);
-  padding: 1rem;
-  border-radius: 1rem;
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-label {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-  margin-bottom: 0.25rem;
-}
-
-.stat-value {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--foreground);
-}
-
-.shopping-list-items {
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 1rem;
-  background-color: rgba(168, 213, 186, 0.1);
-  border-radius: 1rem;
-}
-
-.category-section {
-  margin-bottom: 1.5rem;
-}
-
-.category-section:last-child {
-  margin-bottom: 0;
-}
-
-.category-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.category-items {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.shopping-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem;
-  background-color: white;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-}
-
-.item-label {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  cursor: pointer;
-  flex: 1;
-}
-
-.item-name {
-  font-weight: 500;
-  color: var(--foreground);
-}
-
-.item-name.purchased {
-  text-decoration: line-through;
-  color: var(--muted-foreground);
-}
-
-.item-quantity {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.quantity-value {
-  font-weight: 600;
-  color: var(--primary);
-}
-
-.quantity-unit {
-  color: var(--muted-foreground);
-  font-size: 0.875rem;
-}
-
-.item-delete-btn {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.5rem;
-  border: 1px solid rgba(212, 24, 61, 0.2);
-  background-color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-left: 0.5rem;
-}
-
-.item-delete-btn:hover {
-  background-color: rgba(212, 24, 61, 0.1);
-  border-color: var(--destructive);
-}
-
-.item-delete-btn .iconify {
-  width: 1rem;
-  height: 1rem;
-  color: var(--destructive);
-}
-
-/* Acciones de modal */
-.modal-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-}
-
-.modal-btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-}
-
-.cancel-btn {
-  background-color: transparent;
-  border: 1px solid var(--border);
-  color: var(--foreground);
-}
-
-.cancel-btn:hover {
-  background-color: rgba(168, 213, 186, 0.1);
-}
-
-.confirm-btn {
-  background-color: var(--primary);
-  color: white;
-}
-
-.confirm-btn:hover {
-  background-color: rgba(93, 162, 113, 0.9);
-}
-
-.confirm-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.generate-btn {
-  background-color: #8b5cf6;
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.generate-btn:hover {
-  background-color: #7c3aed;
-}
-
-.export-btn {
-  background-color: rgba(139, 177, 116, 0.9);
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.export-btn:hover {
-  background-color: rgba(139, 177, 116, 1);
-}
-
-.add-all-btn {
-  background-color: var(--primary);
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.add-all-btn:hover {
-  background-color: rgba(93, 162, 113, 0.9);
-}
-
-/* Loading states */
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem;
-  color: var(--muted-foreground);
-}
-
-.loading-icon {
-  width: 3rem;
-  height: 3rem;
-  color: var(--primary);
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem;
-  text-align: center;
-  color: var(--muted-foreground);
-}
-
-/* Responsive */
-@media (max-width: 1200px) {
-  .weekly-view {
-    flex-direction: column;
-  }
-
-  .recipes-sidebar {
-    width: 100%;
-    margin-top: 24px;
-  }
-
-  .recipes-scroll {
-    max-height: 300px;
-  }
 }
 
 /* ============================================
@@ -3533,8 +1930,7 @@ export default {
 
 /* Ajustes para móvil */
 @media (max-width: 768px) {
-
-  /* Layout responsive */
+  /* Sidebar se convierte en overlay en móvil */
   .sidebar-fixed {
     transform: translateX(-100%);
     width: 280px;
@@ -3609,47 +2005,11 @@ export default {
   .modal-btn {
     width: 100%;
   }
-
-  /* Monthly view responsive */
-  .month-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  /* Modal responsive */
-  .modal-content {
-    margin: 1rem;
-    max-height: 85vh;
-  }
-
-  .quick-options {
-    flex-direction: column;
-  }
-
-  .recipes-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .preferences-grid,
-  .weekdays-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .preview-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .modal-actions {
-    flex-direction: column;
-  }
-
-  .modal-btn {
-    width: 100%;
-  }
 }
 
 @media (max-width: 480px) {
-  .view-tabs {
-    flex-direction: column;
+  .planificador-title {
+    font-size: 20px;
   }
 
   .header-icon-container {
@@ -3671,11 +2031,10 @@ export default {
   }
 }
 
-@media (min-width: 769px) {
-  .planificador-header {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+/* Media queries para tamaños de pantalla más grandes */
+@media (min-width: 1400px) {
+  .content-container {
+    max-width: 1600px;
   }
 
   .planificador-grid-responsive {

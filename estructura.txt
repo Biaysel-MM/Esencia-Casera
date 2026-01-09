@@ -4,7 +4,6 @@ Esencia Casera/
 ├── .vscode/
 ├── node_modules/
 ├── public/
-├── dist/
 ├── src/
 │   ├── assets/
 │   │   ├── css/
@@ -33,7 +32,6 @@ Esencia Casera/
 │   │   └── auth.js
 │   ├── main.js
 │   ├── supabase.js
-│   ├── netlify.toml
 │   └── App.vue
 ├── .gitignore
 ├── index.html
