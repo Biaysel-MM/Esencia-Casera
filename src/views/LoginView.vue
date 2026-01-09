@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container">
+  <div v-if="!isLoading" class="login-container">
     <div class="login-wrapper">
       <!-- Logo and Welcome -->
       <div class="logo-section">
@@ -68,9 +68,12 @@
             </button>
           </p>
         </div>
-
       </div>
     </div>
+  </div>
+  <div v-else class="loading-screen">
+    <div class="loading-spinner"></div>
+    <p>Cargando...</p>
   </div>
 </template>
 
@@ -89,17 +92,14 @@ export default {
     const authStore = useAuthStore()
     const { isLoading, error, userRole } = storeToRefs(authStore)
     
-    // CAMBIAR ESTO: Eliminar valores por defecto
     const form = ref({
-      email: '',  // Ahora vacío
+      email: '',
       password: ''
     })
 
-
-onUnmounted(() => {
-  console.log('LoginView desmontado')
-  // Limpiar cualquier temporizador o suscripción
-})
+    onUnmounted(() => {
+      console.log('LoginView desmontado')
+    })
     
     const handleLogin = async () => {
       console.log('Login form submitted')
@@ -108,12 +108,15 @@ onUnmounted(() => {
       if (success) {
         console.log('Login successful, redirecting based on role...')
         
-        // Redirigir según el rol
-        if (userRole.value === 'admin') {
-          router.push('/home')
-        } else {
-          router.push('/familiar-dashboard')
-        }
+        // Esperar un momento para asegurar que el perfil se cargó
+        setTimeout(() => {
+          // Redirigir según el rol (usar el valor actualizado del store)
+          if (authStore.userRole === 'admin') {
+            router.push('/home')
+          } else {
+            router.push('/familiar-dashboard')
+          }
+        }, 100)
       } else {
         console.log('Login failed')
       }
@@ -137,6 +140,30 @@ onUnmounted(() => {
 
 
 <style scoped>
+  /* estilos de loading  */
+  .loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(245, 158, 11, 0.15) 50%, rgba(139, 92, 246, 0.15) 100%);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #10b981;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 .login-container {
   min-height: 100vh;
   background: linear-gradient(135deg,

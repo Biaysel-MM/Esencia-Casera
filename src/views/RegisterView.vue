@@ -152,7 +152,6 @@
   </div>
 </template>
 
-
 <script>
 import { useAuthStore } from '../stores/auth'
 import { storeToRefs } from 'pinia'
@@ -173,7 +172,7 @@ export default {
       familyCode: ''
     })
     
-    const role = ref('admin') // Por defecto admin (crear familia)
+    const role = ref('admin')
     const error = ref('')
     const successMessage = ref('')
     
@@ -181,93 +180,80 @@ export default {
       form.value.familyCode = event.target.value.toUpperCase()
     }
     
-    const handleRegister = async () => {
-      console.log('📝 Registro iniciado:', {
-        email: form.value.email,
-        name: form.value.name,
-        role: role.value,
-        hasFamilyCode: !!form.value.familyCode
-      })
-      
-      // Reset messages
-      error.value = ''
-      successMessage.value = ''
-      
-      // Validación básica
-      if (!form.value.email || !form.value.password || !form.value.name) {
-        error.value = 'Por favor completa todos los campos obligatorios'
-        return
-      }
-      
-      // Si es familiar, validar código de familia
-      if (role.value === 'familiar' && !form.value.familyCode) {
-        error.value = 'El código de familia es requerido para unirse'
-        return
-      }
-      
-      // Validar contraseña
-      if (form.value.password.length < 6) {
-        error.value = 'La contraseña debe tener al menos 6 caracteres'
-        return
-      }
-      
-      // Validar email
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(form.value.email.trim())) {
-        error.value = 'Formato de email inválido. Ejemplo: nombre@ejemplo.com'
-        return
-      }
-      
-      try {
-        // Registrar en Supabase con rol
-        const result = await authStore.register(
-          form.value.email,
-          form.value.password,
-          form.value.name,
-          role.value,
-          role.value === 'familiar' ? form.value.familyCode : null
-        )
+const handleRegister = async () => {
+  console.log('📝 Iniciando registro...')
+  
+  // Reset messages
+  error.value = ''
+  successMessage.value = ''
+  
+  // Validación básica
+  if (!form.value.email || !form.value.password || !form.value.name) {
+    error.value = 'Por favor completa todos los campos obligatorios'
+    return
+  }
+  
+  // Validar contraseña
+  if (form.value.password.length < 6) {
+    error.value = 'La contraseña debe tener al menos 6 caracteres'
+    return
+  }
+  
+  try {
+    // Registrar en Supabase
+    const result = await authStore.register(
+      form.value.email,
+      form.value.password,
+      form.value.name,
+      role.value,
+      role.value === 'familiar' ? form.value.familyCode : null
+    )
+    
+    console.log('📊 Resultado:', result)
+    
+    if (result.success) {
+      if (result.needsEmailConfirmation) {
+        // Email de confirmación enviado
+        successMessage.value = '✅ ¡Registro exitoso! Revisa tu email para confirmar tu cuenta.'
         
-        console.log('📊 Resultado del registro:', result)
+        // Limpiar formulario
+        form.value.email = ''
+        form.value.password = ''
+        form.value.name = ''
+        form.value.familyCode = ''
         
-        if (result.success) {
-          if (result.needsEmailConfirmation) {
-            // Caso: Requiere confirmación de email
-            successMessage.value = '¡Registro exitoso! Por favor revisa tu email para confirmar tu cuenta.'
-            
-            // Limpiar formulario
-            form.value.email = ''
-            form.value.password = ''
-            form.value.name = ''
-            form.value.familyCode = ''
-            
-            // Mostrar mensaje y opción para ir a login
-            setTimeout(() => {
-              router.push('/login')
-            }, 3000)
-            
+        // Redirigir a login después de 3 segundos
+        setTimeout(() => {
+          router.push('/login')
+        }, 3000)
+        
+      } else {
+        // Sesión automática
+        successMessage.value = `✅ ¡Bienvenido ${form.value.name}! Cuenta creada exitosamente.`
+        
+        // Redirigir según rol
+        setTimeout(() => {
+          if (result.role === 'admin') {
+            router.push('/home')
           } else {
-            // Caso: Sesión automática (email ya confirmado)
-            successMessage.value = `¡Bienvenido ${form.value.name}! Tu cuenta ha sido creada exitosamente.`
-            
-            // Redirigir según el rol
-            setTimeout(() => {
-              if (result.role === 'admin') {
-                router.push('/home') // Vista de admin
-              } else {
-                router.push('/familiar-dashboard') // Vista de familiar
-              }
-            }, 2000)
+            router.push('/familiar-dashboard')
           }
-        } else {
-          // Mostrar error
-          error.value = result.error || 'Error al crear la cuenta. Por favor, intenta nuevamente.'
-        }
-      } catch (err) {
-        console.error('❌ Error en handleRegister:', err)
-        error.value = 'Error inesperado. Por favor, intenta nuevamente.'
+        }, 2000)
+      }
+    } else {
+      // Mostrar error
+      error.value = result.error || 'Error al crear la cuenta'
+      
+      // Sugerencias según error
+      if (result.error?.includes('already registered')) {
+        error.value += ' ¿Ya tienes cuenta? <a href="/login" class="text-primary">Inicia sesión aquí</a>'
       }
     }
+  } catch (err) {
+    console.error('❌ Error:', err)
+    error.value = 'Error inesperado. Por favor, intenta nuevamente.'
+  }
+}
     
     const goToLogin = () => {
       router.push('/login')
