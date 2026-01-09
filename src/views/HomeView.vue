@@ -13,6 +13,7 @@
         <div class="content-container">
           <div class="inicio-view">
             <!-- Daily Meals -->
+            <!-- Daily Meals -->
             <section class="section-card">
               <div class="section-header">
                 <h2 class="section-title">Comidas del día</h2>
@@ -244,11 +245,11 @@
                       </div>
                       <div class="stat-item">
                         <span class="stat-label">Humedad</span>
-                        <span class="stat-value">{{ weather.humidity }}%</span>
+                        <span class="stat-value">65%</span>
                       </div>
                       <div class="stat-item">
                         <span class="stat-label">Viento</span>
-                        <span class="stat-value">{{ weather.wind }} km/h</span>
+                        <span class="stat-value">12 km/h</span>
                       </div>
                     </div>
                     <button class="weather-recipe-btn" @click="openWeatherRecipeModal">
@@ -262,7 +263,7 @@
                 <section class="notifications-section">
                   <div class="notifications-header">
                     <h3>Notificaciones</h3>
-                    <span class="notifications-badge">{{ unreadNotificationsCount }}</span>
+                    <span class="notifications-badge">{{ notifications.length }}</span>
                   </div>
                   <div class="notifications-list">
                     <!-- Loading State -->
@@ -279,22 +280,14 @@
                     <div v-else v-for="notification in notifications.slice(0, 3)" :key="notification.id"
                       class="notification-item" @click="handleNotification(notification)">
                       <div class="notification-icon" :class="notification.type">
-                        <span class="iconify" :data-icon="notification.icon || getNotificationIcon(notification.type)"></span>
+                        <span class="iconify" :data-icon="notification.icon"></span>
                       </div>
                       <div class="notification-content">
-                        <p class="notification-text">{{ notification.title }}</p>
-                        <p class="notification-time">{{ formatTimeAgo(notification.created_at) }}</p>
+                        <p class="notification-text">{{ notification.text }}</p>
+                        <p class="notification-time">{{ notification.time }}</p>
                       </div>
-                      <button v-if="!notification.is_read" class="mark-read-btn" @click.stop="markAsRead(notification)">
-                        <span class="iconify" data-icon="mdi:check"></span>
-                      </button>
                     </div>
                   </div>
-                  
-                  <button v-if="notifications.length > 3" class="view-all-notifications" @click="goToNotifications">
-                    Ver todas las notificaciones
-                    <span class="iconify" data-icon="mdi:chevron-right"></span>
-                  </button>
                 </section>
               </div>
             </div>
@@ -455,6 +448,7 @@
             </div>
           </div>
         </div>
+
         <div class="modal-actions">
           <button class="modal-btn cancel-btn" @click="closeChangeMealModal">Cancelar</button>
           <button class="modal-btn confirm-btn" @click="confirmMealChange" :disabled="!selectedMeal">
@@ -709,7 +703,7 @@ import Header from '../components/layout/Header.vue'
 import { onUnmounted, onBeforeUnmount } from 'vue'
 
 export default {
-  name: 'HomeView',
+  name: 'InicioView',
   components: {
     Sidebar,
     Header
@@ -2357,10 +2351,6 @@ export default {
 
     return {
       isMobileMenuOpen,
-      selectedDate,
-      dailyMenu,
-      pantryItems,
-      recommendedRecipes,
       notifications,
       pantryItems,
       todayMeals,
@@ -2435,26 +2425,6 @@ export default {
 
       goToRecipes,
       handleNotification,
-      markAsRead,
-      markAllAsRead,
-      
-      // Navigation
-      goToRecipes,
-      goToNotifications,
-      goToPantry,
-      previousDay,
-      nextDay,
-      goToToday,
-      
-      // Step navigation
-      nextStep,
-      prevStep,
-      
-      // Filter methods
-      filterMealOptions,
-      filterIngredients,
-      
-      // Layout functions
       toggleMobileMenu,
       closeMobileMenu,
       handleLogout,
@@ -3379,6 +3349,7 @@ export default {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -3401,6 +3372,7 @@ export default {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -4317,6 +4289,7 @@ export default {
   .grid-layout {
     grid-template-columns: 1fr;
   }
+
   /* Modal responsive */
   .modal-content {
     margin: 1rem;
@@ -4419,6 +4392,4 @@ export default {
     gap: 2rem;
   }
 }
-
-
 </style>
