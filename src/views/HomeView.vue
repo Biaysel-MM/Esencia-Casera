@@ -13,7 +13,6 @@
         <div class="content-container">
           <div class="inicio-view">
             <!-- Daily Meals -->
-            <!-- Daily Meals -->
             <section class="section-card">
               <div class="section-header">
                 <h2 class="section-title">Comidas del día</h2>
@@ -54,7 +53,6 @@
                         <span>{{todayMeals.find(m => m.type === 'desayuno')?.servings || '2 porciones'}}</span>
                       </div>
                     </div>
-                    <div v-else class="no-recipe"><p>No hay receta asignada</p></div>
                     <div class="meal-actions">
                       <button class="cook-btn"
                         @click="openRecipeModal(todayMeals.find(m => m.type === 'desayuno')?.recipeId || 'aaaaaaaa-0000-0000-0000-000000000001')">Cocinar</button>
@@ -88,9 +86,6 @@
                         <span>{{todayMeals.find(m => m.type === 'almuerzo')?.servings || '4 porciones'}}</span>
                       </div>
                     </div>
-                    <div v-else class="no-recipe">
-                      <p>No hay receta asignada</p>
-                    </div>
                     <div class="meal-actions">
                       <button class="cook-btn"
                         @click="openRecipeModal(todayMeals.find(m => m.type === 'almuerzo')?.recipeId || 'aaaaaaaa-0000-0000-0000-000000000002')">Cocinar</button>
@@ -122,9 +117,6 @@
                         <span class="iconify" data-icon="mdi:account-group-outline"></span>
                         <span>{{todayMeals.find(m => m.type === 'cena')?.servings || '4 porciones'}}</span>
                       </div>
-                    </div>
-                    <div v-else class="no-recipe">
-                      <p>No hay receta asignada</p>
                     </div>
                     <div class="meal-actions">
                       <button class="cook-btn"
