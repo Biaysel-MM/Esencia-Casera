@@ -28,8 +28,6 @@
                 <button class="generate-week-btn" @click="generateWeeklyMenu">
                   <span class="iconify" data-icon="mdi:sparkles"></span>
                   Generar semana
-<<<<<<< HEAD
-=======
                 </button>
                 <button class="shopping-list-btn" @click="generateShoppingList">
                   <span class="iconify" data-icon="mdi:cart"></span>
@@ -134,7 +132,6 @@
                     <p class="outside-option-title">Marcar como salida</p>
                     <p class="outside-option-desc">No comeré en casa</p>
                   </div>
->>>>>>> versionAntigua
                 </button>
                 <button class="shopping-list-btn" @click="generateShoppingList">
                   <span class="iconify" data-icon="mdi:cart"></span>
@@ -240,72 +237,6 @@
               </div>
             </div>
 
-<<<<<<< HEAD
-            <!-- Vista Mensual -->
-            <!-- REEMPLAZA la vista mensual (desde línea ~350) -->
-            <div v-else class="monthly-view-simple">
-              <div class="month-header">
-                <button @click="previousMonth" class="month-nav-btn">
-                  <span class="iconify" data-icon="mdi:chevron-left"></span>
-                </button>
-                <h3>{{ currentMonthYear }}</h3>
-                <button @click="nextMonth" class="month-nav-btn">
-                  <span class="iconify" data-icon="mdi:chevron-right"></span>
-                </button>
-              </div>
-
-              <div class="weekdays-header">
-                <div v-for="day in ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']" :key="day" class="weekday">
-                  {{ day }}
-                </div>
-              </div>
-
-              <div class="month-grid-responsive">
-                <div v-for="day in monthDays" :key="day.date" class="month-day-responsive"
-                  :class="{ 'current-month': day.isCurrentMonth, 'today': isTodayDate(day.date) }"
-                  @click="selectDayForQuickAdd(day.date)">
-                  <div class="day-header-responsive">
-                    <span class="day-number">{{ day.day }}</span>
-                    <span v-if="isTodayDate(day.date)" class="today-badge">Hoy</span>
-                  </div>
-
-                  <div class="day-meals-responsive">
-                    <div v-for="meal in getDayMeals(day.date)" :key="`${day.date}-${meal.type}`"
-                      class="month-meal-responsive" @click.stop="openMealModal(day.date, meal.type)">
-                      <div class="meal-icon-responsive">
-                        <span class="iconify" :data-icon="getMealIcon(meal.type)"></span>
-                      </div>
-                      <span class="meal-name-responsive">
-                        {{ truncateText(meal.recipe?.title || meal.name || '...', 12) }}
-                      </span>
-                    </div>
-
-                    <button v-if="getDayMeals(day.date).length === 0" class="add-meal-month-btn"
-                      @click.stop="openQuickAddForDay(day.date)" title="Agregar comida">
-                      <span class="iconify" data-icon="mdi:plus"></span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Resumen mensual -->
-              <div class="month-summary">
-                <h4>Resumen del mes</h4>
-                <div class="summary-stats">
-                  <div class="stat-item">
-                    <span class="stat-value">{{ getMonthMealsCount() }}</span>
-                    <span class="stat-label">Comidas planificadas</span>
-                  </div>
-                  <div class="stat-item">
-                    <span class="stat-value">{{ getMonthRecipesCount() }}</span>
-                    <span class="stat-label">Recetas diferentes</span>
-                  </div>
-                  <div class="stat-item">
-                    <span class="stat-value">{{ getMonthOutsideCount() }}</span>
-                    <span class="stat-label">Días fuera</span>
-                  </div>
-                </div>
-=======
             <!-- Modal de generación de menú semanal -->
             <div v-if="showGenerateWeeklyModal" class="modal-overlay" @click="closeGenerateWeeklyModal">
               <div class="modal-content generate-weekly-modal" @click.stop>
@@ -445,7 +376,6 @@
                     Exportar Lista
                   </button>
                 </div>
->>>>>>> versionAntigua
               </div>
             </div>
           </div>
@@ -753,16 +683,11 @@
 </template>
 
 <script>
-<<<<<<< HEAD
-import { ref, reactive, computed, onMounted, watch } from 'vue'
-=======
 import { ref, reactive, computed, onMounted } from 'vue'
->>>>>>> versionAntigua
 import { useRouter } from 'vue-router'
-import { useToast } from 'vue-toastification'
 import Sidebar from '../components/layout/Sidebar.vue'
 import Header from '../components/layout/Header.vue'
-import { supabase } from '../supabase'
+import { useAuthStore } from '../stores/auth'
 
 export default {
   name: 'PlanificadorView',
@@ -772,21 +697,10 @@ export default {
   },
   setup() {
     const router = useRouter()
-    const toast = useToast()
+    const authStore = useAuthStore()
 
-    // Layout state
     const isMobileMenuOpen = ref(false)
 
-<<<<<<< HEAD
-    // Data
-    const currentView = ref('weekly')
-    const currentWeekStart = ref(new Date())
-    const weekDays = ref([])
-    const monthDays = ref([])
-    const weeklyPlan = ref([])
-    const allRecipes = ref([])
-    const filteredRecipes = ref([])
-=======
     // Datos del planificador
     const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
     
@@ -796,55 +710,12 @@ export default {
       { key: 'snack', label: 'Merienda', time: '4:00 PM', icon: 'mdi:coffee' },
       { key: 'dinner', label: 'Cena', time: '7:00 PM', icon: 'mdi:moon-waning-crescent' }
     ]
->>>>>>> versionAntigua
 
-    // ✅ AÑADE ESTO JUSTO AQUÍ:
-    // Variables para navegación mensual
-    const currentMonth = ref(new Date().getMonth())
-    const currentYear = ref(new Date().getFullYear())
-
-    // Estados de carga
-    const loadingWeeklyPlan = ref(false)
-    const loadingRecipes = ref(false)
-    const loadingShoppingList = ref(false)
-
-    // Estados de modales
-    const showRecipeModal = ref(false)
-    const showQuickRecipeModal = ref(false)
-    const showGenerateWeeklyModal = ref(false)
-    const showShoppingListModal = ref(false)
-
-    // Datos seleccionados
+    const weekMeals = ref([])
+    const isSelectingRecipe = ref(false)
     const selectedDay = ref('')
     const selectedMeal = ref('')
-    const selectedCategory = ref('all')
-    const recipeSearch = ref('')
 
-<<<<<<< HEAD
-
-
-    // Datos temporales
-    const quickMealData = reactive({
-      name: '',
-      type: '',
-      notes: ''
-    })
-
-    const generationPreferences = reactive({
-      vegetarian: false,
-      healthy: false,
-      quick: false,
-      variety: true,
-      usePantry: false,
-      selectedDays: {
-        lunes: true,
-        martes: true,
-        miércoles: true,
-        jueves: true,
-        viernes: true,
-        sábado: true,
-        domingo: true
-=======
     // Modales
     const showGenerateWeeklyModal = ref(false)
     const showShoppingListModal = ref(false)
@@ -900,135 +771,8 @@ export default {
         servings: 4,
         type: 'Cena',
         image: 'https://images.unsplash.com/photo-1615818449536-f26c1e1fe0f0?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
->>>>>>> versionAntigua
       }
-    })
-
-    const generatedWeeklyMenu = ref([])
-    const shoppingList = ref([])
-
-    // Tipos de comidas
-    const mealTypes = [
-      { key: 'breakfast', label: 'Desayuno', time: '8:00 AM', icon: 'mdi:sun-wireless' },
-      { key: 'lunch', label: 'Almuerzo', time: '1:00 PM', icon: 'mdi:food' },
-      { key: 'dinner', label: 'Cena', time: '7:00 PM', icon: 'mdi:moon-waning-crescent' }
-    ]
-
-    // Categorías
-    const categories = [
-      { key: 'all', label: 'Todas' },
-      { key: 'breakfast', label: 'Desayuno' },
-      { key: 'lunch', label: 'Almuerzo' },
-      { key: 'dinner', label: 'Cena' },
-      { key: 'vegetarian', label: 'Vegetariano' },
-      { key: 'healthy', label: 'Saludable' },
-      { key: 'quick', label: 'Rápido' }
-    ]
-
-    // Computed properties
-
-    // CON ESTO:
-    const currentMonthYear = computed(() => {
-      const date = new Date(currentYear.value, currentMonth.value, 1)
-      return date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
-    })
-
-
-
-    const modalRecipes = computed(() => {
-      let filtered = allRecipes.value
-
-      if (selectedMeal.value) {
-        filtered = filtered.filter(recipe => recipe.category === selectedMeal.value)
-      }
-
-      return filtered.slice(0, 12)
-    })
-
-    const groupedShoppingList = computed(() => {
-      const groups = {}
-
-      shoppingList.value.forEach(item => {
-        if (!groups[item.category]) {
-          groups[item.category] = {
-            name: formatCategory(item.category),
-            items: []
-          }
-        }
-        groups[item.category].items.push(item)
-      })
-
-      return Object.values(groups)
-    })
-
-    const shoppingListStats = computed(() => {
-      const categories = new Set(shoppingList.value.map(item => item.category))
-      const recipes = new Set(shoppingList.value.map(item => item.recipe_id).filter(Boolean))
-
-      return {
-        categories: categories.size,
-        recipes: recipes.size,
-        total: shoppingList.value.length
-      }
-    })
-
-    // Helper functions
-    const formatDate = (dateString) => {
-      const date = new Date(dateString)
-      return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-    }
-
-    const formatWeekRange = () => {
-      if (weekDays.value.length === 0) return ''
-
-      const firstDay = new Date(weekDays.value[0].date)
-      const lastDay = new Date(weekDays.value[6].date)
-
-      const firstFormatted = firstDay.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-      const lastFormatted = lastDay.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-
-      return `Semana del ${firstFormatted} al ${lastFormatted}`
-    }
-
-    const formatCategory = (category) => {
-      const categories = {
-        'verduras': 'Verduras',
-        'frutas': 'Frutas',
-        'proteinas': 'Proteínas',
-        'granos': 'Granos',
-        'lacteos': 'Lácteos',
-        'condimentos': 'Condimentos',
-        'especias': 'Especias',
-        'aceites': 'Aceites',
-        'otros': 'Otros'
-      }
-      return categories[category] || category
-    }
-
-    const formatMealType = (type) => {
-      const types = {
-        'breakfast': 'Desayuno',
-        'lunch': 'Almuerzo',
-        'dinner': 'Cena'
-      }
-      return types[type] || type
-    }
-
-    const formatDayName = (dateString) => {
-      const date = new Date(dateString)
-      const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
-      return days[date.getDay()]
-    }
-
-    const getMealTime = (type) => {
-      const meal = mealTypes.find(m => m.key === type)
-      return meal ? meal.time : ''
-    }
-
-    const getMealIcon = (type) => {
-      const meal = mealTypes.find(m => m.key === type)
-      return meal ? meal.icon : 'mdi:food'
-    }
+    ])
 
     // Generación de semana
     const currentWeekStart = ref(new Date())
@@ -1081,813 +825,61 @@ export default {
     }
 
     const handleLogout = async () => {
-      try {
-        await supabase.auth.signOut()
-        router.push('/login')
-      } catch (error) {
-        console.error('Error logging out:', error)
-        toast.error('Error al cerrar sesión')
-      }
+      await authStore.logout()
+      router.push('/login')
     }
 
     // Funciones del planificador
-    const generateWeekDays = () => {
-      const days = []
-      const startDate = new Date(currentWeekStart.value)
-
-      // Ajustar al lunes
-      const dayOfWeek = startDate.getDay()
-      const diff = startDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)
-      startDate.setDate(diff)
-
-      const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(startDate)
-        date.setDate(startDate.getDate() + i)
-
-        days.push({
-          name: dayNames[i],
-          date: date.toISOString().split('T')[0],
-          day: date.getDate()
-        })
-      }
-
-      weekDays.value = days
-      generateMonthDays() // Esto llamará a la nueva función
+    const getMealForSlot = (day, mealKey) => {
+      return weekMeals.value.find(m => m.day === day && m.meal === mealKey)
     }
 
-    // ✅ AÑADE TODAS ESTAS FUNCIONES JUSTO AQUÍ:
-
-    // 1. Función para verificar si es hoy
-    const isTodayDate = (dateString) => {
-      const today = new Date().toISOString().split('T')[0]
-      return dateString === today
+    const openRecipeSelection = (day, mealKey) => {
+      selectedDay.value = day
+      selectedMeal.value = mealKey
+      isSelectingRecipe.value = true
     }
 
-    // 2. Función para truncar texto
-    const truncateText = (text, maxLength) => {
-      if (!text) return ''
-      return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
-    }
-
-    // 3. Nueva función generateMonthDays (reemplaza la anterior)
-    const generateMonthDays = () => {
-      const days = []
-      const firstDay = new Date(currentYear.value, currentMonth.value, 1)
-      const lastDay = new Date(currentYear.value, currentMonth.value + 1, 0)
-
-      const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-
-      // Empezar desde el domingo anterior
-      const startDate = new Date(firstDay)
-      startDate.setDate(firstDay.getDate() - firstDay.getDay())
-
-      while (days.length < 42) { // 6 semanas
-        const dayDate = new Date(startDate)
-        dayDate.setDate(startDate.getDate() + days.length)
-
-        days.push({
-          name: dayNames[dayDate.getDay()],
-          date: dayDate.toISOString().split('T')[0],
-          day: dayDate.getDate(),
-          isCurrentMonth: dayDate.getMonth() === currentMonth.value
-        })
-      }
-
-      monthDays.value = days
-    }
-
-    // 4. Navegación mensual
-    const previousMonth = () => {
-      if (currentMonth.value === 0) {
-        currentMonth.value = 11
-        currentYear.value--
-      } else {
-        currentMonth.value--
-      }
-      generateMonthDays()
-    }
-
-    const nextMonth = () => {
-      if (currentMonth.value === 11) {
-        currentMonth.value = 0
-        currentYear.value++
-      } else {
-        currentMonth.value++
-      }
-      generateMonthDays()
-    }
-
-    // 5. Funciones para el calendario
-    const selectDayForQuickAdd = (date) => {
-      // Puedes cambiar a vista semanal o hacer otra acción
-      console.log('Día seleccionado:', date)
-    }
-
-    const openQuickAddForDay = (date) => {
-      selectedDay.value = date
-      showRecipeModal.value = true
-    }
-
-    // 6. Estadísticas mensuales
-    const getMonthMealsCount = () => {
-      const monthStart = new Date(currentYear.value, currentMonth.value, 1)
-        .toISOString().split('T')[0]
-      const monthEnd = new Date(currentYear.value, currentMonth.value + 1, 0)
-        .toISOString().split('T')[0]
-
-      return weeklyPlan.value.filter(meal =>
-        meal.date >= monthStart && meal.date <= monthEnd
-      ).length
-    }
-
-    const getMonthRecipesCount = () => {
-      const monthStart = new Date(currentYear.value, currentMonth.value, 1)
-        .toISOString().split('T')[0]
-      const monthEnd = new Date(currentYear.value, currentMonth.value + 1, 0)
-        .toISOString().split('T')[0]
-
-      const recipes = new Set(
-        weeklyPlan.value
-          .filter(meal => meal.date >= monthStart && meal.date <= monthEnd && meal.recipe_id)
-          .map(meal => meal.recipe_id)
-      )
-
-      return recipes.size
-    }
-
-    const getMonthOutsideCount = () => {
-      const monthStart = new Date(currentYear.value, currentMonth.value, 1)
-        .toISOString().split('T')[0]
-      const monthEnd = new Date(currentYear.value, currentMonth.value + 1, 0)
-        .toISOString().split('T')[0]
-
-      return weeklyPlan.value.filter(meal =>
-        meal.date >= monthStart && meal.date <= monthEnd && meal.isOutside
-      ).length
-    }
-
-
-    const getMealForSlot = (date, mealType) => {
-      return weeklyPlan.value.find(
-        meal => meal.date === date && meal.type === mealType
-      )
-    }
-
-    const getDayMeals = (date) => {
-      return weeklyPlan.value.filter(meal => meal.date === date).slice(0, 2)
-    }
-
-    const openRecipeSelection = (date, mealType) => {
-      selectedDay.value = date
-      selectedMeal.value = mealType
-      showRecipeModal.value = true
-    }
-
-    const closeRecipeModal = () => {
-      showRecipeModal.value = false
+    const closeRecipeSelection = () => {
+      isSelectingRecipe.value = false
       selectedDay.value = ''
       selectedMeal.value = ''
     }
 
-    const openQuickRecipeModal = () => {
-      showRecipeModal.value = false
-      showQuickRecipeModal.value = true
-
-      // Reset form
-      Object.assign(quickMealData, {
-        name: '',
-        type: '',
-        notes: ''
+    const selectRecipe = (recipe) => {
+      weekMeals.value = weekMeals.value.filter(
+        m => !(m.day === selectedDay.value && m.meal === selectedMeal.value)
+      )
+      
+      weekMeals.value.push({
+        day: selectedDay.value,
+        meal: selectedMeal.value,
+        recipe: recipe,
+        isOutside: false
       })
+      
+      closeRecipeSelection()
     }
 
-    const closeQuickRecipeModal = () => {
-      showQuickRecipeModal.value = false
+    const setOutsideMeal = () => {
+      weekMeals.value = weekMeals.value.filter(
+        m => !(m.day === selectedDay.value && m.meal === selectedMeal.value)
+      )
+      
+      weekMeals.value.push({
+        day: selectedDay.value,
+        meal: selectedMeal.value,
+        recipe: null,
+        isOutside: true
+      })
+      
+      closeRecipeSelection()
     }
 
-    const openMealModal = (date, mealType) => {
-      const meal = getMealForSlot(date, mealType)
-      if (meal) {
-        if (meal.recipe) {
-          router.push(`/receta/${meal.recipe.id}`)
-        }
-      }
-    }
-
-    const openGenerateWeeklyModal = () => {
-      showGenerateWeeklyModal.value = true
-      generatedWeeklyMenu.value = []
-    }
-
-    const closeGenerateWeeklyModal = () => {
-      showGenerateWeeklyModal.value = false
-    }
-
-    const openShoppingListModal = () => {
-      showShoppingListModal.value = true
-      generateShoppingListData()
-    }
-
-    const closeShoppingListModal = () => {
-      showShoppingListModal.value = false
-    }
-
-    // Funciones de navegación
-    const previousWeek = () => {
-      const date = new Date(currentWeekStart.value)
-      date.setDate(date.getDate() - 7)
-      currentWeekStart.value = date
-    }
-
-    const nextWeek = () => {
-      const date = new Date(currentWeekStart.value)
-      date.setDate(date.getDate() + 7)
-      currentWeekStart.value = date
-    }
-
-    const goToCurrentWeek = () => {
-      currentWeekStart.value = new Date()
-    }
-
-    // Funciones de arrastrar y soltar
-    const handleDragStart = (date, mealType, event) => {
-      const meal = getMealForSlot(date, mealType)
-      if (meal) {
-        event.dataTransfer.setData('text/plain', JSON.stringify({
-          type: 'meal',
-          date: date,
-          mealType: mealType,
-          meal: meal
-        }))
-      }
-    }
-
-    const handleRecipeDragStart = (recipe, event) => {
-      event.dataTransfer.setData('text/plain', JSON.stringify({
-        type: 'recipe',
-        recipe: recipe
-      }))
-    }
-
-    const handleDragEnter = (event) => {
-      event.target.classList.add('drag-over')
-    }
-
-    const handleDragLeave = (event) => {
-      event.target.classList.remove('drag-over')
-    }
-
-    const handleDrop = (date, mealType, event) => {
-      event.target.classList.remove('drag-over')
-      event.preventDefault()
-
-      try {
-        const data = JSON.parse(event.dataTransfer.getData('text/plain'))
-
-        if (data.type === 'recipe') {
-          selectRecipeForSlot(data.recipe)
-        } else if (data.type === 'meal') {
-          moveMeal(data.meal, date, mealType)
-        }
-      } catch (error) {
-        console.error('Error al procesar drop:', error)
-      }
-    }
-
-    const moveMeal = async (meal, newDate, newMealType) => {
-      try {
-        // Remove from old slot
-        weeklyPlan.value = weeklyPlan.value.filter(
-          m => !(m.date === meal.date && m.type === meal.type)
-        )
-
-        // Add to new slot
-        meal.date = newDate
-        meal.type = newMealType
-        weeklyPlan.value.push(meal)
-
-        // Save to database
-        await saveWeeklyPlan()
-
-        toast.success('Comida movida exitosamente')
-      } catch (error) {
-        console.error('Error moving meal:', error)
-        toast.error('Error al mover la comida')
-      }
-    }
-
-    // Funciones de recetas
-    const selectRecipeForSlot = async (recipe) => {
-      try {
-        const user = await getCurrentUser()
-        if (!user) return
-
-        // Remove existing meal for this slot
-        weeklyPlan.value = weeklyPlan.value.filter(
-          m => !(m.date === selectedDay.value && m.type === selectedMeal.value)
-        )
-
-        // Add new meal
-        weeklyPlan.value.push({
-          date: selectedDay.value,
-          type: selectedMeal.value,
-          recipe: recipe,
-          recipe_id: recipe.id,
-          isOutside: false,
-          user_id: user.id
-        })
-
-        // Save to database
-        await saveWeeklyPlan()
-
-        toast.success(`${recipe.title} agregado al planificador`)
-        closeRecipeModal()
-      } catch (error) {
-        console.error('Error selecting recipe:', error)
-        toast.error('Error al agregar la receta')
-      }
-    }
-
-    const selectRecipeForModal = (recipe) => {
-      // This can be used for quick view or other actions
-      console.log('Recipe selected:', recipe)
-    }
-
-    const setOutsideMeal = async () => {
-      try {
-        const user = await getCurrentUser()
-        if (!user) return
-
-        // Remove existing meal for this slot
-        weeklyPlan.value = weeklyPlan.value.filter(
-          m => !(m.date === selectedDay.value && m.type === selectedMeal.value)
-        )
-
-        // Add outside meal
-        weeklyPlan.value.push({
-          date: selectedDay.value,
-          type: selectedMeal.value,
-          recipe: null,
-          recipe_id: null,
-          isOutside: true,
-          name: 'Fuera de casa',
-          user_id: user.id
-        })
-
-        // Save to database
-        await saveWeeklyPlan()
-
-        toast.success('Marcado como salida')
-        closeRecipeModal()
-      } catch (error) {
-        console.error('Error setting outside meal:', error)
-        toast.error('Error al marcar como salida')
-      }
-    }
-
-    const saveQuickMeal = async () => {
-      try {
-        const user = await getCurrentUser()
-        if (!user) return
-
-        // Remove existing meal for this slot
-        weeklyPlan.value = weeklyPlan.value.filter(
-          m => !(m.date === selectedDay.value && m.type === selectedMeal.value)
-        )
-
-        // Add quick meal
-        weeklyPlan.value.push({
-          date: selectedDay.value,
-          type: selectedMeal.value,
-          recipe: null,
-          recipe_id: null,
-          isOutside: false,
-          name: quickMealData.name,
-          notes: quickMealData.notes,
-          quick_type: quickMealData.type,
-          user_id: user.id
-        })
-
-        // Save to database
-        await saveWeeklyPlan()
-
-        toast.success('Comida rápida agregada')
-        closeQuickRecipeModal()
-        closeRecipeModal()
-      } catch (error) {
-        console.error('Error saving quick meal:', error)
-        toast.error('Error al agregar comida rápida')
-      }
-    }
-
-    const removeMeal = async (date, mealType) => {
-      if (!confirm('¿Estás seguro de que quieres eliminar esta comida del planificador?')) {
-        return
-      }
-
-      try {
-        weeklyPlan.value = weeklyPlan.value.filter(
-          m => !(m.date === date && m.type === mealType)
-        )
-
-        // Save to database
-        await saveWeeklyPlan()
-
-        toast.success('Comida eliminada del planificador')
-      } catch (error) {
-        console.error('Error removing meal:', error)
-        toast.error('Error al eliminar la comida')
-      }
-    }
-
-    // ✅ AÑADE ESTA FUNCIÓN JUSTO AQUÍ:
-    // Generar menú para un día específico
-    const generateDayMenu = async (date) => {
-      try {
-        const user = await getCurrentUser()
-        if (!user) return
-
-        // Obtener recetas para cada tipo de comida del día
-        for (const mealType of mealTypes) {
-          // Saltar si ya tiene comida
-          if (getMealForSlot(date, mealType.key)) continue
-
-          const { data: recipes, error } = await supabase
-            .from('recipes')
-            .select('*')
-            .eq('category', mealType.key)
-            .limit(1)
-
-          if (error) throw error
-
-          if (recipes && recipes.length > 0) {
-            weeklyPlan.value.push({
-              date: date,
-              type: mealType.key,
-              recipe: recipes[0],
-              recipe_id: recipes[0].id,
-              isOutside: false,
-              user_id: user.id
-            })
-          }
-        }
-
-        await saveWeeklyPlan()
-        toast.success('Menú generado para el día')
-      } catch (error) {
-        console.error('Error generating day menu:', error)
-        toast.error('Error al generar el menú')
-      }
-    }
-
-    // Funciones de generación de menú
-    const generateWeeklyMenu = () => {
-      openGenerateWeeklyModal()
-    }
-
-    const generateWeekPreview = async () => {
-      try {
-        generatedWeeklyMenu.value = []
-
-        const user = await getCurrentUser()
-        if (!user) return
-
-        // Get recipes based on preferences
-        let query = supabase
-          .from('recipes')
-          .select('*')
-
-        if (generationPreferences.vegetarian) {
-          query = query.eq('is_vegetarian', true)
-        }
-
-        if (generationPreferences.healthy) {
-          query = query.eq('is_healthy', true)
-        }
-
-        if (generationPreferences.quick) {
-          query = query.eq('is_quick', true)
-        }
-
-        const { data: recipes, error } = await query
-
-        if (error) throw error
-
-        // Generate menu for selected days
-        const daysToPlan = weekDays.value.filter(day =>
-          generationPreferences.selectedDays[day.name.toLowerCase()]
-        )
-
-        for (const day of daysToPlan) {
-          for (const mealType of mealTypes) {
-            // Skip if already planned
-            const existingMeal = getMealForSlot(day.date, mealType.key)
-            if (existingMeal) {
-              generatedWeeklyMenu.value.push(existingMeal)
-              continue
-            }
-
-            // Find recipe for this meal type
-            const suitableRecipes = recipes.filter(recipe =>
-              recipe.category === mealType.key
-            )
-
-            if (suitableRecipes.length > 0) {
-              const randomRecipe = suitableRecipes[Math.floor(Math.random() * suitableRecipes.length)]
-
-              generatedWeeklyMenu.value.push({
-                date: day.date,
-                type: mealType.key,
-                recipe: randomRecipe,
-                recipe_id: randomRecipe.id,
-                isOutside: false,
-                user_id: user.id
-              })
-            }
-          }
-        }
-
-        toast.success('Menú semanal generado')
-      } catch (error) {
-        console.error('Error generating weekly menu:', error)
-        toast.error('Error al generar el menú')
-      }
-    }
-
-    const applyGeneratedWeeklyMenu = async () => {
-      try {
-        const user = await getCurrentUser()
-        if (!user) return
-
-        // Replace existing meals with generated ones
-        for (const meal of generatedWeeklyMenu.value) {
-          // Remove existing meal for this slot
-          weeklyPlan.value = weeklyPlan.value.filter(
-            m => !(m.date === meal.date && m.type === meal.type)
-          )
-
-          // Add generated meal
-          weeklyPlan.value.push(meal)
-        }
-
-        // Save to database
-        await saveWeeklyPlan()
-
-        toast.success('Menú semanal aplicado exitosamente')
-        closeGenerateWeeklyModal()
-      } catch (error) {
-        console.error('Error applying weekly menu:', error)
-        toast.error('Error al aplicar el menú')
-      }
-    }
-
-    // Funciones de lista de compras
-    const generateShoppingList = () => {
-      openShoppingListModal()
-    }
-
-    const generateShoppingListData = async () => {
-      loadingShoppingList.value = true
-      try {
-        const user = await getCurrentUser()
-        if (!user) return
-
-        // Get all recipes from weekly plan
-        const recipeIds = weeklyPlan.value
-          .filter(meal => meal.recipe_id)
-          .map(meal => meal.recipe_id)
-
-        if (recipeIds.length === 0) {
-          shoppingList.value = []
-          return
-        }
-
-        // Get ingredients for all recipes
-        const { data: ingredients, error } = await supabase
-          .from('recipe_ingredients')
-          .select('*')
-          .in('recipe_id', recipeIds)
-
-        if (error) throw error
-
-        // Group and sum ingredients
-        const grouped = {}
-
-        ingredients.forEach(ing => {
-          const key = `${ing.name}-${ing.unit || 'unidades'}`
-
-          if (!grouped[key]) {
-            grouped[key] = {
-              id: ing.id,
-              name: ing.name,
-              quantity: 0,
-              unit: ing.unit || 'unidades',
-              category: ing.category || 'otros',
-              recipe_id: ing.recipe_id,
-              purchased: false
-            }
-          }
-
-          // Sum quantities (simple approach - in real app, you'd need to parse quantities)
-          const quantity = parseFloat(ing.quantity) || 1
-          grouped[key].quantity += quantity
-        })
-
-        shoppingList.value = Object.values(grouped)
-      } catch (error) {
-        console.error('Error generating shopping list:', error)
-        toast.error('Error al generar la lista de compras')
-      } finally {
-        loadingShoppingList.value = false
-      }
-    }
-
-    const updateShoppingItem = async (item) => {
-      // In a real app, you'd save this to the database
-      console.log('Update shopping item:', item)
-    }
-
-    const removeShoppingItem = (item) => {
-      shoppingList.value = shoppingList.value.filter(i => i.id !== item.id)
-    }
-
-    const exportShoppingList = () => {
-      const listText = shoppingList.value
-        .map(item => `${item.purchased ? '[x]' : '[ ]'} ${item.name} - ${item.quantity} ${item.unit}`)
-        .join('\n')
-
-      const blob = new Blob([listText], { type: 'text/plain' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `lista-compras-${new Date().toISOString().split('T')[0]}.txt`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-
-      toast.success('Lista exportada')
-    }
-
-    const addAllToShoppingList = async () => {
-      try {
-        const user = await getCurrentUser()
-        if (!user) return
-
-        const itemsToAdd = shoppingList.value.map(item => ({
-          user_id: user.id,
-          name: item.name,
-          quantity: item.quantity,
-          unit: item.unit,
-          category: item.category,
-          is_purchased: false
-        }))
-
-        const { error } = await supabase
-          .from('shopping_list')
-          .insert(itemsToAdd)
-
-        if (error) throw error
-
-        toast.success('Ingredientes agregados a la lista de compras')
-        closeShoppingListModal()
-      } catch (error) {
-        console.error('Error adding to shopping list:', error)
-        toast.error('Error al agregar a la lista de compras')
-      }
-    }
-
-    // Funciones de filtrado
-    const filterRecipes = () => {
-      let filtered = allRecipes.value
-
-      // Filter by category
-      if (selectedCategory.value !== 'all') {
-        if (selectedCategory.value === 'vegetarian') {
-          filtered = filtered.filter(r => r.is_vegetarian)
-        } else if (selectedCategory.value === 'healthy') {
-          filtered = filtered.filter(r => r.is_healthy)
-        } else if (selectedCategory.value === 'quick') {
-          filtered = filtered.filter(r => r.is_quick)
-        } else {
-          filtered = filtered.filter(r => r.category === selectedCategory.value)
-        }
-      }
-
-      // Filter by search
-      if (recipeSearch.value) {
-        const search = recipeSearch.value.toLowerCase()
-        filtered = filtered.filter(r =>
-          r.title.toLowerCase().includes(search) ||
-          r.description?.toLowerCase().includes(search)
-        )
-      }
-
-      filteredRecipes.value = filtered
-    }
-
-    // Funciones de base de datos
-    const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      return user
-    }
-
-    const fetchWeeklyPlan = async () => {
-      loadingWeeklyPlan.value = true
-      try {
-        const user = await getCurrentUser()
-        if (!user) return
-
-        // Get start and end of current week
-        const startDate = new Date(weekDays.value[0].date)
-        const endDate = new Date(weekDays.value[6].date)
-
-        const { data, error } = await supabase
-          .from('weekly_plan')
-          .select(`
-            *,
-            recipe:recipe_id (*)
-          `)
-          .eq('user_id', user.id)
-          .gte('date', startDate.toISOString().split('T')[0])
-          .lte('date', endDate.toISOString().split('T')[0])
-
-        if (error) throw error
-
-        weeklyPlan.value = data || []
-      } catch (error) {
-        console.error('Error fetching weekly plan:', error)
-        toast.error('Error al cargar el plan semanal')
-      } finally {
-        loadingWeeklyPlan.value = false
-      }
-    }
-
-    const saveWeeklyPlan = async () => {
-      try {
-        const user = await getCurrentUser()
-        if (!user) return
-
-        // Get meals for current week only
-        const weekDates = weekDays.value.map(d => d.date)
-        const mealsToSave = weeklyPlan.value.filter(meal =>
-          weekDates.includes(meal.date)
-        )
-
-        // First, delete existing meals for this week
-        const startDate = weekDates[0]
-        const endDate = weekDates[6]
-
-        await supabase
-          .from('weekly_plan')
-          .delete()
-          .eq('user_id', user.id)
-          .gte('date', startDate)
-          .lte('date', endDate)
-
-        // Then insert new meals
-        if (mealsToSave.length > 0) {
-          const { error } = await supabase
-            .from('weekly_plan')
-            .insert(mealsToSave.map(meal => ({
-              user_id: user.id,
-              date: meal.date,
-              type: meal.type,
-              recipe_id: meal.recipe_id,
-              is_outside: meal.isOutside,
-              name: meal.name,
-              notes: meal.notes,
-              quick_type: meal.quick_type
-            })))
-
-          if (error) throw error
-        }
-      } catch (error) {
-        console.error('Error saving weekly plan:', error)
-        throw error
-      }
-    }
-
-    const fetchRecipes = async () => {
-      loadingRecipes.value = true
-      try {
-        const { data, error } = await supabase
-          .from('recipes')
-          .select('*')
-          .order('title')
-
-        if (error) throw error
-
-        allRecipes.value = data || []
-        filteredRecipes.value = data || []
-      } catch (error) {
-        console.error('Error fetching recipes:', error)
-        toast.error('Error al cargar las recetas')
-      } finally {
-        loadingRecipes.value = false
-      }
+    const removeMeal = (day, mealKey) => {
+      weekMeals.value = weekMeals.value.filter(
+        m => !(m.day === day && m.meal === mealKey)
+      )
     }
 
     // Funciones de navegación semanal
@@ -2093,86 +1085,6 @@ export default {
       event.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDQwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjFmNWYxIi8+CjxwYXRoIGQ9Ik0xMDAgN0g1MFY1MEgxMDBWN0oiIGZpbGw9IiNlMWU4ZTAiLz4KPHBhdGggZD0iTTM1MCAxNTBIMzAwVjEwMEgzNTBWMTUwWiIgZmlsbD0iI2UxZThlMCIvPgo8cGF0aCBkPSJNMTUwIDEwMEgxMDBWNTBIMTUwVjEwMFoiIGZpbGw9IiNlMWU4ZTAiLz4KPHBhdGggZD0iTTIwMCAxNTBIMTUwVjEwMEgyMDBWMTUwWiIgZmlsbD0iI2UxZThlMCIvPgo8L3N2Zz4='
     }
 
-<<<<<<< HEAD
-    const goToRecipes = () => {
-      router.push('/recetas')
-    }
-
-    // Watch for week changes
-    watch(currentWeekStart, () => {
-      generateWeekDays()
-      fetchWeeklyPlan()
-    })
-
-    // Initialize
-    onMounted(async () => {
-      generateWeekDays()
-      await Promise.all([
-        fetchWeeklyPlan(),
-        fetchRecipes()
-      ])
-    })
-
-    // Necesitamos crear la tabla weekly_plan si no existe
-    const createWeeklyPlanTable = async () => {
-      try {
-        const { error } = await supabase.rpc('create_weekly_plan_table')
-        if (error) throw error
-      } catch (error) {
-        console.error('Error creating weekly plan table:', error)
-      }
-    }
-
-
-
-    return {
-      isMobileMenuOpen,
-      currentView,
-      weekDays,
-      monthDays,
-      weeklyPlan,
-      mealTypes,
-      categories,
-      selectedCategory,
-      recipeSearch,
-      showRecipeModal,
-      showQuickRecipeModal,
-      showGenerateWeeklyModal,
-      showShoppingListModal,
-      loadingWeeklyPlan,
-      loadingRecipes,
-      loadingShoppingList,
-      quickMealData,
-      generationPreferences,
-      generatedWeeklyMenu,
-      shoppingList,
-      filteredRecipes,
-      modalRecipes,
-      groupedShoppingList,
-      shoppingListStats,
-      currentMonthYear,
-
-      // Layout functions
-      toggleMobileMenu,
-      closeMobileMenu,
-      handleLogout,
-
-      // Navigation
-      previousWeek,
-      nextWeek,
-      goToCurrentWeek,
-
-      // Helper functions
-      formatDate,
-      formatWeekRange,
-      formatCategory,
-      formatMealType,
-      formatDayName,
-      getMealTime,
-      getMealIcon,
-
-      // Plan functions
-=======
     // Inicializar
     onMounted(() => {
       // Generar algunos datos de ejemplo
@@ -2203,64 +1115,12 @@ export default {
       handleLogout,
       
       // Planificador
->>>>>>> versionAntigua
       getMealForSlot,
-      getDayMeals,
       openRecipeSelection,
-      closeRecipeModal,
-      openQuickRecipeModal,
-      closeQuickRecipeModal,
-      openMealModal,
-      openGenerateWeeklyModal,
-      closeGenerateWeeklyModal,
-      openShoppingListModal,
-      closeShoppingListModal,
-
-      // Meal functions
-      selectRecipeForSlot,
-      selectRecipeForModal,
+      closeRecipeSelection,
+      selectRecipe,
       setOutsideMeal,
-      saveQuickMeal,
       removeMeal,
-<<<<<<< HEAD
-
-      // Generation functions
-      generateWeeklyMenu,
-      generateWeekPreview,
-      applyGeneratedWeeklyMenu,
-
-      // Shopping list functions
-      generateShoppingList,
-      updateShoppingItem,
-      removeShoppingItem,
-      exportShoppingList,
-      addAllToShoppingList,
-
-      // Filter functions
-      filterRecipes,
-
-      // Drag and drop
-      handleDragStart,
-      handleRecipeDragStart,
-      handleDragEnter,
-      handleDragLeave,
-      handleDrop,
-
-      // Utils
-      handleImageError,
-      goToRecipes,
-
-      isTodayDate,
-      truncateText,
-      previousMonth,
-      nextMonth,
-      selectDayForQuickAdd,
-      openQuickAddForDay,
-      getMonthMealsCount,
-      getMonthRecipesCount,
-      getMonthOutsideCount,
-      generateDayMenu,
-=======
       
       // Navegación
       previousWeek,
@@ -2286,10 +1146,8 @@ export default {
       
       // Utils
       handleImageError
->>>>>>> versionAntigua
     }
   }
-
 }
 </script>
 
@@ -2479,60 +1337,6 @@ export default {
   border-color: var(--primary);
 }
 
-<<<<<<< HEAD
-/* Pestañas de vista */
-.view-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 24px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.5rem;
-}
-
-.tab-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: none;
-  border: none;
-  color: var(--muted-foreground);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  border-radius: 0.5rem;
-  transition: all 0.2s;
-}
-
-.tab-btn:hover {
-  background-color: rgba(168, 213, 186, 0.1);
-  color: var(--foreground);
-}
-
-.tab-btn.active {
-  background-color: var(--primary);
-  color: white;
-}
-
-.tab-btn .iconify {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-/* Vista semanal */
-.weekly-view {
-  display: flex;
-  gap: 24px;
-}
-
-/* Grid del planificador */
-.planificador-grid {
-  flex: 1;
-  background-color: var(--card);
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  overflow: scroll;
-=======
 /* ============================================
    NUEVO DISEÑO RESPONSIVE DEL CALENDARIO
    ============================================ */
@@ -2550,29 +1354,13 @@ export default {
   border-radius: 16px;
   border: 1px solid var(--border);
   padding: 20px;
->>>>>>> versionAntigua
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-<<<<<<< HEAD
-.grid-header {
-  display: grid;
-  grid-template-columns: 140px repeat(3, 1fr);
-  background-color: rgba(168, 213, 186, 0.2);
-  border-bottom: 1px solid var(--border);
-  width: 100%;
-}
-
-.header-cell {
-  padding: 16px;
-  text-align: left;
-  width: 100%;
-=======
 .day-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
->>>>>>> versionAntigua
 }
 
 .day-header {
@@ -2673,71 +1461,6 @@ export default {
   font-weight: normal;
 }
 
-<<<<<<< HEAD
-/* Filas del grid */
-.grid-row {
-  display: grid;
-  grid-template-columns: 140px repeat(3, 1fr);
-  border-bottom: 1px solid var(--border);
-}
-
-.grid-row:last-child {
-  border-bottom: none;
-}
-
-.day-cell {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  border-right: 1px solid var(--border);
-  background-color: rgba(168, 213, 186, 0.05);
-}
-
-.day-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--foreground);
-}
-
-.day-date {
-  font-size: 12px;
-  color: var(--muted-foreground);
-  margin-top: 2px;
-}
-
-.meal-cell {
-  padding: 12px;
-  border-right: 1px solid var(--border);
-  min-height: 140px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.meal-cell:last-child {
-  border-right: none;
-}
-
-.meal-cell.drag-over {
-  background-color: rgba(93, 162, 113, 0.1);
-  border: 2px dashed var(--primary);
-}
-
-/* Botón para agregar comida */
-.add-meal-btn {
-  width: 100%;
-  height: 100%;
-  border: 2px dashed var(--border);
-  border-radius: 12px;
-  background: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: var(--muted-foreground);
-=======
 .add-meal-btn-small {
   width: 32px;
   height: 32px;
@@ -2747,7 +1470,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
->>>>>>> versionAntigua
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -2768,12 +1490,8 @@ export default {
   background-color: white;
   border-radius: 10px;
   padding: 12px;
-<<<<<<< HEAD
-  cursor: move;
-=======
   border: 1px solid rgba(93, 162, 113, 0.2);
   cursor: pointer;
->>>>>>> versionAntigua
   transition: all 0.2s;
 }
 
@@ -2783,11 +1501,7 @@ export default {
   border-color: var(--primary);
 }
 
-<<<<<<< HEAD
-.remove-btn {
-=======
 .remove-btn-small {
->>>>>>> versionAntigua
   position: absolute;
   top: 8px;
   right: 8px;
@@ -2807,19 +1521,11 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-<<<<<<< HEAD
-.meal-card:hover .remove-btn {
-  opacity: 1;
-}
-
-.remove-btn .iconify {
-=======
 .meal-content-responsive:hover .remove-btn-small {
   opacity: 1;
 }
 
 .remove-btn-small .iconify {
->>>>>>> versionAntigua
   width: 12px;
   height: 12px;
 }
@@ -2830,180 +1536,9 @@ export default {
   gap: 12px;
 }
 
-<<<<<<< HEAD
-.meal-image {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
-  overflow: hidden;
-  flex-shrink: 0;
-  border: 1px solid var(--border);
-}
-
-.meal-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.meal-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.meal-name {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--foreground);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 2px;
-}
-
-.meal-details {
-  font-size: 11px;
-  color: var(--muted-foreground);
-}
-
-.outside-badge {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  color: var(--secondary);
-  background-color: rgba(139, 177, 116, 0.2);
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-top: 4px;
-  width: fit-content;
-}
-
-.outside-badge .iconify {
-  width: 10px;
-  height: 10px;
-}
-
-/* Panel lateral de recetas */
-.recipes-sidebar {
-  width: 300px;
-  background-color: var(--card);
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.sidebar-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-bottom: 16px;
-}
-
-.search-section {
-  margin-bottom: 16px;
-}
-
-.search-input {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-input .iconify {
-  position: absolute;
-  left: 12px;
-  width: 1rem;
-  height: 1rem;
-  color: var(--muted-foreground);
-}
-
-.search-input input {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  background-color: white;
-  font-size: 0.875rem;
-  transition: all 0.2s;
-}
-
-.search-input input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(93, 162, 113, 0.1);
-}
-
-.recipe-categories {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 16px;
-}
-
-.category-btn {
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background-color: white;
-  color: var(--muted-foreground);
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.category-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.category-btn.active {
-  background-color: var(--primary);
-  color: white;
-  border-color: var(--primary);
-}
-
-.recipes-scroll {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.recipe-draggable {
-  background-color: white;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  margin-bottom: 12px;
-  cursor: move;
-  transition: all 0.2s;
-}
-
-.recipe-draggable:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-  border-color: var(--primary);
-}
-
-.recipe-drag-content {
-=======
 .outside-content {
->>>>>>> versionAntigua
   display: flex;
   align-items: center;
-<<<<<<< HEAD
-  gap: 12px;
-  padding: 12px;
-}
-
-.recipe-drag-image {
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
-  overflow: hidden;
-  flex-shrink: 0;
-=======
   justify-content: center;
   gap: 8px;
   padding: 16px 0;
@@ -3014,7 +1549,6 @@ export default {
   width: 24px;
   height: 24px;
   color: var(--secondary);
->>>>>>> versionAntigua
 }
 
 .recipe-drag-image img {
@@ -3095,96 +1629,6 @@ export default {
   text-align: center;
 }
 
-<<<<<<< HEAD
-.month-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  background-color: var(--border);
-}
-
-.month-day {
-  background-color: var(--card);
-  min-height: 120px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-}
-
-.month-day:not(.isCurrentMonth) {
-  background-color: rgba(168, 213, 186, 0.05);
-  opacity: 0.6;
-}
-
-.day-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--border);
-}
-
-.day-number {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--foreground);
-}
-
-.day-name-short {
-  font-size: 12px;
-  color: var(--muted-foreground);
-}
-
-.day-meals {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.month-meal {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  background-color: rgba(168, 213, 186, 0.1);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.month-meal:hover {
-  background-color: rgba(168, 213, 186, 0.2);
-}
-
-.meal-icon {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.meal-icon .iconify {
-  width: 14px;
-  height: 14px;
-  color: var(--primary);
-}
-
-.meal-name-short {
-  font-size: 10px;
-  color: var(--foreground);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
-}
-
-/* MODALES - Usando estilos similares a HomeView */
-
-.modal-overlay {
-=======
 .meal-preview-content {
   display: flex;
   align-items: center;
@@ -3264,7 +1708,6 @@ export default {
 
 /* Modal de selección de recetas */
 .recipe-modal-overlay {
->>>>>>> versionAntigua
   position: fixed;
   top: 0;
   left: 0;
@@ -4616,8 +3059,6 @@ export default {
   }
 }
 
-<<<<<<< HEAD
-=======
 /* ============================================
    NUEVOS MODALES (de ejemplo)
    ============================================ */
@@ -5091,7 +3532,6 @@ export default {
 }
 
 /* Ajustes para móvil */
->>>>>>> versionAntigua
 @media (max-width: 768px) {
 
   /* Layout responsive */
@@ -5101,28 +3541,19 @@ export default {
     transition: transform 0.3s ease;
   }
 
-<<<<<<< HEAD
-=======
   /* Cuando el menú móvil está abierto */
->>>>>>> versionAntigua
   .mobile-menu-open .sidebar-fixed {
     transform: translateX(0);
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
   }
 
-<<<<<<< HEAD
-=======
   /* Header ocupa toda la pantalla en móvil */
->>>>>>> versionAntigua
   .header-fixed {
     left: 0;
     right: 0;
   }
 
-<<<<<<< HEAD
-=======
   /* Contenido principal ocupa toda la pantalla en móvil */
->>>>>>> versionAntigua
   .main-content-wrapper {
     margin-left: 0;
     width: 100%;
@@ -5131,58 +3562,6 @@ export default {
   .content-container {
     padding: 16px;
   }
-<<<<<<< HEAD
-
-  /* Header responsive */
-  .planificador-header {
-    gap: 16px;
-  }
-
-  .header-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .week-navigation {
-    margin-left: 0;
-    justify-content: center;
-  }
-
-  /* Grid responsive */
-  .grid-header,
-  .grid-row {
-    display: block;
-  }
-
-  .grid-header {
-    display: none;
-  }
-
-  .grid-row {
-    border-bottom: 1px solid var(--border);
-    padding: 16px 0;
-    margin-bottom: 8px;
-  }
-
-  .day-cell {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 12px;
-    padding-bottom: 12px;
-    background-color: rgba(168, 213, 186, 0.1);
-    border-radius: 8px;
-  }
-
-  .meal-cell {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    min-height: auto;
-    padding: 12px 0;
-  }
-
-  .meal-cell:last-child {
-    border-bottom: none;
-=======
 
   /* Header responsive */
   .planificador-header {
@@ -5229,7 +3608,6 @@ export default {
 
   .modal-btn {
     width: 100%;
->>>>>>> versionAntigua
   }
 
   /* Monthly view responsive */
@@ -5274,18 +3652,6 @@ export default {
     flex-direction: column;
   }
 
-<<<<<<< HEAD
-  .tab-btn {
-    justify-content: center;
-  }
-
-  .month-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .shopping-list-stats {
-    grid-template-columns: 1fr;
-=======
   .header-icon-container {
     width: 40px;
     height: 40px;
@@ -5302,7 +3668,6 @@ export default {
 
   .meal-time {
     display: none;
->>>>>>> versionAntigua
   }
 }
 
@@ -5313,583 +3678,11 @@ export default {
     align-items: center;
   }
 
-<<<<<<< HEAD
-  .weekly-view {
-    flex-direction: row;
-  }
-}
-
-/* ============================================
-   ESTILOS SIMPLIFICADOS SIN RECETAS DISPONIBLES
-   ============================================ */
-
-.weekly-view-simple {
-  width: 100%;
-}
-
-.planificador-grid-responsive {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
-  margin-bottom: 24px;
-}
-
-.day-card {
-  background-color: var(--card);
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.day-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
-
-.day-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.day-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.day-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--foreground);
-}
-
-.day-date {
-  font-size: 14px;
-  color: var(--muted-foreground);
-  margin-top: 2px;
-}
-
-.generate-day-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background-color: rgba(93, 162, 113, 0.1);
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.generate-day-btn:hover {
-  background-color: rgba(93, 162, 113, 0.2);
-  border-color: var(--primary);
-}
-
-.generate-day-btn .iconify {
-  width: 18px;
-  height: 18px;
-}
-
-.meals-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.meal-slot {
-  background-color: rgba(168, 213, 186, 0.05);
-  border-radius: 12px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  transition: all 0.2s;
-}
-
-.meal-slot:hover {
-  background-color: rgba(168, 213, 186, 0.1);
-}
-
-.meal-slot.drag-over {
-  background-color: rgba(93, 162, 113, 0.2);
-  border: 2px dashed var(--primary);
-}
-
-.meal-slot-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.meal-type {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--foreground);
-}
-
-.meal-type .iconify {
-  width: 16px;
-  height: 16px;
-  color: var(--primary);
-}
-
-.meal-time {
-  font-size: 12px;
-  color: var(--muted-foreground);
-  margin-left: 8px;
-  font-weight: normal;
-}
-
-.add-meal-btn-small {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background-color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.add-meal-btn-small:hover {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: white;
-}
-
-.add-meal-btn-small .iconify {
-  width: 16px;
-  height: 16px;
-}
-
-.meal-content-responsive {
-  position: relative;
-  background-color: white;
-  border-radius: 10px;
-  padding: 12px;
-  border: 1px solid rgba(93, 162, 113, 0.2);
-  cursor: move;
-  transition: all 0.2s;
-}
-
-.meal-content-responsive:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-  border-color: var(--primary);
-}
-
-.remove-btn-small {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: var(--destructive);
-  color: white;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.2s;
-  z-index: 2;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.meal-content-responsive:hover .remove-btn-small {
-  opacity: 1;
-}
-
-.remove-btn-small .iconify {
-  width: 12px;
-  height: 12px;
-}
-
-.meal-preview {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.meal-preview-image {
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
-  overflow: hidden;
-  flex-shrink: 0;
-  border: 1px solid var(--border);
-}
-
-.meal-preview-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.meal-preview-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.meal-preview-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--foreground);
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.meal-preview-details {
-  font-size: 11px;
-  color: var(--muted-foreground);
-}
-
-.outside-badge-small {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  color: var(--secondary);
-  background-color: rgba(139, 177, 116, 0.2);
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-top: 4px;
-}
-
-.outside-badge-small .iconify {
-  width: 10px;
-  height: 10px;
-}
-
-.empty-slot {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px 12px;
-  border: 2px dashed var(--border);
-  border-radius: 10px;
-  background-color: rgba(168, 213, 186, 0.05);
-  color: var(--muted-foreground);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.empty-slot:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background-color: rgba(168, 213, 186, 0.1);
-}
-
-.empty-slot .iconify {
-  width: 24px;
-  height: 24px;
-  margin-bottom: 8px;
-}
-
-.empty-slot p {
-  font-size: 12px;
-  font-weight: 500;
-}
-
-/* Vista mensual simplificada */
-.monthly-view-simple {
-  background-color: var(--card);
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  padding: 20px;
-}
-
-.month-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding: 0 10px;
-}
-
-.month-header h3 {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin: 0;
-}
-
-.month-nav-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background-color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.month-nav-btn:hover {
-  background-color: rgba(168, 213, 186, 0.1);
-  border-color: var(--primary);
-}
-
-.month-nav-btn .iconify {
-  width: 20px;
-  height: 20px;
-  color: var(--foreground);
-}
-
-.weekdays-header {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  background-color: rgba(168, 213, 186, 0.1);
-  border-radius: 8px;
-  margin-bottom: 10px;
-}
-
-.weekday {
-  padding: 12px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--foreground);
-}
-
-.month-grid-responsive {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  background-color: var(--border);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.month-day-responsive {
-  background-color: var(--card);
-  min-height: 120px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid var(--border);
-}
-
-.month-day-responsive:hover {
-  background-color: rgba(168, 213, 186, 0.05);
-}
-
-.month-day-responsive.current-month {
-  background-color: var(--card);
-}
-
-.month-day-responsive:not(.current-month) {
-  background-color: rgba(168, 213, 186, 0.05);
-  opacity: 0.7;
-}
-
-.month-day-responsive.today {
-  background-color: rgba(93, 162, 113, 0.15);
-  border: 2px solid var(--primary);
-}
-
-.day-header-responsive {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid rgba(168, 213, 186, 0.3);
-}
-
-.day-number {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--foreground);
-}
-
-.today-badge {
-  background-color: var(--primary);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 500;
-}
-
-.day-meals-responsive {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.month-meal-responsive {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  background-color: rgba(168, 213, 186, 0.2);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.month-meal-responsive:hover {
-  background-color: rgba(168, 213, 186, 0.3);
-}
-
-.meal-icon-responsive {
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.meal-icon-responsive .iconify {
-  width: 12px;
-  height: 12px;
-  color: var(--primary);
-}
-
-.meal-name-responsive {
-  font-size: 9px;
-  color: var(--foreground);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
-}
-
-.add-meal-month-btn {
-  width: 100%;
-  height: 24px;
-  border: 1px dashed var(--border);
-  border-radius: 6px;
-  background-color: rgba(168, 213, 186, 0.1);
-  color: var(--muted-foreground);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 4px;
-}
-
-.add-meal-month-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background-color: rgba(168, 213, 186, 0.2);
-}
-
-.add-meal-month-btn .iconify {
-  width: 12px;
-  height: 12px;
-}
-
-.month-summary {
-  margin-top: 24px;
-  padding: 20px;
-  background-color: rgba(168, 213, 186, 0.1);
-  border-radius: 16px;
-  border: 1px solid var(--border);
-}
-
-.month-summary h4 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-bottom: 16px;
-  text-align: center;
-}
-
-.summary-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-.summary-stats .stat-item {
-  text-align: center;
-  padding: 12px;
-  background-color: white;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-}
-
-.summary-stats .stat-value {
-  display: block;
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--primary);
-  margin-bottom: 4px;
-}
-
-.summary-stats .stat-label {
-  display: block;
-  font-size: 12px;
-  color: var(--muted-foreground);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
   .planificador-grid-responsive {
-    grid-template-columns: 1fr;
-  }
-
-  .month-grid-responsive {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .weekdays-header {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .weekday:nth-child(n+3) {
-    display: none;
-  }
-
-  .summary-stats {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-  .planificador-grid-responsive {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .month-grid-responsive {
-=======
-  .planificador-grid-responsive {
->>>>>>> versionAntigua
     grid-template-columns: repeat(4, 1fr);
   }
 }
 
-<<<<<<< HEAD
-@media (min-width: 1025px) {
-=======
 @media (min-width: 769px) and (max-width: 1399px) {
   .planificador-grid-responsive {
     grid-template-columns: repeat(2, 1fr);
@@ -5897,7 +3690,6 @@ export default {
 }
 
 @media (min-width: 1200px) and (max-width: 1399px) {
->>>>>>> versionAntigua
   .planificador-grid-responsive {
     grid-template-columns: repeat(3, 1fr);
   }
