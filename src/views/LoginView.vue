@@ -80,6 +80,7 @@ import { useAuthStore } from '../stores/auth'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
+import { onUnmounted } from 'vue'
 
 export default {
   name: 'LoginView',
@@ -93,6 +94,12 @@ export default {
       email: '',  // Ahora vacío
       password: ''
     })
+
+
+onUnmounted(() => {
+  console.log('LoginView desmontado')
+  // Limpiar cualquier temporizador o suscripción
+})
     
     const handleLogin = async () => {
       console.log('Login form submitted')
