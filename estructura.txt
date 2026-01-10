@@ -1,4 +1,8 @@
 
+RESUMEN DEL PROYECTO ESENCIA CASERA
+Esencia Casera es una aplicación web Vue.js integral de planificación y gestión culinaria diseñada para familias y cocineros domésticos. El sistema permite a los usuarios registrar todos los ingredientes disponibles en su despensa y, mediante algoritmos inteligentes, genera automáticamente recetas personalizadas que pueden preparar con lo que ya tienen en casa. La aplicación incluye un planificador semanal interactivo, sugerencias basadas en condiciones climáticas, sistema de votación familiar para decidir menús, gestión de lista de compras automatizada y seguimiento de fechas de vencimiento de ingredientes.
+
+La plataforma se destaca por su guía paso a paso con imágenes para cada receta, facilitando el proceso culinario incluso para principiantes. Con roles diferenciados (administrador y familiares), soporta dinámicas familiares colaborativas donde todos pueden votar por las comidas de la semana. La integración completa con Supabase asegura persistencia de datos en tiempo real, mientras que la interfaz intuitiva y visualmente atractiva mantiene una experiencia de usuario fluida y accesible para toda la familia.
 
 Esencia Casera/
 ├── .vscode/
@@ -39,3 +43,107 @@ Esencia Casera/
 ├── package.json
 ├── README.md
 └── vite.config.js
+
+
+Resumen de la Base de Datos "Esencia Casera"
+Tablas Principales y sus Relaciones
+1. Tabla Central: profiles
+Propósito: Perfiles de usuarios con autenticación completa
+Campos clave: id (UUID), full_name, role, family_code
+Relaciones: Referenciada por casi todas las otras tablas como user_id o created_by
+2. Catálogo de Ingredientes (ingredients)
+Propósito: Catálogo maestro de ingredientes disponibles
+Categorías: verduras, frutas, proteínas, granos, lácteos, condimentos, bebidas, otros
+Relaciones: Referenciada por recipe_ingredients, user_pantry, shopping_list_items
+3. Sistema de Recetas (recipes + recipe_ingredients)
+recipes: Almacena recetas con pasos en formato JSONB, categorías, tiempo de preparación
+recipe_ingredients: Tabla de unión que relaciona recetas con ingredientes y sus cantidades
+Características: Calificaciones, tags, visibilidad pública/privada
+4. Gestión Personal (user_pantry + shopping_lists)
+user_pantry: Despensa personal de cada usuario con fechas de caducidad
+shopping_lists + shopping_list_items: Listas de compras con seguimiento de estado
+5. Planificación Semanal (weekly_planner + planned_meals)
+weekly_planner: Planificador semanal por usuario
+planned_meals: Comidas específicas asignadas a días y tipos (desayuno, almuerzo, cena)
+6. Funcionalidades Sociales (families + family_votes)
+families: Grupos familiares con código único
+family_votes: Sistema de votación familiar para recetas semanales
+7. Interacción Usuario (favorites + cooking_history)
+favorites: Recetas marcadas como favoritas
+cooking_history: Historial de recetas preparadas con calificaciones
+8. Sistema de Notificaciones (notifications)
+Propósito: Notificaciones personalizadas por usuario
+Tipos: expiry (caducidad), recipe, shopping, family, weather, system
+9. Sugerencias Inteligentes (weather_suggestions)
+Propósito: Sugerencias de recetas basadas en condiciones climáticas
+
+Relaciones Principales
+
+profiles (usuarios)
+    │
+    ├── recipes (creadas por usuario)
+    │    └── recipe_ingredients (ingredientes por receta)
+    │         └── ingredients (catálogo)
+    │
+    ├── user_pantry (despensa personal)
+    │    └── ingredients
+    │
+    ├── weekly_planner (planificación semanal)
+    │    └── planned_meals (comidas específicas)
+    │         └── recipes
+    │
+    ├── favorites (recetas favoritas)
+    │    └── recipes
+    │
+    ├── shopping_lists (listas de compras)
+    │    └── shopping_list_items
+    │         └── ingredients
+    │
+    ├── families (grupos familiares)
+    │    └── family_votes (votaciones)
+    │         └── recipes
+    │
+    ├── weather_suggestions (sugerencias clima)
+    │    └── recipes
+    │
+    ├── notifications (alertas)
+    │
+    └── cooking_history (historial)
+         └── recipes
+
+Vistas Importantes
+available_recipes_view: Recetas que se pueden preparar con ingredientes en despensa
+expiring_ingredients_view: Ingredientes próximos a caducar
+todays_meals_view: Comidas planificadas para hoy
+Características Clave
+Seguridad (RLS)
+Políticas de Row Level Security en todas las tablas
+Usuarios solo ven/modifican sus propios datos
+Excepciones: ingredients (todos pueden ver, solo admins modificar)
+Funcionalidades Avanzadas
+Generación automática de menús: generate_weekly_menu()
+Gestión de despensa: add_to_pantry()
+Sugerencias por clima: get_weather_suggestions()
+Datos de prueba automáticos: initialize_user_test_data()
+Estructura Técnica
+UUIDs como claves primarias en todas las tablas
+Timestamps automáticos: created_at, updated_at
+Índices optimizados para búsquedas frecuentes
+Triggers para mantener consistencia
+Flujo Principal de Datos
+Usuario se registra → Se crea perfil automáticamente
+Datos de prueba se inicializan automáticamente (despensa, planificador, etc.)
+Usuario gestiona despensa → Sistema sugiere recetas disponibles
+Planificación semanal → Generación automática o manual de menús
+Compra ingredientes → Listas de compras integradas con despensa
+Cocina recetas → Se registra en historial, se actualizan calificaciones
+Casos de Uso Soportados
+Búsqueda de recetas por ingredientes disponibles
+Planificación de comidas semanales
+Gestión de inventario con alertas de caducidad
+Listas de compras inteligentes
+Votación familiar para menús semanales
+Sugerencias contextuales basadas en clima
+Seguimiento de hábitos de cocina
+
+Esta base de datos está diseñada para ser escalable, segura y fácil de mantener, con un enfoque en la experiencia del usuario y la gestión eficiente de recursos en el hogar.

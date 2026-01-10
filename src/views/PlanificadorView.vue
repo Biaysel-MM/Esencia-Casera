@@ -313,6 +313,7 @@ import { useRouter } from 'vue-router'
 import Sidebar from '../components/layout/Sidebar.vue'
 import Header from '../components/layout/Header.vue'
 import { useAuthStore } from '../stores/auth'
+import { supabase } from '@/supabase'
 
 export default {
   name: 'PlanificadorView',
@@ -325,107 +326,36 @@ export default {
     const authStore = useAuthStore()
 
     const isMobileMenuOpen = ref(false)
-
-    // Datos del planificador
-    const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
     
+    // Tipos de comidas con correspondencia a base de datos
     const mealTypes = [
-      { key: 'breakfast', label: 'Desayuno', time: '8:00 AM', icon: 'mdi:sun-wireless' },
-      { key: 'lunch', label: 'Almuerzo', time: '1:00 PM', icon: 'mdi:food' },
-      { key: 'snack', label: 'Merienda', time: '4:00 PM', icon: 'mdi:coffee' },
-      { key: 'dinner', label: 'Cena', time: '7:00 PM', icon: 'mdi:moon-waning-crescent' }
+      { key: 'breakfast', label: 'Desayuno', time: '8:00 AM', icon: 'mdi:sun-wireless', dbType: 'desayuno' },
+      { key: 'lunch', label: 'Almuerzo', time: '1:00 PM', icon: 'mdi:food', dbType: 'almuerzo' },
+      { key: 'snack', label: 'Merienda', time: '4:00 PM', icon: 'mdi:coffee', dbType: 'merienda' },
+      { key: 'dinner', label: 'Cena', time: '7:00 PM', icon: 'mdi:moon-waning-crescent', dbType: 'cena' }
     ]
 
+    // Estados del componente
     const weekMeals = ref([])
     const isSelectingRecipe = ref(false)
     const selectedDay = ref('')
     const selectedMeal = ref('')
-
-    // Modales
     const showGenerateWeeklyModal = ref(false)
     const showShoppingListModal = ref(false)
     const generatedWeeklyMenu = ref([])
     const shoppingList = ref([])
-
-    // Recetas de ejemplo con imágenes fallback
-    const allRecipes = ref([
-      {
-        id: 1,
-        name: 'Bowl de Avena con Frutas',
-        time: '15 min',
-        servings: 2,
-        type: 'Desayuno',
-        image: 'https://images.unsplash.com/photo-1592503469196-3a7880cc2d05?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
-      },
-      {
-        id: 2,
-        name: 'Ensalada de Pollo a la Parrilla',
-        time: '30 min',
-        servings: 4,
-        type: 'Almuerzo',
-        image: 'https://images.unsplash.com/photo-1604909052743-94e838986d24?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
-      },
-      {
-        id: 3,
-        name: 'Pasta Primavera',
-        time: '25 min',
-        servings: 4,
-        type: 'Cena',
-        image: 'https://images.unsplash.com/photo-1704915912471-070dd75619c9?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
-      },
-      {
-        id: 4,
-        name: 'Smoothie de Plátano y Espinaca',
-        time: '10 min',
-        servings: 2,
-        type: 'Desayuno',
-        image: 'https://images.unsplash.com/photo-1577450680941-2011043c55f8?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
-      },
-      {
-        id: 5,
-        name: 'Sopa de Verduras Nutritiva',
-        time: '35 min',
-        servings: 6,
-        type: 'Almuerzo',
-        image: 'https://images.unsplash.com/photo-1643786661490-966f1877effa?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
-      },
-      {
-        id: 6,
-        name: 'Tacos Mexicanos Caseros',
-        time: '25 min',
-        servings: 4,
-        type: 'Cena',
-        image: 'https://images.unsplash.com/photo-1615818449536-f26c1e1fe0f0?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
-      }
-    ])
-
-    // Generación de semana
-    const currentWeekStart = ref(new Date())
-    const weekDays = computed(() => {
-      const daysArray = []
-      const startDate = new Date(currentWeekStart.value)
-      
-      // Ajustar al lunes
-      const dayOfWeek = startDate.getDay()
-      const diff = startDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)
-      startDate.setDate(diff)
-      
-      const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-      
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(startDate)
-        date.setDate(startDate.getDate() + i)
-        
-        daysArray.push({
-          name: dayNames[i],
-          date: date.toISOString().split('T')[0],
-          day: date.getDate()
-        })
-      }
-      
-      return daysArray
+    const allRecipes = ref([])
+    const loading = reactive({
+      initial: true,
+      recipes: false,
+      shoppingList: false
     })
 
+    // Navegación semanal
+    const currentWeekStart = ref(null)
+    const weekDays = ref([])
+
+    // Preferencias de generación
     const generationPreferences = reactive({
       variety: true,
       quick: true,
@@ -440,242 +370,801 @@ export default {
       }
     })
 
-    // Funciones del layout
-    const toggleMobileMenu = () => {
-      isMobileMenuOpen.value = !isMobileMenuOpen.value
+    // Sistema de notificaciones
+    const showToast = ref(false)
+    const toastConfig = reactive({
+      type: 'info',
+      title: '',
+      message: '',
+      icon: 'mdi:information'
+    })
+
+    // ============================================
+    // FUNCIONES AUXILIARES
+    // ============================================
+
+    // Obtener lunes de una semana
+    const getWeekStart = (date = new Date()) => {
+      const day = date.getDay()
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1)
+      const weekStart = new Date(date.setDate(diff))
+      weekStart.setHours(0, 0, 0, 0)
+      return weekStart
     }
 
-    const closeMobileMenu = () => {
-      isMobileMenuOpen.value = false
+    // Obtener domingo de una semana
+    const getWeekEnd = (weekStart) => {
+      const weekEnd = new Date(weekStart)
+      weekEnd.setDate(weekStart.getDate() + 6)
+      weekEnd.setHours(23, 59, 59, 999)
+      return weekEnd
     }
 
-    const handleLogout = async () => {
-      await authStore.logout()
-      router.push('/login')
+    // Formatear fecha en español
+    const formatDate = (dateString) => {
+      const date = new Date(dateString)
+      return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
     }
 
-    // Funciones del planificador
+    // Formatear rango semanal
+    const formatWeekRange = () => {
+      if (weekDays.value.length === 0) return 'Cargando...'
+      
+      const firstDay = weekDays.value[0]
+      const lastDay = weekDays.value[6]
+      
+      const firstFormatted = formatDate(firstDay.date)
+      const lastFormatted = formatDate(lastDay.date)
+      
+      return `Semana del ${firstFormatted} al ${lastFormatted}`
+    }
+
+    // Mostrar notificación
+    const showNotification = (type, title, message, icon = null) => {
+      toastConfig.type = type
+      toastConfig.title = title
+      toastConfig.message = message
+      
+      if (icon) {
+        toastConfig.icon = icon
+      } else {
+        switch (type) {
+          case 'success':
+            toastConfig.icon = 'mdi:check-circle'
+            break
+          case 'error':
+            toastConfig.icon = 'mdi:alert-circle'
+            break
+          case 'warning':
+            toastConfig.icon = 'mdi:alert'
+            break
+          default:
+            toastConfig.icon = 'mdi:information'
+        }
+      }
+      
+      showToast.value = true
+      setTimeout(() => {
+        showToast.value = false
+      }, 3000)
+    }
+
+    // Manejador de errores de imágenes
+    const handleImageError = (event) => {
+      event.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDQwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjFmNWYxIi8+CjxwYXRoIGQ9Ik0xMDAgN0g1MFY1MEgxMDBWN0oiIGZpbGw9IiNlMWU4ZTAiLz4KPHBhdGggZD0iTTM1MCAxNTBIMzAwVjEwMEgzNTBWMTUwWiIgZmlsbD0iI2UxZThlMCIvPgo8cGF0aCBkPSJNMTUwIDEwMEgxMDBWNTBIMTUwVjEwMFoiIGZpbGw9IiNlMWU4ZTAiLz4KPHBhdGggZD0iTTIwMCAxNTBIMTUwVjEwMEgyMDBWMTUwWiIgZmlsbD0iI2UxZThlMCIvPgo8L3N2Zz4='
+    }
+
+    // ============================================
+    // GESTIÓN DE SEMANAS
+    // ============================================
+
+    // Generar array de días de la semana
+    const generateWeekDays = (weekStart) => {
+      const daysArray = []
+      const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+      
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(weekStart)
+        date.setDate(weekStart.getDate() + i)
+        
+        daysArray.push({
+          name: dayNames[i],
+          date: date.toISOString().split('T')[0],
+          dayOfWeek: i // 0=lunes, 6=domingo
+        })
+      }
+      
+      return daysArray
+    }
+
+    // Navegar a semana anterior
+    const previousWeek = () => {
+      const newWeekStart = new Date(currentWeekStart.value)
+      newWeekStart.setDate(newWeekStart.getDate() - 7)
+      currentWeekStart.value = newWeekStart
+      weekDays.value = generateWeekDays(newWeekStart)
+      loadWeekData()
+    }
+
+    // Navegar a semana siguiente
+    const nextWeek = () => {
+      const newWeekStart = new Date(currentWeekStart.value)
+      newWeekStart.setDate(newWeekStart.getDate() + 7)
+      currentWeekStart.value = newWeekStart
+      weekDays.value = generateWeekDays(newWeekStart)
+      loadWeekData()
+    }
+
+    // Ir a semana actual
+    const goToCurrentWeek = () => {
+      const today = new Date()
+      currentWeekStart.value = getWeekStart(today)
+      weekDays.value = generateWeekDays(currentWeekStart.value)
+      loadWeekData()
+    }
+
+    // ============================================
+    // CARGA DE DATOS
+    // ============================================
+
+    // Cargar datos de la semana actual
+    const loadWeekData = async () => {
+      try {
+        loading.initial = true
+        
+        if (!authStore.user?.id) {
+          showNotification('error', 'Error', 'Usuario no autenticado')
+          return
+        }
+
+        const weekStartStr = currentWeekStart.value.toISOString().split('T')[0]
+        
+        // 1. Buscar o crear planificador semanal
+        const { data: plannerData, error: plannerError } = await supabase
+          .from('weekly_planner')
+          .select('id, week_start, preferences')
+          .eq('user_id', authStore.user.id)
+          .eq('week_start', weekStartStr)
+          .single()
+
+        let plannerId = null
+        
+        if (plannerError || !plannerData) {
+          // Crear nuevo planificador
+          const weekEnd = getWeekEnd(new Date(currentWeekStart.value))
+          
+          const { data: newPlanner, error: createError } = await supabase
+            .from('weekly_planner')
+            .insert({
+              user_id: authStore.user.id,
+              week_start: weekStartStr,
+              week_end: weekEnd.toISOString().split('T')[0],
+              preferences: { dietary: [], variety: true }
+            })
+            .select()
+            .single()
+
+          if (createError) {
+            console.error('Error creando planificador:', createError)
+            showNotification('error', 'Error', 'No se pudo crear el planificador semanal')
+            return
+          }
+          
+          plannerId = newPlanner.id
+        } else {
+          plannerId = plannerData.id
+        }
+
+        // 2. Cargar comidas planificadas
+        const { data: plannedMeals, error: mealsError } = await supabase
+          .from('planned_meals')
+          .select(`
+            id,
+            day_of_week,
+            meal_type,
+            recipe:recipes (
+              id,
+              title,
+              description,
+              total_time,
+              servings,
+              image_url,
+              calories_per_serving
+            )
+          `)
+          .eq('planner_id', plannerId)
+
+        if (mealsError) {
+          console.error('Error cargando comidas:', mealsError)
+          showNotification('error', 'Error', 'No se pudieron cargar las comidas planificadas')
+        } else {
+          // Transformar datos para la vista
+          weekMeals.value = plannedMeals.map(meal => {
+            const dayName = weekDays.value.find(d => d.dayOfWeek === meal.day_of_week)?.name || ''
+            const mealType = mealTypes.find(m => m.dbType === meal.meal_type)?.key || ''
+            
+            return {
+              id: meal.id,
+              day: dayName,
+              dayOfWeek: meal.day_of_week,
+              meal: mealType,
+              mealDbType: meal.meal_type,
+              recipe: meal.recipe ? {
+                id: meal.recipe.id,
+                name: meal.recipe.title,
+                time: `${meal.recipe.total_time} min`,
+                servings: meal.recipe.servings,
+                image: meal.recipe.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=120',
+                calories: meal.recipe.calories_per_serving
+              } : null,
+              isOutside: !meal.recipe
+            }
+          })
+        }
+
+        // 3. Cargar recetas para el modal
+        await loadAllRecipes()
+
+      } catch (error) {
+        console.error('Error cargando datos:', error)
+        showNotification('error', 'Error', 'Error al cargar los datos del planificador')
+      } finally {
+        loading.initial = false
+      }
+    }
+
+    // Cargar todas las recetas
+    const loadAllRecipes = async () => {
+      try {
+        loading.recipes = true
+        
+        const { data, error } = await supabase
+          .from('recipes')
+          .select('id, title, total_time, servings, image_url, tags')
+          .eq('is_public', true)
+          .order('title')
+
+        if (error) throw error
+
+        allRecipes.value = data.map(recipe => {
+          // Determinar tipo basado en tags
+          let type = 'General'
+          if (recipe.tags?.includes('desayuno')) type = 'Desayuno'
+          else if (recipe.tags?.includes('almuerzo')) type = 'Almuerzo'
+          else if (recipe.tags?.includes('cena')) type = 'Cena'
+          else if (recipe.tags?.includes('merienda')) type = 'Merienda'
+
+          return {
+            id: recipe.id,
+            name: recipe.title,
+            time: `${recipe.total_time} min`,
+            servings: recipe.servings,
+            type: type,
+            image: recipe.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=120',
+            tags: recipe.tags || []
+          }
+        })
+
+      } catch (error) {
+        console.error('Error cargando recetas:', error)
+        showNotification('error', 'Error', 'No se pudieron cargar las recetas')
+        allRecipes.value = []
+      } finally {
+        loading.recipes = false
+      }
+    }
+
+    // ============================================
+    // GESTIÓN DE COMIDAS POR SLOT
+    // ============================================
+
+    // Obtener comida para un slot específico
     const getMealForSlot = (day, mealKey) => {
       return weekMeals.value.find(m => m.day === day && m.meal === mealKey)
     }
 
+    // Abrir modal de selección
     const openRecipeSelection = (day, mealKey) => {
       selectedDay.value = day
       selectedMeal.value = mealKey
       isSelectingRecipe.value = true
     }
 
+    // Cerrar modal
     const closeRecipeSelection = () => {
       isSelectingRecipe.value = false
       selectedDay.value = ''
       selectedMeal.value = ''
     }
 
-    const selectRecipe = (recipe) => {
-      weekMeals.value = weekMeals.value.filter(
-        m => !(m.day === selectedDay.value && m.meal === selectedMeal.value)
-      )
+    // Obtener planificador ID para la semana actual
+    const getCurrentPlannerId = async () => {
+      const weekStartStr = currentWeekStart.value.toISOString().split('T')[0]
       
-      weekMeals.value.push({
-        day: selectedDay.value,
-        meal: selectedMeal.value,
-        recipe: recipe,
-        isOutside: false
-      })
+      const { data, error } = await supabase
+        .from('weekly_planner')
+        .select('id')
+        .eq('user_id', authStore.user.id)
+        .eq('week_start', weekStartStr)
+        .single()
+
+      if (error) {
+        console.error('Error obteniendo planificador:', error)
+        return null
+      }
       
-      closeRecipeSelection()
+      return data.id
     }
 
-    const setOutsideMeal = () => {
-      weekMeals.value = weekMeals.value.filter(
-        m => !(m.day === selectedDay.value && m.meal === selectedMeal.value)
-      )
-      
-      weekMeals.value.push({
-        day: selectedDay.value,
-        meal: selectedMeal.value,
-        recipe: null,
-        isOutside: true
-      })
-      
-      closeRecipeSelection()
+    // Seleccionar receta
+    const selectRecipe = async (recipe) => {
+      try {
+        const plannerId = await getCurrentPlannerId()
+        if (!plannerId) {
+          showNotification('error', 'Error', 'No se encontró el planificador')
+          return
+        }
+
+        const dayOfWeek = weekDays.value.find(d => d.name === selectedDay.value)?.dayOfWeek
+        const mealDbType = mealTypes.find(m => m.key === selectedMeal.value)?.dbType
+
+        if (dayOfWeek === undefined || !mealDbType) {
+          showNotification('error', 'Error', 'Datos inválidos')
+          return
+        }
+
+        // Eliminar comida existente si existe
+        const existingMeal = weekMeals.value.find(
+          m => m.day === selectedDay.value && m.meal === selectedMeal.value
+        )
+        
+        if (existingMeal?.id) {
+          const { error: deleteError } = await supabase
+            .from('planned_meals')
+            .delete()
+            .eq('id', existingMeal.id)
+
+          if (deleteError) throw deleteError
+        }
+
+        // Insertar nueva comida
+        const { error: insertError } = await supabase
+          .from('planned_meals')
+          .insert({
+            planner_id: plannerId,
+            day_of_week: dayOfWeek,
+            meal_type: mealDbType,
+            recipe_id: recipe.id
+          })
+
+        if (insertError) throw insertError
+
+        // Actualizar estado local
+        weekMeals.value = weekMeals.value.filter(
+          m => !(m.day === selectedDay.value && m.meal === selectedMeal.value)
+        )
+        
+        weekMeals.value.push({
+          day: selectedDay.value,
+          dayOfWeek: dayOfWeek,
+          meal: selectedMeal.value,
+          mealDbType: mealDbType,
+          recipe: recipe,
+          isOutside: false
+        })
+
+        showNotification('success', 'Éxito', `${recipe.name} agregado al planificador`)
+        closeRecipeSelection()
+
+      } catch (error) {
+        console.error('Error seleccionando receta:', error)
+        showNotification('error', 'Error', 'No se pudo agregar la receta')
+      }
     }
 
-    const removeMeal = (day, mealKey) => {
-      weekMeals.value = weekMeals.value.filter(
-        m => !(m.day === day && m.meal === mealKey)
-      )
+    // Marcar como salida/fuera
+    const setOutsideMeal = async () => {
+      try {
+        const plannerId = await getCurrentPlannerId()
+        if (!plannerId) {
+          showNotification('error', 'Error', 'No se encontró el planificador')
+          return
+        }
+
+        const dayOfWeek = weekDays.value.find(d => d.name === selectedDay.value)?.dayOfWeek
+        const mealDbType = mealTypes.find(m => m.key === selectedMeal.value)?.dbType
+
+        if (dayOfWeek === undefined || !mealDbType) {
+          showNotification('error', 'Error', 'Datos inválidos')
+          return
+        }
+
+        // Eliminar comida existente si existe
+        const existingMeal = weekMeals.value.find(
+          m => m.day === selectedDay.value && m.meal === selectedMeal.value
+        )
+        
+        if (existingMeal?.id) {
+          const { error: deleteError } = await supabase
+            .from('planned_meals')
+            .delete()
+            .eq('id', existingMeal.id)
+
+          if (deleteError) throw deleteError
+        }
+
+        // Insertar marcador de "fuera"
+        const { error: insertError } = await supabase
+          .from('planned_meals')
+          .insert({
+            planner_id: plannerId,
+            day_of_week: dayOfWeek,
+            meal_type: mealDbType,
+            recipe_id: null // null indica "fuera"
+          })
+
+        if (insertError) throw insertError
+
+        // Actualizar estado local
+        weekMeals.value = weekMeals.value.filter(
+          m => !(m.day === selectedDay.value && m.meal === selectedMeal.value)
+        )
+        
+        weekMeals.value.push({
+          day: selectedDay.value,
+          dayOfWeek: dayOfWeek,
+          meal: selectedMeal.value,
+          mealDbType: mealDbType,
+          recipe: null,
+          isOutside: true
+        })
+
+        showNotification('success', 'Éxito', 'Marcado como salida/fuera de casa')
+        closeRecipeSelection()
+
+      } catch (error) {
+        console.error('Error marcando como fuera:', error)
+        showNotification('error', 'Error', 'No se pudo actualizar')
+      }
     }
 
-    // Funciones de navegación semanal
-    const previousWeek = () => {
-      const date = new Date(currentWeekStart.value)
-      date.setDate(date.getDate() - 7)
-      currentWeekStart.value = date
+    // Eliminar comida
+    const removeMeal = async (day, mealKey) => {
+      try {
+        const meal = weekMeals.value.find(m => m.day === day && m.meal === mealKey)
+        
+        if (!meal?.id) {
+          showNotification('warning', 'Advertencia', 'No hay comida para eliminar')
+          return
+        }
+
+        const { error } = await supabase
+          .from('planned_meals')
+          .delete()
+          .eq('id', meal.id)
+
+        if (error) throw error
+
+        // Actualizar estado local
+        weekMeals.value = weekMeals.value.filter(
+          m => !(m.day === day && m.meal === mealKey)
+        )
+
+        showNotification('success', 'Éxito', 'Comida eliminada del planificador')
+
+      } catch (error) {
+        console.error('Error eliminando comida:', error)
+        showNotification('error', 'Error', 'No se pudo eliminar la comida')
+      }
     }
 
-    const nextWeek = () => {
-      const date = new Date(currentWeekStart.value)
-      date.setDate(date.getDate() + 7)
-      currentWeekStart.value = date
-    }
+    // ============================================
+    // GENERACIÓN DE MENÚ SEMANAL
+    // ============================================
 
-    const goToCurrentWeek = () => {
-      currentWeekStart.value = new Date()
-    }
-
-    // Funciones helper
-    const formatDate = (dateString) => {
-      const date = new Date(dateString)
-      return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-    }
-
-    const formatWeekRange = () => {
-      if (weekDays.value.length === 0) return ''
-      
-      const firstDay = new Date(weekDays.value[0].date)
-      const lastDay = new Date(weekDays.value[6].date)
-      
-      const firstFormatted = firstDay.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-      const lastFormatted = lastDay.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-      
-      return `Semana del ${firstFormatted} al ${lastFormatted}`
-    }
-
-    const getMealTypeLabel = (mealKey) => {
-      const meal = mealTypes.find(m => m.key === mealKey)
-      return meal ? meal.label : mealKey
-    }
-
-    // Funciones de generación de menú
+    // Abrir modal de generación
     const generateWeeklyMenu = () => {
       showGenerateWeeklyModal.value = true
       generatedWeeklyMenu.value = []
     }
 
+    // Cerrar modal
     const closeGenerateWeeklyModal = () => {
       showGenerateWeeklyModal.value = false
+      generationPreferences.selectedDays = {
+        lunes: true,
+        martes: true,
+        miércoles: true,
+        jueves: true,
+        viernes: true,
+        sábado: true,
+        domingo: true
+      }
     }
 
-    const generateDayMenu = (date) => {
-      const dayName = weekDays.value.find(d => d.date === date)?.name
-      if (!dayName) return
-      
-      // Generar menú para el día con recetas aleatorias
-      mealTypes.forEach(mealType => {
-        if (!getMealForSlot(dayName, mealType.key)) {
-          // Buscar receta apropiada para este tipo de comida
+    // Generar menú para un día
+    const generateDayMenu = async (date) => {
+      try {
+        const dayName = weekDays.value.find(d => d.date === date)?.name
+        if (!dayName) return
+        
+        const dayOfWeek = weekDays.value.find(d => d.name === dayName)?.dayOfWeek
+        const plannerId = await getCurrentPlannerId()
+        
+        if (!plannerId) {
+          showNotification('error', 'Error', 'No se encontró el planificador')
+          return
+        }
+
+        // Eliminar comidas existentes para este día
+        const dayMeals = weekMeals.value.filter(m => m.day === dayName)
+        for (const meal of dayMeals) {
+          if (meal.id) {
+            await supabase
+              .from('planned_meals')
+              .delete()
+              .eq('id', meal.id)
+          }
+        }
+
+        // Generar nuevas comidas
+        const newMeals = []
+        
+        for (const mealType of mealTypes) {
+          // Filtrar recetas por tipo
           const suitableRecipes = allRecipes.value.filter(recipe => 
-            recipe.type.toLowerCase().includes(mealType.label.toLowerCase())
+            recipe.tags?.includes(mealType.dbType) || recipe.type === mealType.label
           )
           
           if (suitableRecipes.length > 0) {
             const randomRecipe = suitableRecipes[Math.floor(Math.random() * suitableRecipes.length)]
-            weekMeals.value.push({
-              day: dayName,
-              meal: mealType.key,
-              recipe: randomRecipe,
-              isOutside: false
-            })
+            
+            // Insertar en base de datos
+            const { error } = await supabase
+              .from('planned_meals')
+              .insert({
+                planner_id: plannerId,
+                day_of_week: dayOfWeek,
+                meal_type: mealType.dbType,
+                recipe_id: randomRecipe.id
+              })
+
+            if (!error) {
+              newMeals.push({
+                day: dayName,
+                dayOfWeek: dayOfWeek,
+                meal: mealType.key,
+                mealDbType: mealType.dbType,
+                recipe: randomRecipe,
+                isOutside: false
+              })
+            }
           }
         }
-      })
+
+        // Actualizar estado local
+        weekMeals.value = weekMeals.value.filter(m => m.day !== dayName)
+        weekMeals.value.push(...newMeals)
+
+        showNotification('success', 'Éxito', `Menú generado para ${dayName}`)
+
+      } catch (error) {
+        console.error('Error generando menú diario:', error)
+        showNotification('error', 'Error', 'No se pudo generar el menú')
+      }
     }
 
-    const generateWeekPreview = () => {
-      generatedWeeklyMenu.value = []
-      
-      weekDays.value.forEach(day => {
-        if (generationPreferences.selectedDays[day.name.toLowerCase()]) {
-          mealTypes.forEach(mealType => {
-            const existingMeal = getMealForSlot(day.name, mealType.key)
-            if (existingMeal) {
-              generatedWeeklyMenu.value.push(existingMeal)
-            } else {
-              // Buscar receta aleatoria
-              const suitableRecipes = allRecipes.value.filter(recipe => 
-                recipe.type.toLowerCase().includes(mealType.label.toLowerCase())
+    // Generar vista previa del menú semanal
+    const generateWeekPreview = async () => {
+      try {
+        // Obtener recetas filtradas por preferencias
+        let filteredRecipes = [...allRecipes.value]
+        
+        if (generationPreferences.quick) {
+          filteredRecipes = filteredRecipes.filter(r => 
+            parseInt(r.time) <= 30 // Recetas rápidas (30 min o menos)
+          )
+        }
+
+        // Generar menú basado en días seleccionados
+        const preview = []
+        
+        for (const day of weekDays.value) {
+          const dayLower = day.name.toLowerCase()
+          
+          if (generationPreferences.selectedDays[dayLower]) {
+            for (const mealType of mealTypes) {
+              // Verificar si ya hay comida planificada
+              const existing = weekMeals.value.find(
+                m => m.day === day.name && m.meal === mealType.key
               )
               
-              if (suitableRecipes.length > 0) {
-                const randomRecipe = suitableRecipes[Math.floor(Math.random() * suitableRecipes.length)]
-                generatedWeeklyMenu.value.push({
-                  day: day.name,
-                  meal: mealType.key,
-                  recipe: randomRecipe,
-                  isOutside: false
-                })
+              if (existing) {
+                preview.push(existing)
+              } else {
+                // Generar nueva comida
+                const suitableRecipes = filteredRecipes.filter(recipe => 
+                  recipe.tags?.includes(mealType.dbType) || recipe.type === mealType.label
+                )
+                
+                if (suitableRecipes.length > 0) {
+                  const randomRecipe = suitableRecipes[Math.floor(Math.random() * suitableRecipes.length)]
+                  
+                  preview.push({
+                    day: day.name,
+                    dayOfWeek: day.dayOfWeek,
+                    meal: mealType.key,
+                    mealDbType: mealType.dbType,
+                    recipe: randomRecipe,
+                    isOutside: false
+                  })
+                }
               }
             }
-          })
+          }
         }
-      })
+
+        generatedWeeklyMenu.value = preview
+        showNotification('success', 'Éxito', 'Vista previa generada')
+
+      } catch (error) {
+        console.error('Error generando vista previa:', error)
+        showNotification('error', 'Error', 'No se pudo generar la vista previa')
+      }
     }
 
-    const applyGeneratedWeeklyMenu = () => {
-      // Reemplazar las comidas existentes con las generadas
-      generatedWeeklyMenu.value.forEach(meal => {
-        // Eliminar comida existente para este slot
-        weekMeals.value = weekMeals.value.filter(
-          m => !(m.day === meal.day && m.meal === meal.meal)
-        )
-        
-        // Agregar la nueva comida
-        weekMeals.value.push(meal)
-      })
-      
-      closeGenerateWeeklyModal()
+    // Aplicar menú generado
+    const applyGeneratedWeeklyMenu = async () => {
+      try {
+        const plannerId = await getCurrentPlannerId()
+        if (!plannerId) {
+          showNotification('error', 'Error', 'No se encontró el planificador')
+          return
+        }
+
+        // Eliminar todas las comidas de la semana actual
+        const { error: deleteError } = await supabase
+          .from('planned_meals')
+          .delete()
+          .eq('planner_id', plannerId)
+
+        if (deleteError) throw deleteError
+
+        // Insertar nuevas comidas
+        const mealsToInsert = generatedWeeklyMenu.value.map(meal => ({
+          planner_id: plannerId,
+          day_of_week: meal.dayOfWeek,
+          meal_type: meal.mealDbType,
+          recipe_id: meal.isOutside ? null : meal.recipe?.id
+        }))
+
+        const { error: insertError } = await supabase
+          .from('planned_meals')
+          .insert(mealsToInsert)
+
+        if (insertError) throw insertError
+
+        // Actualizar estado local
+        weekMeals.value = generatedWeeklyMenu.value
+
+        showNotification('success', 'Éxito', 'Menú semanal aplicado exitosamente')
+        closeGenerateWeeklyModal()
+
+      } catch (error) {
+        console.error('Error aplicando menú:', error)
+        showNotification('error', 'Error', 'No se pudo aplicar el menú')
+      }
     }
 
-    // Funciones de lista de compras
-    const generateShoppingList = () => {
-      showShoppingListModal.value = true
-      generateShoppingListData()
+    // ============================================
+    // LISTA DE COMPRAS
+    // ============================================
+
+    // Abrir modal de lista de compras
+    const generateShoppingList = async () => {
+      try {
+        loading.shoppingList = true
+        await generateShoppingListData()
+        showShoppingListModal.value = true
+      } catch (error) {
+        console.error('Error generando lista:', error)
+        showNotification('error', 'Error', 'No se pudo generar la lista')
+      } finally {
+        loading.shoppingList = false
+      }
     }
 
+    // Cerrar modal
     const closeShoppingListModal = () => {
       showShoppingListModal.value = false
     }
 
-    const generateShoppingListData = () => {
-      // Simular generación de lista de compras
-      shoppingList.value = [
-        { id: 1, name: 'Tomates', quantity: 3, unit: 'unidades', category: 'verduras', purchased: false },
-        { id: 2, name: 'Cebolla', quantity: 2, unit: 'unidades', category: 'verduras', purchased: false },
-        { id: 3, name: 'Pechuga de pollo', quantity: 500, unit: 'gramos', category: 'proteínas', purchased: false },
-        { id: 4, name: 'Arroz', quantity: 1, unit: 'kilo', category: 'granos', purchased: true },
-        { id: 5, name: 'Leche', quantity: 1, unit: 'litro', category: 'lácteos', purchased: false },
-        { id: 6, name: 'Huevos', quantity: 12, unit: 'unidades', category: 'proteínas', purchased: false },
-        { id: 7, name: 'Manzanas', quantity: 6, unit: 'unidades', category: 'frutas', purchased: false },
-        { id: 8, name: 'Aceite de oliva', quantity: 1, unit: 'botella', category: 'aceites', purchased: true }
-      ]
+    // Generar datos de lista de compras
+    const generateShoppingListData = async () => {
+      try {
+        // Obtener recetas planificadas
+        const recipeIds = weekMeals.value
+          .filter(meal => !meal.isOutside && meal.recipe?.id)
+          .map(meal => meal.recipe.id)
+        
+        if (recipeIds.length === 0) {
+          shoppingList.value = []
+          showNotification('info', 'Información', 'No hay recetas planificadas')
+          return
+        }
+
+        // Obtener ingredientes de todas las recetas
+        const { data: ingredientsData, error } = await supabase
+          .from('recipe_ingredients')
+          .select(`
+            quantity,
+            unit,
+            ingredient:ingredients (
+              id,
+              name,
+              category
+            )
+          `)
+          .in('recipe_id', recipeIds)
+
+        if (error) throw error
+
+        // Consolidar ingredientes
+        const consolidated = {}
+        
+        ingredientsData.forEach(item => {
+          const ingredient = item.ingredient
+          if (!ingredient) return
+          
+          const key = `${ingredient.id}-${item.unit}`
+          
+          if (!consolidated[key]) {
+            consolidated[key] = {
+              id: ingredient.id,
+              name: ingredient.name,
+              category: ingredient.category || 'otros',
+              quantity: 0,
+              unit: item.unit,
+              purchased: false
+            }
+          }
+          
+          consolidated[key].quantity += parseFloat(item.quantity)
+        })
+
+        // Convertir a array y formatear cantidades
+        shoppingList.value = Object.values(consolidated).map(item => ({
+          ...item,
+          quantity: `${Math.ceil(item.quantity * 100) / 100}`, // Redondear a 2 decimales
+          purchased: false
+        }))
+
+      } catch (error) {
+        console.error('Error generando lista de compras:', error)
+        throw error
+      }
     }
 
+    // Agrupar lista de compras por categoría
     const groupedShoppingList = computed(() => {
       const groups = {}
       
       shoppingList.value.forEach(item => {
-        if (!groups[item.category]) {
-          groups[item.category] = {
-            name: formatCategory(item.category),
+        const category = item.category || 'otros'
+        
+        if (!groups[category]) {
+          groups[category] = {
+            name: formatCategory(category),
             items: []
           }
         }
-        groups[item.category].items.push(item)
+        groups[category].items.push(item)
       })
       
       return Object.values(groups)
     })
 
-    const shoppingListStats = computed(() => {
-      const recipes = new Set(weekMeals.value.filter(meal => meal.recipe).map(meal => meal.recipe.id))
-      
-      return {
-        recipes: recipes.size,
-        total: shoppingList.value.length
-      }
-    })
-
+    // Formatear categoría
     const formatCategory = (category) => {
       const categories = {
         'verduras': 'Verduras',
@@ -690,35 +1179,102 @@ export default {
       return categories[category] || category
     }
 
-    const exportShoppingList = () => {
-      const listText = shoppingList.value
-        .map(item => `${item.purchased ? '[x]' : '[ ]'} ${item.name} - ${item.quantity} ${item.unit}`)
-        .join('\n')
+    // Estadísticas de lista de compras
+    const shoppingListStats = computed(() => {
+      const recipes = new Set(
+        weekMeals.value
+          .filter(meal => !meal.isOutside && meal.recipe)
+          .map(meal => meal.recipe.id)
+      )
       
-      const blob = new Blob([listText], { type: 'text/plain' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `lista-compras-${new Date().toISOString().split('T')[0]}.txt`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      return {
+        recipes: recipes.size,
+        total: shoppingList.value.length,
+        purchased: shoppingList.value.filter(item => item.purchased).length
+      }
+    })
+
+    // Exportar lista de compras
+    const exportShoppingList = () => {
+      try {
+        const listText = `LISTA DE COMPRAS - ${formatWeekRange()}\n\n`
+        
+        groupedShoppingList.value.forEach(category => {
+          listText += `=== ${category.name.toUpperCase()} ===\n`
+          
+          category.items.forEach(item => {
+            const purchased = item.purchased ? '[✓]' : '[ ]'
+            listText += `${purchased} ${item.name} - ${item.quantity} ${item.unit}\n`
+          })
+          
+          listText += '\n'
+        })
+        
+        const blob = new Blob([listText], { type: 'text/plain;charset=utf-8' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `lista-compras-${new Date().toISOString().split('T')[0]}.txt`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        
+        showNotification('success', 'Éxito', 'Lista exportada')
+
+      } catch (error) {
+        console.error('Error exportando lista:', error)
+        showNotification('error', 'Error', 'No se pudo exportar la lista')
+      }
     }
 
-    const handleImageError = (event) => {
-      event.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDQwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjFmNWYxIi8+CjxwYXRoIGQ9Ik0xMDAgN0g1MFY1MEgxMDBWN0oiIGZpbGw9IiNlMWU4ZTAiLz4KPHBhdGggZD0iTTM1MCAxNTBIMzAwVjEwMEgzNTBWMTUwWiIgZmlsbD0iI2UxZThlMCIvPgo8cGF0aCBkPSJNMTUwIDEwMEgxMDBWNTBIMTUwVjEwMFoiIGZpbGw9IiNlMWU4ZTAiLz4KPHBhdGggZD0iTTIwMCAxNTBIMTUwVjEwMEgyMDBWMTUwWiIgZmlsbD0iI2UxZThlMCIvPgo8L3N2Zz4='
+    // ============================================
+    // FUNCIONES DEL LAYOUT
+    // ============================================
+
+    const toggleMobileMenu = () => {
+      isMobileMenuOpen.value = !isMobileMenuOpen.value
     }
 
-    // Inicializar
-    onMounted(() => {
-      // Generar algunos datos de ejemplo
-      generateShoppingListData()
+    const closeMobileMenu = () => {
+      isMobileMenuOpen.value = false
+    }
+
+    const handleLogout = async () => {
+      try {
+        await authStore.logout()
+        router.push('/login')
+      } catch (error) {
+        console.error('❌ Error cerrando sesión:', error)
+        showNotification('error', 'Error', 'No se pudo cerrar sesión')
+      }
+    }
+
+    // ============================================
+    // INICIALIZACIÓN
+    // ============================================
+
+    onMounted(async () => {
+      // Verificar autenticación
+      if (!authStore.isAuthenticated) {
+        router.push('/login')
+        return
+      }
+
+      // Inicializar semana actual
+      const today = new Date()
+      currentWeekStart.value = getWeekStart(today)
+      weekDays.value = generateWeekDays(currentWeekStart.value)
+      
+      // Cargar datos
+      await loadWeekData()
+      
+      showNotification('success', 'Bienvenido', 'Planificador semanal cargado')
     })
 
     return {
+      // Estados
       isMobileMenuOpen,
-      days,
       mealTypes,
       weekMeals,
       allRecipes,
@@ -733,6 +1289,9 @@ export default {
       generationPreferences,
       groupedShoppingList,
       shoppingListStats,
+      loading,
+      showToast,
+      toastConfig,
       
       // Layout
       toggleMobileMenu,
@@ -755,7 +1314,6 @@ export default {
       // Helper functions
       formatDate,
       formatWeekRange,
-      getMealTypeLabel,
       
       // Generación de menú
       generateWeeklyMenu,
