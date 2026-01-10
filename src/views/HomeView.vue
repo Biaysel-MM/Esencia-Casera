@@ -13,121 +13,72 @@
         <div class="content-container">
           <div class="inicio-view">
             <!-- Daily Meals -->
-            <!-- Daily Meals -->
-            <section class="section-card">
-              <div class="section-header">
-                <h2 class="section-title">Comidas del día</h2>
-                <button class="generate-menu-btn" @click="openGenerateMenuModal">
-                  <span class="iconify" data-icon="mdi:sparkles"></span>
-                  Generar nuevo menú
-                </button>
-              </div>
+<!-- REEMPLAZA LA SECCIÓN DE COMIDAS DEL DÍA CON ESTA VERSIÓN MEJORADA: -->
 
-              <div class="meals-grid">
-                <!-- Loading State -->
-                <div v-if="loadingStates.meals" class="loading-placeholder">
-                  <div class="loading-spinner"></div>
-                  <p>Cargando comidas...</p>
-                </div>
+<!-- Daily Meals -->
+<section class="section-card">
+  <div class="section-header">
+    <h2 class="section-title">Comidas del día</h2>
+    <button class="generate-menu-btn" @click="openGenerateMenuModal">
+      <span class="iconify" data-icon="mdi:sparkles"></span>
+      Generar nuevo menú
+    </button>
+  </div>
 
-                <!-- Breakfast - CAMBIA v-else-if POR v-if -->
-                <div v-if="todayMeals.find(m => m.type === 'desayuno')" class="meal-card">
-                  <div class="meal-image">
-                    <img
-                      :src="todayMeals.find(m => m.type === 'desayuno')?.image || 'https://images.unsplash.com/photo-1592503469196-3a7880cc2d05?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=160'"
-                      :alt="todayMeals.find(m => m.type === 'desayuno')?.title">
-                    <div class="meal-emoji">🌅</div>
-                    <div class="meal-gradient"></div>
-                    <div class="meal-label">
-                      <h4>Desayuno</h4>
-                    </div>
-                  </div>
-                  <div class="meal-content">
-                    <h3>{{todayMeals.find(m => m.type === 'desayuno')?.title || 'Bowl de Avena con Frutas'}}</h3>
-                    <div class="meal-details">
-                      <div class="detail-item">
-                        <span class="iconify" data-icon="mdi:clock-outline"></span>
-                        <span>{{todayMeals.find(m => m.type === 'desayuno')?.time || '15 min'}}</span>
-                      </div>
-                      <div class="detail-item">
-                        <span class="iconify" data-icon="mdi:account-group-outline"></span>
-                        <span>{{todayMeals.find(m => m.type === 'desayuno')?.servings || '2 porciones'}}</span>
-                      </div>
-                    </div>
-                    <div class="meal-actions">
-                      <button class="cook-btn"
-                        @click="openRecipeModal(todayMeals.find(m => m.type === 'desayuno')?.recipeId || 'aaaaaaaa-0000-0000-0000-000000000001')">Cocinar</button>
-                      <button class="change-btn" @click="openChangeMealModal('breakfast')">Cambiar</button>
-                    </div>
-                  </div>
-                </div>
+  <div class="meals-grid">
+    <!-- Loading State -->
+    <div v-if="loadingStates.meals" class="loading-placeholder">
+      <div class="loading-spinner"></div>
+      <p>Cargando comidas...</p>
+    </div>
 
-                <!-- Lunch - CAMBIA v-else-if POR v-if -->
-                <div v-if="todayMeals.find(m => m.type === 'almuerzo')" class="meal-card">
-                  <div class="meal-image">
-                    <img
-                      :src="todayMeals.find(m => m.type === 'almuerzo')?.image || 'https://images.unsplash.com/photo-1604909052743-94e838986d24?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=160'"
-                      :alt="todayMeals.find(m => m.type === 'almuerzo')?.title">
-                    <div class="meal-emoji">🍽️</div>
-                    <div class="meal-gradient"></div>
-                    <div class="meal-label">
-                      <h4>Almuerzo</h4>
-                    </div>
-                  </div>
-                  <div class="meal-content">
-                    <h3>{{todayMeals.find(m => m.type === 'almuerzo')?.title || 'Ensalada de Pollo a la Parrilla'}}
-                    </h3>
-                    <div class="meal-details">
-                      <div class="detail-item">
-                        <span class="iconify" data-icon="mdi:clock-outline"></span>
-                        <span>{{todayMeals.find(m => m.type === 'almuerzo')?.time || '30 min'}}</span>
-                      </div>
-                      <div class="detail-item">
-                        <span class="iconify" data-icon="mdi:account-group-outline"></span>
-                        <span>{{todayMeals.find(m => m.type === 'almuerzo')?.servings || '4 porciones'}}</span>
-                      </div>
-                    </div>
-                    <div class="meal-actions">
-                      <button class="cook-btn"
-                        @click="openRecipeModal(todayMeals.find(m => m.type === 'almuerzo')?.recipeId || 'aaaaaaaa-0000-0000-0000-000000000002')">Cocinar</button>
-                      <button class="change-btn" @click="openChangeMealModal('lunch')">Cambiar</button>
-                    </div>
-                  </div>
-                </div>
+    <!-- Empty State -->
+    <div v-else-if="todayMeals.length === 0" class="empty-state">
+      <span class="iconify" data-icon="mdi:food-outline" style="font-size: 48px; color: #ccc;"></span>
+      <p>No hay comidas planificadas para hoy</p>
+      <button class="generate-menu-btn" @click="openGenerateMenuModal">
+        <span class="iconify" data-icon="mdi:sparkles"></span>
+        Generar menú automático
+      </button>
+    </div>
 
-                <!-- Dinner - CAMBIA v-else-if POR v-if -->
-                <div v-if="todayMeals.find(m => m.type === 'cena')" class="meal-card">
-                  <div class="meal-image">
-                    <img
-                      :src="todayMeals.find(m => m.type === 'cena')?.image || 'https://images.unsplash.com/photo-1704915912471-070dd75619c9?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=160'"
-                      :alt="todayMeals.find(m => m.type === 'cena')?.title">
-                    <div class="meal-emoji">🌙</div>
-                    <div class="meal-gradient"></div>
-                    <div class="meal-label">
-                      <h4>Cena</h4>
-                    </div>
-                  </div>
-                  <div class="meal-content">
-                    <h3>{{todayMeals.find(m => m.type === 'cena')?.title || 'Pasta Primavera'}}</h3>
-                    <div class="meal-details">
-                      <div class="detail-item">
-                        <span class="iconify" data-icon="mdi:clock-outline"></span>
-                        <span>{{todayMeals.find(m => m.type === 'cena')?.time || '25 min'}}</span>
-                      </div>
-                      <div class="detail-item">
-                        <span class="iconify" data-icon="mdi:account-group-outline"></span>
-                        <span>{{todayMeals.find(m => m.type === 'cena')?.servings || '4 porciones'}}</span>
-                      </div>
-                    </div>
-                    <div class="meal-actions">
-                      <button class="cook-btn"
-                        @click="openRecipeModal(todayMeals.find(m => m.type === 'cena')?.recipeId || 'aaaaaaaa-0000-0000-0000-000000000003')">Cocinar</button>
-                      <button class="change-btn" @click="openChangeMealModal('dinner')">Cambiar</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
+    <!-- Comidas cargadas -->
+    <template v-else>
+      <!-- Breakfast -->
+      <div class="meal-card" v-for="meal in todayMeals" :key="meal.id">
+        <div class="meal-image">
+          <img :src="meal.image" :alt="meal.title">
+          <div class="meal-emoji">{{ getMealEmoji(meal.type) }}</div>
+          <div class="meal-gradient"></div>
+          <div class="meal-label">
+            <h4>{{ getMealTypeText(meal.type) }}</h4>
+          </div>
+        </div>
+        <div class="meal-content">
+          <h3>{{ meal.title }}</h3>
+          <div class="meal-details">
+            <div class="detail-item">
+              <span class="iconify" data-icon="mdi:clock-outline"></span>
+              <span>{{ meal.time }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="iconify" data-icon="mdi:account-group-outline"></span>
+              <span>{{ meal.servings }}</span>
+            </div>
+          </div>
+          <div class="meal-actions">
+            <button class="cook-btn" @click="openRecipeModal(meal.recipeId)">
+              Cocinar
+            </button>
+            <button class="change-btn" @click="openChangeMealModal(meal.type === 'desayuno' ? 'breakfast' : meal.type === 'almuerzo' ? 'lunch' : 'dinner')">
+              Cambiar
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</section>
 
             <!-- My Pantry - EN CUADRO BLANCO -->
             <section class="section-card bg-white-card">
@@ -832,117 +783,99 @@ export default {
     // ============================================
 
     // 1. Load today's meals from database - VERSIÓN CORREGIDA
-    const loadTodayMeals = async () => {
-      try {
-        loadingStates.meals = true
+// REEMPLAZA LA FUNCIÓN loadTodayMeals EN EL SCRIPT CON ESTA VERSIÓN CORREGIDA:
 
-        console.log('📅 Cargando comidas del día...')
+// 1. Load today's meals from database - VERSIÓN ROBUSTA
+const loadTodayMeals = async () => {
+  try {
+    loadingStates.meals = true
 
-        // Obtener la fecha actual
-        const today = new Date()
+    console.log('📅 Cargando comidas del día...')
 
-        // Obtener día de la semana (0=domingo, 1=lunes, ..., 6=sábado)
-        const jsDayOfWeek = today.getDay() // JavaScript: 0=domingo
+    // Obtener la fecha actual
+    const today = new Date()
+    const formattedToday = today.toISOString().split('T')[0]
 
-        // Convertir a nuestro sistema: 0=lunes, 6=domingo
-        // Mapeo: domingo(0) -> 6, lunes(1) -> 0, martes(2) -> 1, etc.
-        const dayOfWeek = (jsDayOfWeek + 6) % 7
+    // Obtener día de la semana ajustado (0=lunes, 1=martes, ..., 6=domingo)
+    const dayOfWeek = (today.getDay() + 6) % 7 // Convertir: domingo(0)->6, lunes(1)->0
 
-        console.log(`📅 Hoy es ${today.toLocaleDateString()}, día de la semana: JS=${jsDayOfWeek}, Nuestro=${dayOfWeek}`)
+    console.log(`📅 Fecha actual: ${formattedToday}, Día de semana: ${dayOfWeek}`)
 
-        // Obtener lunes de esta semana
-        const weekStart = new Date(today)
-        const dayDiff = today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)
-        weekStart.setDate(dayDiff)
+    // Obtener inicio de semana (lunes)
+    const weekStart = new Date(today)
+    const dayDiff = today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)
+    weekStart.setDate(dayDiff)
+    const formattedWeekStart = weekStart.toISOString().split('T')[0]
 
-        const formattedWeekStart = weekStart.toISOString().split('T')[0]
+    console.log(`📅 Semana actual comienza: ${formattedWeekStart}`)
 
-        console.log(`📅 Semana actual comienza: ${formattedWeekStart} (lunes)`)
+    // Buscar o crear planificador semanal
+    let plannerId = null
 
-        // Verificar si existe un planificador para esta semana
-        const { data: plannerData, error: plannerError } = await supabase
-          .from('weekly_planner')
-          .select('id')
-          .eq('user_id', authStore.user.id)
-          .eq('week_start', formattedWeekStart)
-          .single()
+    // Primero, buscar planificador existente
+    const { data: existingPlanner, error: plannerError } = await supabase
+      .from('weekly_planner')
+      .select('id')
+      .eq('user_id', authStore.user.id)
+      .eq('week_start', formattedWeekStart)
+      .maybeSingle()
 
-        let plannerId = null
+    if (plannerError) {
+      console.error('Error buscando planificador:', plannerError)
+    }
 
-        if (plannerError || !plannerData) {
-          console.log('📝 No hay planificador, creando uno nuevo...')
+    if (existingPlanner) {
+      plannerId = existingPlanner.id
+      console.log('✅ Planificador existente encontrado:', plannerId)
+    } else {
+      console.log('📝 Creando nuevo planificador...')
+      
+      // Crear planificador directamente
+      const weekEnd = new Date(weekStart)
+      weekEnd.setDate(weekStart.getDate() + 6)
 
-          try {
-            // Crear nuevo planificador usando la función RPC
-            const { data: plannerIdData, error: createError } = await supabase
-              .rpc('generate_weekly_menu', {
-                p_user_id: authStore.user.id,
-                p_week_start: formattedWeekStart
-              })
+      const { data: newPlanner, error: createError } = await supabase
+        .from('weekly_planner')
+        .insert({
+          user_id: authStore.user.id,
+          week_start: formattedWeekStart,
+          week_end: weekEnd.toISOString().split('T')[0],
+          preferences: { dietary: [] }
+        })
+        .select()
+        .single()
 
-            if (createError) {
-              console.error('Error al crear planificador con RPC:', createError)
-              // Crear planificador manualmente
-              const weekEnd = new Date(weekStart)
-              weekEnd.setDate(weekStart.getDate() + 6)
+      if (createError) {
+        console.error('Error creando planificador:', createError)
+        
+        // Intentar método alternativo
+        try {
+          const { data: altPlanner, error: altError } = await supabase
+            .rpc('create_weekly_planner', {
+              p_user_id: authStore.user.id,
+              p_week_start: formattedWeekStart
+            })
 
-              const { data: newPlanner, error: manualCreateError } = await supabase
-                .from('weekly_planner')
-                .insert({
-                  user_id: authStore.user.id,
-                  week_start: formattedWeekStart,
-                  week_end: weekEnd.toISOString().split('T')[0],
-                  preferences: { dietary: [] }
-                })
-                .select()
-                .single()
-
-              if (manualCreateError) {
-                console.error('Error creación manual:', manualCreateError)
-                throw manualCreateError
-              }
-              plannerId = newPlanner.id
-
-              // Ahora crear comidas planificadas para hoy
-              const mealsToInsert = [
-                { day_of_week: dayOfWeek, meal_type: 'desayuno', recipe_id: 'aaaaaaaa-0000-0000-0000-000000000001' },
-                { day_of_week: dayOfWeek, meal_type: 'almuerzo', recipe_id: 'aaaaaaaa-0000-0000-0000-000000000002' },
-                { day_of_week: dayOfWeek, meal_type: 'cena', recipe_id: 'aaaaaaaa-0000-0000-0000-000000000003' }
-              ]
-
-              for (const meal of mealsToInsert) {
-                const { error: mealError } = await supabase
-                  .from('planned_meals')
-                  .insert({
-                    planner_id: plannerId,
-                    day_of_week: meal.day_of_week,
-                    meal_type: meal.meal_type,
-                    recipe_id: meal.recipe_id
-                  })
-
-                if (mealError) {
-                  console.error(`Error insertando ${meal.meal_type}:`, mealError)
-                }
-              }
-            } else {
-              plannerId = plannerIdData
-              console.log('✅ Planificador creado con RPC:', plannerId)
-            }
-          } catch (error) {
-            console.error('❌ Error en creación de planificador:', error)
-            // Usar datos por defecto
-            todayMeals.value = getDefaultMeals()
-            return
-          }
-        } else {
-          plannerId = plannerData.id
-          console.log('✅ Planificador existente:', plannerId)
+          if (altError) throw altError
+          plannerId = altPlanner
+        } catch (rpcError) {
+          console.error('Error RPC:', rpcError)
+          
+          // Crear comidas por defecto directamente
+          console.log('⚠️ Usando comidas por defecto sin planificador')
+          todayMeals.value = getDefaultMeals()
+          return
         }
+      } else {
+        plannerId = newPlanner.id
+        console.log('✅ Nuevo planificador creado:', plannerId)
+      }
+    }
 
-        // Obtener comidas planificadas para hoy
-        const { data: plannedMeals, error: mealsError } = await supabase
-          .from('planned_meals')
-          .select(`
+    // Obtener comidas planificadas para hoy
+    const { data: plannedMeals, error: mealsError } = await supabase
+      .from('planned_meals')
+      .select(`
         id,
         meal_type,
         day_of_week,
@@ -956,96 +889,155 @@ export default {
           calories_per_serving
         )
       `)
-          .eq('planner_id', plannerId)
-          .eq('day_of_week', dayOfWeek)
-          .order('meal_type')
+      .eq('planner_id', plannerId)
+      .eq('day_of_week', dayOfWeek)
 
-        if (mealsError) {
-          console.error('Error al obtener comidas:', mealsError)
-          // Usar datos por defecto si hay error
-          todayMeals.value = getDefaultMeals()
-        } else {
-          console.log(`✅ Comidas encontradas: ${plannedMeals?.length || 0}`)
+    if (mealsError) {
+      console.error('Error obteniendo comidas planificadas:', mealsError)
+    }
 
-          if (plannedMeals && plannedMeals.length > 0) {
-            todayMeals.value = plannedMeals.map(meal => ({
-              id: meal.id,
-              type: meal.meal_type,
-              title: meal.recipe?.title || 'Receta no disponible',
-              description: meal.recipe?.description || '',
-              time: `${meal.recipe?.total_time || 15} min`,
-              servings: `${meal.recipe?.servings || 2} porciones`,
-              image: meal.recipe?.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
-              calories: meal.recipe?.calories_per_serving,
-              recipeId: meal.recipe?.id
-            }))
-          } else {
-            console.log('⚠️ No hay comidas planificadas para hoy, usando por defecto')
-            todayMeals.value = getDefaultMeals()
+    console.log(`🔍 Comidas encontradas para hoy: ${plannedMeals?.length || 0}`)
 
-            // Crear comidas por defecto en la base de datos
-            const defaultMeals = getDefaultMeals()
-            for (const meal of defaultMeals) {
-              const { error: insertError } = await supabase
-                .from('planned_meals')
-                .insert({
-                  planner_id: plannerId,
-                  day_of_week: dayOfWeek,
-                  meal_type: meal.type,
-                  recipe_id: meal.recipeId
-                })
-
-              if (insertError) {
-                console.error(`Error insertando ${meal.type}:`, insertError)
-              }
-            }
-          }
+    if (plannedMeals && plannedMeals.length > 0) {
+      // Mapear comidas encontradas
+      todayMeals.value = plannedMeals.map(meal => {
+        const recipe = meal.recipe || {}
+        return {
+          id: meal.id,
+          type: meal.meal_type,
+          title: recipe.title || getDefaultMealTitle(meal.meal_type),
+          description: recipe.description || '',
+          time: `${recipe.total_time || 30} min`,
+          servings: `${recipe.servings || 2} porciones`,
+          image: recipe.image_url || getDefaultMealImage(meal.meal_type),
+          calories: recipe.calories_per_serving,
+          recipeId: recipe.id || getDefaultRecipeId(meal.meal_type)
         }
+      })
 
-        console.log('✅ Comidas cargadas:', todayMeals.value.map(m => m.type))
+      console.log('✅ Comidas cargadas exitosamente:', todayMeals.value.map(m => m.type))
+    } else {
+      // No hay comidas planificadas para hoy, crear por defecto
+      console.log('⚠️ No hay comidas planificadas, creando por defecto...')
+      const defaultMeals = getDefaultMeals()
+      
+      // Insertar comidas por defecto en la base de datos
+      for (const meal of defaultMeals) {
+        const { error: insertError } = await supabase
+          .from('planned_meals')
+          .insert({
+            planner_id: plannerId,
+            day_of_week: dayOfWeek,
+            meal_type: meal.type,
+            recipe_id: meal.recipeId
+          })
+          .select()
+          .single()
 
-      } catch (error) {
-        console.error('❌ Error cargando comidas:', error)
-        showNotification('error', 'Error', 'No se pudieron cargar las comidas del día')
-        // Usar datos por defecto
-        todayMeals.value = getDefaultMeals()
-      } finally {
-        loadingStates.meals = false
+        if (insertError) {
+          console.error(`Error insertando ${meal.type}:`, insertError)
+        }
       }
+
+      todayMeals.value = defaultMeals
+      console.log('✅ Comidas por defecto creadas')
     }
 
-    // Función auxiliar para comidas por defecto
-    const getDefaultMeals = () => {
-      return [
-        {
-          id: '1',
-          type: 'desayuno',
-          title: 'Bowl de Avena con Frutas',
-          time: '15 min',
-          servings: '2 porciones',
-          image: 'https://images.unsplash.com/photo-1592503469196-3a7880cc2d05?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
-          recipeId: 'aaaaaaaa-0000-0000-0000-000000000001'
-        },
-        {
-          id: '2',
-          type: 'almuerzo',
-          title: 'Ensalada de Pollo a la Parrilla',
-          time: '30 min',
-          servings: '4 porciones',
-          image: 'https://images.unsplash.com/photo-1604909052743-94e838986d24?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
-          recipeId: 'aaaaaaaa-0000-0000-0000-000000000002'
-        },
-        {
-          id: '3',
-          type: 'cena',
-          title: 'Pasta Primavera',
-          time: '25 min',
-          servings: '4 porciones',
-          image: 'https://images.unsplash.com/photo-1704915912471-070dd75619c9?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
-          recipeId: 'aaaaaaaa-0000-0000-0000-000000000003'
-        }
-      ]
+    // Asegurar que tenemos las 3 comidas del día
+    ensureAllMealsPresent()
+
+  } catch (error) {
+    console.error('❌ Error cargando comidas del día:', error)
+    showNotification('error', 'Error', 'No se pudieron cargar las comidas del día')
+    
+    // Usar datos por defecto
+    todayMeals.value = getDefaultMeals()
+  } finally {
+    loadingStates.meals = false
+  }
+}
+
+// Función auxiliar para asegurar que haya 3 comidas
+const ensureAllMealsPresent = () => {
+  const requiredMeals = ['desayuno', 'almuerzo', 'cena']
+  const existingTypes = todayMeals.value.map(m => m.type)
+  
+  requiredMeals.forEach(mealType => {
+    if (!existingTypes.includes(mealType)) {
+      console.log(`➕ Agregando comida faltante: ${mealType}`)
+      todayMeals.value.push({
+        id: `temp_${mealType}`,
+        type: mealType,
+        title: getDefaultMealTitle(mealType),
+        time: '30 min',
+        servings: '2 porciones',
+        image: getDefaultMealImage(mealType),
+        recipeId: getDefaultRecipeId(mealType)
+      })
     }
+  })
+}
+
+// Funciones auxiliares para obtener valores por defecto
+const getDefaultMealTitle = (mealType) => {
+  const titles = {
+    'desayuno': 'Bowl de Avena con Frutas',
+    'almuerzo': 'Ensalada de Pollo a la Parrilla',
+    'cena': 'Pasta Primavera'
+  }
+  return titles[mealType] || 'Receta del día'
+}
+
+const getDefaultMealImage = (mealType) => {
+  const images = {
+    'desayuno': 'https://images.unsplash.com/photo-1592503469196-3a7880cc2d05?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
+    'almuerzo': 'https://images.unsplash.com/photo-1604909052743-94e838986d24?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
+    'cena': 'https://images.unsplash.com/photo-1704915912471-070dd75619c9?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
+  }
+  return images[mealType] || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
+}
+
+const getDefaultRecipeId = (mealType) => {
+  const ids = {
+    'desayuno': 'aaaaaaaa-0000-0000-0000-000000000001',
+    'almuerzo': 'aaaaaaaa-0000-0000-0000-000000000002',
+    'cena': 'aaaaaaaa-0000-0000-0000-000000000003'
+  }
+  return ids[mealType] || 'aaaaaaaa-0000-0000-0000-000000000001'
+}
+
+// Mantén la función getDefaultMeals como está
+const getDefaultMeals = () => {
+  return [
+    {
+      id: '1',
+      type: 'desayuno',
+      title: 'Bowl de Avena con Frutas',
+      time: '15 min',
+      servings: '2 porciones',
+      image: 'https://images.unsplash.com/photo-1592503469196-3a7880cc2d05?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
+      recipeId: 'aaaaaaaa-0000-0000-0000-000000000001'
+    },
+    {
+      id: '2',
+      type: 'almuerzo',
+      title: 'Ensalada de Pollo a la Parrilla',
+      time: '30 min',
+      servings: '4 porciones',
+      image: 'https://images.unsplash.com/photo-1604909052743-94e838986d24?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
+      recipeId: 'aaaaaaaa-0000-0000-0000-000000000002'
+    },
+    {
+      id: '3',
+      type: 'cena',
+      title: 'Pasta Primavera',
+      time: '25 min',
+      servings: '4 porciones',
+      image: 'https://images.unsplash.com/photo-1704915912471-070dd75619c9?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
+      recipeId: 'aaaaaaaa-0000-0000-0000-000000000003'
+    }
+  ]
+}
 
     // 2. Load pantry items
     const loadPantryItems = async () => {
@@ -2349,6 +2341,20 @@ export default {
       }
     })
 
+
+    
+// En el setup(), después de las otras funciones, agrega:
+const getMealEmoji = (mealType) => {
+  const emojis = {
+    'desayuno': '🌅',
+    'almuerzo': '🍽️',
+    'cena': '🌙',
+    'breakfast': '🌅',
+    'lunch': '🍽️',
+    'dinner': '🌙'
+  }
+  return emojis[mealType] || '🍴'
+}
     return {
       isMobileMenuOpen,
       notifications,
@@ -2431,6 +2437,7 @@ export default {
       getMealTypeText,
 
 
+  getMealEmoji,
 
       toastIcon,
     }
