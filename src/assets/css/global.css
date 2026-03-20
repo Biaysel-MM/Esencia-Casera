@@ -1,4 +1,6 @@
 /* src/assets/css/global.css */
+@import "tailwindcss";
+
 :root {
   --background: #F6F9F6;
   --foreground: #2C2C2C;

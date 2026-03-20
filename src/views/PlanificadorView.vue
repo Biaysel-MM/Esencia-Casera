@@ -1197,7 +1197,7 @@ export default {
     // Exportar lista de compras
     const exportShoppingList = () => {
       try {
-        const listText = `LISTA DE COMPRAS - ${formatWeekRange()}\n\n`
+        let listText = `LISTA DE COMPRAS - ${formatWeekRange()}\n\n`
         
         groupedShoppingList.value.forEach(category => {
           listText += `=== ${category.name.toUpperCase()} ===\n`
