@@ -1,130 +1,153 @@
 <!-- src/views/HomeView.vue -->
 <template>
-  <div class="inicio-container" :class="{ 'mobile-menu-open': isMobileMenuOpen }">
+  <div class="min-h-screen" :class="{ 'overflow-hidden': isMobileMenuOpen }" style="background-color: var(--background); color: var(--foreground);">
     <!-- Sidebar - Fixed position -->
-    <Sidebar :is-mobile-open="isMobileMenuOpen" @close="closeMobileMenu" class="sidebar-fixed" />
+    <Sidebar :is-mobile-open="isMobileMenuOpen" @close="closeMobileMenu" 
+      class="fixed left-0 top-0 w-65 h-screen z-1000 bg-white border-r transition-transform duration-300 ease-in-out md:translate-x-0"
+      :class="{ 'translate-x-0': isMobileMenuOpen, '-translate-x-full': !isMobileMenuOpen }"
+      style="background-color: var(--card); border-color: var(--border);" />
 
     <!-- Main Content Area -->
-    <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': !isMobileMenuOpen }">
-      <Header @toggle-mobile-menu="toggleMobileMenu" @logout="handleLogout" class="header-fixed" />
+    <div class="min-h-screen transition-all duration-300 ease-in-out md:ml-65" style="background-color: var(--background);">
+      <Header @toggle-mobile-menu="toggleMobileMenu" @logout="handleLogout" 
+        class="fixed top-0 right-0 left-0 md:left-65 h-17.5 z-900 border-b shadow-sm transition-all duration-300"
+        style="background-color: var(--card); border-color: var(--border);" />
 
       <!-- Scrollable Content -->
-      <main class="content-main">
-        <div class="content-container">
-          <div class="inicio-view">
+      <main class="pt-17.5 min-h-[calc(100vh-70px)] overflow-y-auto" style="background-color: var(--background);">
+        <div class="max-w-300 mx-auto w-full p-4 md:p-6 lg:p-8">
+          <div class="flex flex-col gap-6">
             <!-- Daily Meals -->
-<!-- REEMPLAZA LA SECCIÓN DE COMIDAS DEL DÍA CON ESTA VERSIÓN MEJORADA: -->
+            <section class="rounded-2xl p-6 shadow-sm border" style="background-color: var(--card); border-color: var(--border);">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <h2 class="text-xl font-semibold" style="color: var(--foreground);">Comidas del día</h2>
+                <button @click="openGenerateMenuModal" 
+                  class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-200 font-medium text-sm"
+                  style="border-color: var(--border); color: var(--primary); background-color: transparent;">
+                  <span class="iconify w-5 h-5" data-icon="mdi:sparkles"></span>
+                  Generar nuevo menú
+                </button>
+              </div>
 
-<!-- Daily Meals -->
-<section class="section-card">
-  <div class="section-header">
-    <h2 class="section-title">Comidas del día</h2>
-    <button class="generate-menu-btn" @click="openGenerateMenuModal">
-      <span class="iconify" data-icon="mdi:sparkles"></span>
-      Generar nuevo menú
-    </button>
-  </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Loading State -->
+                <div v-if="loadingStates.meals" class="col-span-full flex flex-col items-center justify-center py-12" style="color: var(--muted-foreground);">
+                  <div class="w-10 h-10 border-4 rounded-full animate-spin mb-4" style="border-color: var(--border); border-top-color: var(--primary);"></div>
+                  <p>Cargando comidas...</p>
+                </div>
 
-  <div class="meals-grid">
-    <!-- Loading State -->
-    <div v-if="loadingStates.meals" class="loading-placeholder">
-      <div class="loading-spinner"></div>
-      <p>Cargando comidas...</p>
-    </div>
+                <!-- Empty State -->
+                <div v-else-if="todayMeals.length === 0" class="col-span-full flex flex-col items-center justify-center py-12" style="color: var(--muted-foreground);">
+                  <span class="iconify w-12 h-12 mb-4" style="color: var(--muted-foreground);" data-icon="mdi:food-outline"></span>
+                  <p>No hay comidas planificadas para hoy</p>
+                  <button @click="openGenerateMenuModal" class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-medium transition-colors duration-200" style="background-color: var(--primary);">
+                    <span class="iconify w-5 h-5" data-icon="mdi:sparkles"></span>
+                    Generar menú automático
+                  </button>
+                </div>
 
-    <!-- Empty State -->
-    <div v-else-if="todayMeals.length === 0" class="empty-state">
-      <span class="iconify" data-icon="mdi:food-outline" style="font-size: 48px; color: #ccc;"></span>
-      <p>No hay comidas planificadas para hoy</p>
-      <button class="generate-menu-btn" @click="openGenerateMenuModal">
-        <span class="iconify" data-icon="mdi:sparkles"></span>
-        Generar menú automático
-      </button>
-    </div>
+                <!-- Comidas cargadas -->
+                <template v-else>
+                  <div v-for="meal in todayMeals" :key="meal.id" 
+                    class="rounded-xl border overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                    style="background-color: var(--card); border-color: var(--border);">
+                    <div class="relative h-40 overflow-hidden">
+                      <img :src="meal.image" :alt="meal.title" class="w-full h-full object-cover">
+                      <div class="absolute top-3 left-3 text-2xl">{{ getMealEmoji(meal.type) }}</div>
+                      <div class="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
+                      <div class="absolute bottom-3 left-3 right-3">
+                        <h4 class="text-white text-sm font-medium">{{ getMealTypeText(meal.type) }}</h4>
+                      </div>
+                    </div>
+                    <div class="p-4">
+                      <h3 class="font-medium mb-3" style="color: var(--foreground);">{{ meal.title }}</h3>
+                      <div class="flex gap-4 mb-4 text-xs" style="color: var(--muted-foreground);">
+                        <div class="flex items-center gap-1.5">
+                          <span class="iconify w-3.5 h-3.5" data-icon="mdi:clock-outline"></span>
+                          <span>{{ meal.time }}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                          <span class="iconify w-3.5 h-3.5" data-icon="mdi:account-group-outline"></span>
+                          <span>{{ meal.servings }}</span>
+                        </div>
+                      </div>
+                      <div class="flex gap-2">
+                        <button @click="openRecipeModal(meal.recipeId)" 
+                          class="flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 text-white"
+                          style="background-color: var(--primary);">
+                          Cocinar
+                        </button>
+                        <button @click="openChangeMealModal(meal.type === 'desayuno' ? 'breakfast' : meal.type === 'almuerzo' ? 'lunch' : 'dinner')" 
+                          class="px-4 py-2.5 rounded-xl border transition-all duration-200 text-sm font-medium"
+                          style="border-color: var(--border); color: var(--foreground); background-color: transparent;">
+                          Cambiar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </section>
 
-    <!-- Comidas cargadas -->
-    <template v-else>
-      <!-- Breakfast -->
-      <div class="meal-card" v-for="meal in todayMeals" :key="meal.id">
-        <div class="meal-image">
-          <img :src="meal.image" :alt="meal.title">
-          <div class="meal-emoji">{{ getMealEmoji(meal.type) }}</div>
-          <div class="meal-gradient"></div>
-          <div class="meal-label">
-            <h4>{{ getMealTypeText(meal.type) }}</h4>
-          </div>
-        </div>
-        <div class="meal-content">
-          <h3>{{ meal.title }}</h3>
-          <div class="meal-details">
-            <div class="detail-item">
-              <span class="iconify" data-icon="mdi:clock-outline"></span>
-              <span>{{ meal.time }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="iconify" data-icon="mdi:account-group-outline"></span>
-              <span>{{ meal.servings }}</span>
-            </div>
-          </div>
-          <div class="meal-actions">
-            <button class="cook-btn" @click="openRecipeModal(meal.recipeId)">
-              Cocinar
-            </button>
-            <button class="change-btn" @click="openChangeMealModal(meal.type === 'desayuno' ? 'breakfast' : meal.type === 'almuerzo' ? 'lunch' : 'dinner')">
-              Cambiar
-            </button>
-          </div>
-        </div>
-      </div>
-    </template>
-  </div>
-</section>
-
-            <!-- My Pantry - EN CUADRO BLANCO -->
-            <section class="section-card bg-white-card">
-              <div class="section-header">
-                <h2 class="section-title">Mi Despensa</h2>
-                <button class="add-ingredient-btn" @click="openAddIngredientModal">
-                  <span class="iconify" data-icon="mdi:plus"></span>
+            <!-- My Pantry -->
+            <section class="rounded-2xl p-6 shadow-sm border" style="background-color: var(--card); border-color: var(--border);">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <h2 class="text-xl font-semibold" style="color: var(--foreground);">Mi Despensa</h2>
+                <button @click="openAddIngredientModal" 
+                  class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-200 font-medium text-sm"
+                  style="border-color: var(--border); color: var(--primary); background-color: transparent;">
+                  <span class="iconify w-5 h-5" data-icon="mdi:plus"></span>
                   Agregar ingrediente
                 </button>
               </div>
 
-              <div class="pantry-grid">
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 <!-- Loading State -->
-                <div v-if="loadingStates.pantry && pantryItems.length === 0" class="loading-placeholder">
-                  <div class="loading-spinner"></div>
+                <div v-if="loadingStates.pantry && pantryItems.length === 0" class="col-span-full flex flex-col items-center justify-center py-12" style="color: var(--muted-foreground);">
+                  <div class="w-10 h-10 border-4 rounded-full animate-spin mb-4" style="border-color: var(--border); border-top-color: var(--primary);"></div>
                   <p>Cargando despensa...</p>
                 </div>
 
-                <div v-else-if="pantryItems.length === 0" class="empty-state">
-                  <span class="iconify" data-icon="mdi:fridge-outline" style="font-size: 48px; color: #ccc;"></span>
+                <div v-else-if="pantryItems.length === 0" class="col-span-full flex flex-col items-center justify-center py-12" style="color: var(--muted-foreground);">
+                  <span class="iconify w-12 h-12 mb-4" style="color: var(--muted-foreground);" data-icon="mdi:fridge-outline"></span>
                   <p>Tu despensa está vacía</p>
-                  <button class="add-ingredient-btn" @click="openAddIngredientModal">
+                  <button @click="openAddIngredientModal" class="mt-4 px-4 py-2 rounded-xl text-white text-sm font-medium transition-colors duration-200" style="background-color: var(--primary);">
                     Agregar tu primer ingrediente
                   </button>
                 </div>
 
-                <div v-else v-for="item in pantryItems" :key="item.id" class="pantry-item">
-                  <div class="pantry-image">
-                    <img :src="item.image" :alt="item.name">
-                    <div class="expiry-badge" :class="item.expiryBadge">
+                <div v-else v-for="item in pantryItems" :key="item.id" 
+                  class="rounded-xl border overflow-hidden hover:shadow-md transition-all duration-200"
+                  style="background-color: var(--card); border-color: var(--border);">
+                  <div class="relative h-32">
+                    <img :src="item.image" :alt="item.name" class="w-full h-full object-cover">
+                    <span class="absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-medium text-white" :class="{
+                      'bg-green-600': item.expiryBadge === 'safe',
+                      'bg-orange-500': item.expiryBadge === 'warning',
+                      'bg-red-600': item.expiryBadge === 'danger'
+                    }">
                       {{ item.daysUntilExpiry !== null ? `${item.daysUntilExpiry} días` : 'Sin fecha' }}
-                    </div>
+                    </span>
                   </div>
-                  <div class="pantry-info">
-                    <h4>{{ item.name }}</h4>
-                    <p class="pantry-quantity">{{ item.quantity }}</p>
-                    <p class="pantry-category">{{ item.category }}</p>
-                    <div class="pantry-actions">
-                      <button class="quantity-btn minus" @click="decreaseQuantity(item)">
-                        <span class="iconify" data-icon="mdi:minus"></span>
+                  <div class="p-3">
+                    <h4 class="font-medium text-sm mb-1" style="color: var(--foreground);">{{ item.name }}</h4>
+                    <p class="text-xs mb-0.5" style="color: var(--foreground);">{{ item.quantity }}</p>
+                    <p class="text-xs uppercase tracking-wide mb-2" style="color: var(--muted-foreground);">{{ item.category }}</p>
+                    <div class="flex gap-1.5">
+                      <button @click="decreaseQuantity(item)" 
+                        class="w-8 h-8 rounded-lg border transition-colors duration-200 flex items-center justify-center"
+                        style="border-color: var(--border); background-color: var(--card);">
+                        <span class="iconify w-4 h-4" data-icon="mdi:minus" style="color: var(--foreground);"></span>
                       </button>
-                      <button class="quantity-btn plus" @click="increaseQuantity(item)">
-                        <span class="iconify" data-icon="mdi:plus"></span>
+                      <button @click="increaseQuantity(item)" 
+                        class="w-8 h-8 rounded-lg border transition-colors duration-200 flex items-center justify-center"
+                        style="border-color: var(--border); background-color: var(--card);">
+                        <span class="iconify w-4 h-4" data-icon="mdi:plus" style="color: var(--foreground);"></span>
                       </button>
-                      <button class="delete-btn" @click="removeIngredient(item)">
-                        <span class="iconify" data-icon="mdi:trash-can-outline"></span>
+                      <button @click="removeIngredient(item)" 
+                        class="w-8 h-8 rounded-lg border ml-auto transition-colors duration-200 flex items-center justify-center"
+                        style="border-color: var(--destructive); background-color: var(--card);">
+                        <span class="iconify w-4 h-4" data-icon="mdi:trash-can-outline" style="color: var(--destructive);"></span>
                       </button>
                     </div>
                   </div>
@@ -133,109 +156,118 @@
             </section>
 
             <!-- Grid Layout for Recipes and Weather -->
-            <div class="grid-layout">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <!-- Recommended Recipes -->
-              <section class="section-card">
-                <div class="section-header">
-                  <h2 class="section-title">Recetas Recomendadas</h2>
-                  <button class="view-all-btn" @click="goToRecipes">
+              <section class="rounded-2xl p-6 shadow-sm border" style="background-color: var(--card); border-color: var(--border);">
+                <div class="flex items-center justify-between mb-6">
+                  <h2 class="text-xl font-semibold" style="color: var(--foreground);">Recetas Recomendadas</h2>
+                  <button @click="goToRecipes" class="inline-flex items-center gap-1 text-sm font-medium transition-colors duration-200" style="color: var(--primary);">
                     Ver todas
-                    <span class="iconify" data-icon="mdi:chevron-right"></span>
+                    <span class="iconify w-4 h-4" data-icon="mdi:chevron-right"></span>
                   </button>
                 </div>
 
-                <div class="recipes-grid">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <!-- Loading State -->
-                  <div v-if="loadingStates.recipes && recommendedRecipes.length === 0" class="loading-placeholder">
-                    <div class="loading-spinner"></div>
+                  <div v-if="loadingStates.recipes && recommendedRecipes.length === 0" class="col-span-full flex flex-col items-center justify-center py-12" style="color: var(--muted-foreground);">
+                    <div class="w-10 h-10 border-4 rounded-full animate-spin mb-4" style="border-color: var(--border); border-top-color: var(--primary);"></div>
                     <p>Cargando recetas...</p>
                   </div>
 
-                  <div v-else v-for="recipe in recommendedRecipes.slice(0, 2)" :key="recipe.id" class="recipe-card"
-                    @click="openRecipeModal(recipe.id)">
-                    <div class="recipe-image">
-                      <img :src="recipe.image" :alt="recipe.title">
-                      <div class="recipe-badge">{{ recipe.badge }}</div>
+                  <div v-else v-for="recipe in recommendedRecipes.slice(0, 2)" :key="recipe.id" @click="openRecipeModal(recipe.id)" 
+                    class="rounded-xl border overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                    style="background-color: var(--card); border-color: var(--border);">
+                    <div class="relative h-32">
+                      <img :src="recipe.image" :alt="recipe.title" class="w-full h-full object-cover">
+                      <span class="absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium text-white" style="background-color: var(--primary);">{{ recipe.badge }}</span>
                     </div>
-                    <div class="recipe-content">
-                      <h4>{{ recipe.title }}</h4>
-                      <div class="recipe-details">
+                    <div class="p-3">
+                      <h4 class="font-medium text-sm mb-2" style="color: var(--foreground);">{{ recipe.title }}</h4>
+                      <div class="flex gap-3 text-xs mb-3" style="color: var(--muted-foreground);">
                         <span>⏱️ {{ recipe.time }}</span>
                         <span>👥 {{ recipe.servings }}</span>
                       </div>
-                      <button class="recipe-view-btn">Ver receta</button>
+                      <button class="w-full py-2 rounded-lg text-xs font-medium transition-all duration-200" style="border: 1px solid var(--primary); color: var(--primary); background-color: transparent;">
+                        Ver receta
+                      </button>
                     </div>
                   </div>
                 </div>
               </section>
 
               <!-- Right Column -->
-              <div class="right-column">
+              <div class="flex flex-col gap-6">
                 <!-- Weather Suggestion -->
-                <section class="weather-suggestion-card">
-                  <div class="weather-header">
-                    <div class="weather-icon-container">
-                      <span class="iconify weather-icon" data-icon="mdi:weather-partly-cloudy"></span>
+                <section class="rounded-2xl p-6 text-white shadow-lg" style="background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);">
+                  <div class="flex items-center gap-4 mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                      <span class="iconify w-8 h-8 text-white" data-icon="mdi:weather-partly-cloudy"></span>
                     </div>
                     <div>
-                      <h3 class="weather-title">Sugerencia del clima</h3>
-                      <p class="weather-subtitle">{{ weatherSuggestion ? `${weatherSuggestion.temperature}°C -
-                        ${weatherSuggestion.condition}` : '18°C - Parcialmente nublado' }}</p>
+                      <h3 class="font-medium text-white text-base">Sugerencia del clima</h3>
+                      <p class="text-sm text-white/90">{{ weatherSuggestion ? `${weatherSuggestion.temperature}°C - ${weatherSuggestion.condition}` : '18°C - Parcialmente nublado' }}</p>
                     </div>
                   </div>
-                  <div class="weather-content">
-                    <p class="weather-desc">
-                      <span class="iconify" data-icon="mdi:lightbulb-on-outline"></span>
-                      {{ weatherSuggestion ? weatherSuggestion.suggestionText : 'Hoy es un día perfecto para preparar Sopa de Verduras Nutritiva.El clima fresco pide algo caliente y reconfortante.' }}
+                  <div class="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                    <p class="text-sm mb-4 leading-relaxed flex items-start gap-1.5">
+                      <span class="iconify w-4 h-4 mt-0.5 shrink-0" data-icon="mdi:lightbulb-on-outline"></span>
+                      {{ weatherSuggestion ? weatherSuggestion.suggestionText : 'Hoy es un día perfecto para preparar Sopa de Verduras Nutritiva. El clima fresco pide algo caliente y reconfortante.' }}
                     </p>
-                    <div class="weather-stats">
-                      <div class="stat-item">
-                        <span class="stat-label">Temperatura</span>
-                        <span class="stat-value">{{ weatherSuggestion ? `${weatherSuggestion.temperature}°C` : '18°C'
-                          }}</span>
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                      <div class="bg-white/15 rounded-lg p-2 text-center">
+                        <span class="block text-xs text-white/80">Temperatura</span>
+                        <span class="block text-lg font-semibold">{{ weatherSuggestion ? `${weatherSuggestion.temperature}°C` : '18°C' }}</span>
                       </div>
-                      <div class="stat-item">
-                        <span class="stat-label">Humedad</span>
-                        <span class="stat-value">65%</span>
+                      <div class="bg-white/15 rounded-lg p-2 text-center">
+                        <span class="block text-xs text-white/80">Humedad</span>
+                        <span class="block text-lg font-semibold">65%</span>
                       </div>
-                      <div class="stat-item">
-                        <span class="stat-label">Viento</span>
-                        <span class="stat-value">12 km/h</span>
+                      <div class="bg-white/15 rounded-lg p-2 text-center">
+                        <span class="block text-xs text-white/80">Viento</span>
+                        <span class="block text-lg font-semibold">12 km/h</span>
                       </div>
                     </div>
-                    <button class="weather-recipe-btn" @click="openWeatherRecipeModal">
-                      <span class="iconify" data-icon="mdi:food"></span>
+                    <button @click="openWeatherRecipeModal" class="w-full py-3 rounded-xl text-sm font-medium hover:bg-green-50 transition-all duration-200 flex items-center justify-center gap-2" style="background-color: white; color: var(--primary);">
+                      <span class="iconify w-4 h-4" data-icon="mdi:food"></span>
                       Ir a receta sugerida
                     </button>
                   </div>
                 </section>
 
                 <!-- Notifications -->
-                <section class="notifications-section">
-                  <div class="notifications-header">
-                    <h3>Notificaciones</h3>
-                    <span class="notifications-badge">{{ notifications.length }}</span>
+                <section class="rounded-2xl p-6 shadow-sm border" style="background-color: var(--card); border-color: var(--border);">
+                  <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-medium" style="color: var(--foreground);">Notificaciones</h3>
+                    <span class="w-6 h-6 rounded-full text-white text-xs font-medium flex items-center justify-center" style="background-color: var(--primary);">{{ notifications.length }}</span>
                   </div>
-                  <div class="notifications-list">
+                  <div class="flex flex-col gap-3">
                     <!-- Loading State -->
-                    <div v-if="loadingStates.notifications && notifications.length === 0" class="loading-placeholder">
-                      <div class="loading-spinner"></div>
-                      <p>Cargando notificaciones...</p>
+                    <div v-if="loadingStates.notifications && notifications.length === 0" class="flex flex-col items-center justify-center py-8" style="color: var(--muted-foreground);">
+                      <div class="w-8 h-8 border-3 rounded-full animate-spin mb-3" style="border-color: var(--border); border-top-color: var(--primary);"></div>
+                      <p class="text-sm">Cargando notificaciones...</p>
                     </div>
 
-                    <div v-else-if="notifications.length === 0" class="empty-state">
-                      <span class="iconify" data-icon="mdi:bell-outline" style="font-size: 32px; color: #ccc;"></span>
-                      <p>No tienes notificaciones</p>
+                    <div v-else-if="notifications.length === 0" class="flex flex-col items-center justify-center py-8" style="color: var(--muted-foreground);">
+                      <span class="iconify w-8 h-8 mb-2" style="color: var(--muted-foreground);" data-icon="mdi:bell-outline"></span>
+                      <p class="text-sm">No tienes notificaciones</p>
                     </div>
 
-                    <div v-else v-for="notification in notifications.slice(0, 3)" :key="notification.id"
-                      class="notification-item" @click="handleNotification(notification)">
-                      <div class="notification-icon" :class="notification.type">
-                        <span class="iconify" :data-icon="notification.icon"></span>
+                    <div v-else v-for="notification in notifications.slice(0, 3)" :key="notification.id" @click="handleNotification(notification)" 
+                      class="flex items-start gap-3 p-3 rounded-xl transition-colors duration-200 cursor-pointer" style="background-color: var(--muted);">
+                      <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" :class="{
+                        'bg-red-100': notification.type === 'alert',
+                        'bg-green-100': notification.type === 'recipe',
+                        'bg-yellow-100': notification.type === 'shopping'
+                      }">
+                        <span class="iconify w-5 h-5" :class="{
+                          'text-red-600': notification.type === 'alert',
+                          'text-green-600': notification.type === 'recipe',
+                          'text-yellow-600': notification.type === 'shopping'
+                        }" :data-icon="notification.icon"></span>
                       </div>
-                      <div class="notification-content">
-                        <p class="notification-text">{{ notification.text }}</p>
-                        <p class="notification-time">{{ notification.time }}</p>
+                      <div class="flex-1">
+                        <p class="text-sm" style="color: var(--foreground);">{{ notification.text }}</p>
+                        <p class="text-xs mt-0.5" style="color: var(--muted-foreground);">{{ notification.time }}</p>
                       </div>
                     </div>
                   </div>
@@ -248,15 +280,24 @@
     </div>
 
     <!-- Toast Notification -->
-    <div v-if="showToast" class="toast-notification" :class="toastType">
-      <div class="toast-content">
-        <span class="toast-icon iconify" :data-icon="toastIcon || 'mdi:information'"></span>
+    <div v-if="showToast" 
+      class="fixed top-5 right-5 z-9999 max-w-100 min-w-75 animate-slide-in-right text-white"
+      :style="{
+        background: toastType === 'success' ? 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)' :
+                  toastType === 'error' ? 'linear-gradient(135deg, var(--destructive) 0%, #b31534 100%)' :
+                  toastType === 'warning' ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' :
+                  'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+        borderLeftWidth: '4px',
+        borderLeftColor: toastType === 'success' ? '#2d6a4f' : toastType === 'error' ? '#b91c1c' : toastType === 'warning' ? '#b45309' : '#1e40af'
+      }">
+      <div class="flex items-start gap-3 p-4">
+        <span class="iconify w-6 h-6 shrink-0" :data-icon="toastIcon || 'mdi:information'"></span>
         <div>
-          <p class="toast-title">{{ toastTitle }}</p>
-          <p class="toast-message">{{ toastMessage }}</p>
+          <p class="font-semibold text-sm mb-1">{{ toastTitle }}</p>
+          <p class="text-xs opacity-90 leading-relaxed">{{ toastMessage }}</p>
         </div>
-        <button class="toast-close" @click="showToast = false">
-          <span class="iconify" data-icon="mdi:close"></span>
+        <button @click="showToast = false" class="w-6 h-6 rounded-lg bg-white/20 hover:bg-white/30 transition-colors duration-200 flex items-center justify-center shrink-0 ml-auto">
+          <span class="iconify w-4 h-4 text-white" data-icon="mdi:close"></span>
         </button>
       </div>
     </div>
@@ -264,106 +305,112 @@
     <!-- MODALS -->
 
     <!-- Recipe Modal -->
-    <div v-if="showRecipeModal" class="modal-overlay" @click="closeRecipeModal">
-      <div class="modal-content recipe-modal" @click.stop>
-        <button class="modal-close" @click="closeRecipeModal">
-          <span class="iconify" data-icon="mdi:close"></span>
+    <div v-if="showRecipeModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-4 animate-fade-in" @click="closeRecipeModal">
+      <div class="rounded-2xl max-w-225 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in" @click.stop style="background-color: var(--card);">
+        <button @click="closeRecipeModal" 
+          class="absolute top-4 right-4 w-10 h-10 rounded-xl border transition-all duration-200 flex items-center justify-center z-10"
+          style="background-color: var(--background); border-color: var(--border);">
+          <span class="iconify w-5 h-5" data-icon="mdi:close" style="color: var(--foreground);"></span>
         </button>
 
-        <div v-if="loadingStates.recipeModal" class="modal-loading">
-          <div class="loading-spinner"></div>
+        <div v-if="loadingStates.recipeModal" class="flex flex-col items-center justify-center min-h-75" style="color: var(--muted-foreground);">
+          <div class="w-10 h-10 border-4 rounded-full animate-spin mb-4" style="border-color: var(--border); border-top-color: var(--primary);"></div>
           <p>Cargando receta...</p>
         </div>
 
         <div v-else>
-          <div class="recipe-modal-image">
-            <img :src="currentRecipe.image" :alt="currentRecipe.title">
-            <div class="recipe-image-overlay">
-              <div class="recipe-badges">
-                <span v-for="badge in currentRecipe.badges" :key="badge" class="recipe-badge-item">
-                  {{ badge }}
-                </span>
+          <div class="relative h-75 overflow-hidden rounded-t-2xl">
+            <img :src="currentRecipe.image" :alt="currentRecipe.title" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-linear-to-t from-black/80 to-transparent"></div>
+            <div class="absolute bottom-0 left-0 right-0 p-8 text-white">
+              <div class="flex gap-2 mb-4 flex-wrap">
+                <span v-for="badge in currentRecipe.badges" :key="badge" class="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-xs font-medium">{{ badge }}</span>
               </div>
-              <div class="recipe-title-overlay">
-                <h2>{{ currentRecipe.title }}</h2>
-                <div class="recipe-rating">
-                  <span class="rating-stars">★★★★★</span>
-                  <span class="rating-value">{{ currentRecipe.rating }}</span>
-                </div>
+              <h2 class="text-3xl font-bold mb-2">{{ currentRecipe.title }}</h2>
+              <div class="flex items-center gap-2">
+                <span class="text-yellow-400 text-lg">★★★★★</span>
+                <span class="text-sm">{{ currentRecipe.rating }}</span>
               </div>
             </div>
           </div>
 
-          <div class="recipe-modal-details">
-            <div class="recipe-stats">
-              <div class="stat-box">
-                <span class="iconify" data-icon="mdi:clock-outline"></span>
-                <span class="stat-value">{{ currentRecipe.time }}</span>
-                <span class="stat-label">Tiempo</span>
+          <div class="p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 rounded-xl" style="background-color: var(--muted);">
+              <div class="text-center p-2">
+                <span class="iconify w-6 h-6 mx-auto mb-2" style="color: var(--primary);" data-icon="mdi:clock-outline"></span>
+                <span class="block text-lg font-semibold" style="color: var(--foreground);">{{ currentRecipe.time }}</span>
+                <span class="block text-xs" style="color: var(--muted-foreground);">Tiempo</span>
               </div>
-              <div class="stat-box">
-                <span class="iconify" data-icon="mdi:account-group-outline"></span>
-                <span class="stat-value">{{ currentRecipe.servings }}</span>
-                <span class="stat-label">Porciones</span>
+              <div class="text-center p-2">
+                <span class="iconify w-6 h-6 mx-auto mb-2" style="color: var(--primary);" data-icon="mdi:account-group-outline"></span>
+                <span class="block text-lg font-semibold" style="color: var(--foreground);">{{ currentRecipe.servings }}</span>
+                <span class="block text-xs" style="color: var(--muted-foreground);">Porciones</span>
               </div>
-              <div class="stat-box">
-                <span class="iconify" data-icon="mdi:fire"></span>
-                <span class="stat-value">{{ currentRecipe.calories }}</span>
-                <span class="stat-label">Calorías</span>
+              <div class="text-center p-2">
+                <span class="iconify w-6 h-6 mx-auto mb-2" style="color: var(--primary);" data-icon="mdi:fire"></span>
+                <span class="block text-lg font-semibold" style="color: var(--foreground);">{{ currentRecipe.calories }}</span>
+                <span class="block text-xs" style="color: var(--muted-foreground);">Calorías</span>
               </div>
             </div>
 
-            <div class="recipe-actions">
-              <button class="action-btn favorite-btn" @click="toggleFavorite">
-                <span class="iconify" :data-icon="isFavorite ? 'mdi:heart' : 'mdi:heart-outline'"></span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              <button @click="toggleFavorite" 
+                class="flex items-center justify-center gap-2 py-3 rounded-xl border transition-all duration-200 font-medium"
+                style="border-color: var(--border); background-color: transparent; color: var(--foreground);">
+                <span class="iconify w-5 h-5" :data-icon="isFavorite ? 'mdi:heart' : 'mdi:heart-outline'"></span>
                 {{ isFavorite ? 'En favoritos' : 'Agregar a favoritos' }}
               </button>
-              <button class="action-btn shopping-btn" @click="addToShoppingList">
-                <span class="iconify" data-icon="mdi:cart-plus"></span>
+              <button @click="addToShoppingList" 
+                class="flex items-center justify-center gap-2 py-3 rounded-xl border transition-all duration-200 font-medium"
+                style="border-color: var(--border); background-color: transparent; color: var(--foreground);">
+                <span class="iconify w-5 h-5" data-icon="mdi:cart-plus"></span>
                 Agregar a lista de compras
               </button>
             </div>
 
-            <div class="recipe-section">
-              <h3 class="section-title">
-                <span class="iconify" data-icon="mdi:food-apple"></span>
+            <div class="mb-8">
+              <h3 class="text-xl font-semibold mb-4 flex items-center gap-2" style="color: var(--foreground);">
+                <span class="iconify w-6 h-6" data-icon="mdi:food-apple" style="color: var(--primary);"></span>
                 Ingredientes
               </h3>
-              <div class="ingredients-list">
-                <div v-for="ingredient in currentRecipe.ingredients" :key="ingredient.name" class="ingredient-item">
-                  <span class="ingredient-name">{{ ingredient.name }}</span>
-                  <span class="ingredient-quantity">{{ ingredient.quantity }}</span>
+              <div class="p-6 rounded-xl" style="background-color: var(--muted);">
+                <div v-for="ingredient in currentRecipe.ingredients" :key="ingredient.name" 
+                  class="flex justify-between items-center py-3 border-b last:border-0" style="border-color: var(--border);">
+                  <span class="font-medium" style="color: var(--foreground);">{{ ingredient.name }}</span>
+                  <span class="font-semibold" style="color: var(--primary);">{{ ingredient.quantity }}</span>
                 </div>
               </div>
             </div>
 
-            <div class="recipe-section">
-              <h3 class="section-title">
-                <span class="iconify" data-icon="mdi:book-open-page-variant"></span>
+            <div>
+              <h3 class="text-xl font-semibold mb-4 flex items-center gap-2" style="color: var(--foreground);">
+                <span class="iconify w-6 h-6" data-icon="mdi:book-open-page-variant" style="color: var(--primary);"></span>
                 Instrucciones paso a paso
               </h3>
-              <div class="instructions-container">
-                <div class="step-navigation">
-                  <button class="step-btn" @click="prevStep" :disabled="currentStep === 0">
-                    <span class="iconify" data-icon="mdi:chevron-left"></span>
+              <div class="p-6 rounded-xl" style="background-color: var(--muted);">
+                <div class="flex items-center justify-between mb-6 pb-4 border-b" style="border-color: var(--border);">
+                  <button @click="prevStep" :disabled="currentStep === 0" 
+                    class="px-4 py-2 rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+                    style="border-color: var(--border); background-color: var(--card); color: var(--foreground);">
+                    <span class="iconify w-4 h-4" data-icon="mdi:chevron-left"></span>
                     Anterior
                   </button>
-                  <div class="step-indicator">Paso {{ currentStep + 1 }} de {{ currentRecipe.steps?.length || 0 }}</div>
-                  <button class="step-btn" @click="nextStep"
-                    :disabled="currentStep === (currentRecipe.steps?.length - 1 || 0)">
+                  <div class="font-semibold" style="color: var(--foreground);">Paso {{ currentStep + 1 }} de {{ currentRecipe.steps?.length || 0 }}</div>
+                  <button @click="nextStep" :disabled="currentStep === (currentRecipe.steps?.length - 1 || 0)" 
+                    class="px-4 py-2 rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+                    style="border-color: var(--border); background-color: var(--card); color: var(--foreground);">
                     Siguiente
-                    <span class="iconify" data-icon="mdi:chevron-right"></span>
+                    <span class="iconify w-4 h-4" data-icon="mdi:chevron-right"></span>
                   </button>
                 </div>
 
-                <div v-if="currentRecipe.steps && currentRecipe.steps[currentStep]" class="step-content">
-                  <div class="step-image">
-                    <img :src="currentRecipe.steps[currentStep].image_url || currentRecipe.steps[currentStep].image"
-                      :alt="'Paso ' + (currentStep + 1)">
+                <div v-if="currentRecipe.steps && currentRecipe.steps[currentStep]" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="rounded-xl overflow-hidden h-62.5">
+                    <img :src="currentRecipe.steps[currentStep].image_url || currentRecipe.steps[currentStep].image" :alt="'Paso ' + (currentStep + 1)" class="w-full h-full object-cover">
                   </div>
-                  <div class="step-description">
-                    <h4>Paso {{ currentStep + 1 }}</h4>
-                    <p>{{ currentRecipe.steps[currentStep].description }}</p>
+                  <div>
+                    <h4 class="text-lg font-semibold mb-3" style="color: var(--foreground);">Paso {{ currentStep + 1 }}</h4>
+                    <p class="leading-relaxed" style="color: var(--muted-foreground);">{{ currentRecipe.steps[currentStep].description }}</p>
                   </div>
                 </div>
               </div>
@@ -374,25 +421,34 @@
     </div>
 
     <!-- Change Meal Modal -->
-    <div v-if="showChangeMealModal" class="modal-overlay" @click="closeChangeMealModal">
-      <div class="modal-content change-meal-modal" @click.stop>
-        <button class="modal-close" @click="closeChangeMealModal">
-          <span class="iconify" data-icon="mdi:close"></span>
+    <div v-if="showChangeMealModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-4 animate-fade-in" @click="closeChangeMealModal">
+      <div class="rounded-2xl max-w-200 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in p-8" @click.stop style="background-color: var(--card);">
+        <button @click="closeChangeMealModal" 
+          class="absolute top-4 right-4 w-10 h-10 rounded-xl border transition-all duration-200 flex items-center justify-center"
+          style="background-color: var(--background); border-color: var(--border);">
+          <span class="iconify w-5 h-5" data-icon="mdi:close" style="color: var(--foreground);"></span>
         </button>
 
-        <h2 class="modal-title">Cambiar {{ currentMealType === 'breakfast' ? 'Desayuno' : currentMealType === 'lunch' ?
-          'Almuerzo' : 'Cena' }}</h2>
+        <h2 class="text-2xl font-semibold text-center mb-6" style="color: var(--foreground);">Cambiar {{ currentMealType === 'breakfast' ? 'Desayuno' : currentMealType === 'lunch' ? 'Almuerzo' : 'Cena' }}</h2>
 
-        <div class="meal-options-grid">
-          <div v-for="meal in filteredMeals" :key="meal.id" class="meal-option"
-            :class="{ 'selected': selectedMeal?.id === meal.id }" @click="selectMeal(meal)">
-            <div class="meal-option-image">
-              <img :src="meal.image" :alt="meal.title">
-              <div class="meal-option-badge">{{ getMealTypeText(meal.type) }}</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 max-h-100 overflow-y-auto p-4">
+          <div v-for="meal in filteredMeals" :key="meal.id" @click="selectMeal(meal)" 
+            class="rounded-xl border-2 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200 overflow-hidden"
+            :class="{
+              'border-green-600': selectedMeal?.id === meal.id,
+              'border-gray-200': selectedMeal?.id !== meal.id
+            }"
+            :style="{
+              backgroundColor: selectedMeal?.id === meal.id ? 'var(--muted)' : 'var(--card)',
+              borderColor: selectedMeal?.id === meal.id ? 'var(--primary)' : 'var(--border)'
+            }">
+            <div class="relative h-30">
+              <img :src="meal.image" :alt="meal.title" class="w-full h-full object-cover">
+              <span class="absolute top-2 left-2 px-3 py-1 rounded-full text-white text-xs font-medium" style="background-color: var(--primary);">{{ getMealTypeText(meal.type) }}</span>
             </div>
-            <div class="meal-option-content">
-              <h4>{{ meal.title }}</h4>
-              <div class="meal-option-details">
+            <div class="p-4">
+              <h4 class="font-medium mb-2" style="color: var(--foreground);">{{ meal.title }}</h4>
+              <div class="flex gap-3 text-xs" style="color: var(--muted-foreground);">
                 <span>⏱️ {{ meal.time }}</span>
                 <span>👥 {{ meal.servings }}</span>
               </div>
@@ -400,9 +456,15 @@
           </div>
         </div>
 
-        <div class="modal-actions">
-          <button class="modal-btn cancel-btn" @click="closeChangeMealModal">Cancelar</button>
-          <button class="modal-btn confirm-btn" @click="confirmMealChange" :disabled="!selectedMeal">
+        <div class="flex gap-4 justify-end">
+          <button @click="closeChangeMealModal" 
+            class="px-6 py-3 rounded-xl border transition-colors duration-200 font-medium"
+            style="border-color: var(--border); background-color: transparent; color: var(--foreground);">
+            Cancelar
+          </button>
+          <button @click="confirmMealChange" :disabled="!selectedMeal" 
+            class="px-6 py-3 rounded-xl text-white font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            style="background-color: var(--primary);">
             Cambiar Comida
           </button>
         </div>
@@ -410,51 +472,59 @@
     </div>
 
     <!-- Generate Menu Modal -->
-    <div v-if="showGenerateMenuModal" class="modal-overlay" @click="closeGenerateMenuModal">
-      <div class="modal-content generate-menu-modal" @click.stop>
-        <button class="modal-close" @click="closeGenerateMenuModal">
-          <span class="iconify" data-icon="mdi:close"></span>
+    <div v-if="showGenerateMenuModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-4 animate-fade-in" @click="closeGenerateMenuModal">
+      <div class="rounded-2xl max-w-200 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in p-8" @click.stop style="background-color: var(--card);">
+        <button @click="closeGenerateMenuModal" 
+          class="absolute top-4 right-4 w-10 h-10 rounded-xl border transition-all duration-200 flex items-center justify-center"
+          style="background-color: var(--background); border-color: var(--border);">
+          <span class="iconify w-5 h-5" data-icon="mdi:close" style="color: var(--foreground);"></span>
         </button>
 
-        <h2 class="modal-title">Generar Nuevo Menú</h2>
+        <h2 class="text-2xl font-semibold text-center mb-6" style="color: var(--foreground);">Generar Nuevo Menú</h2>
 
-        <div class="preferences-section">
-          <h3>Preferencias</h3>
-          <div class="preferences-grid">
-            <div class="preference-item">
-              <label class="preference-label">
-                <input type="checkbox" v-model="menuPreferences.dietary" value="vegetariano">
-                <span class="checkbox-custom"></span>
-                <span class="preference-text">Vegetariano</span>
-              </label>
-            </div>
-            <div class="preference-item">
-              <label class="preference-label">
-                <input type="checkbox" v-model="menuPreferences.dietary" value="saludable">
-                <span class="checkbox-custom"></span>
-                <span class="preference-text">Saludable</span>
-              </label>
-            </div>
-            <div class="preference-item">
-              <label class="preference-label">
-                <input type="checkbox" v-model="menuPreferences.dietary" value="rapido">
-                <span class="checkbox-custom"></span>
-                <span class="preference-text">Rápido</span>
-              </label>
-            </div>
+        <div class="mb-8">
+          <h3 class="text-lg font-medium mb-4" style="color: var(--foreground);">Preferencias</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <label class="flex items-center gap-2 p-3 rounded-xl border cursor-pointer transition-colors duration-200" style="border-color: var(--border); background-color: var(--card);">
+              <input type="checkbox" v-model="menuPreferences.dietary" value="vegetariano" class="hidden">
+              <span class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all" :class="{
+                'bg-green-600 border-green-600': menuPreferences.dietary.includes('vegetariano')
+              }" style="border-color: var(--border);">
+                <span v-if="menuPreferences.dietary.includes('vegetariano')" class="text-white text-xs">✓</span>
+              </span>
+              <span class="font-medium" style="color: var(--foreground);">Vegetariano</span>
+            </label>
+            <label class="flex items-center gap-2 p-3 rounded-xl border cursor-pointer transition-colors duration-200" style="border-color: var(--border); background-color: var(--card);">
+              <input type="checkbox" v-model="menuPreferences.dietary" value="saludable" class="hidden">
+              <span class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all" :class="{
+                'bg-green-600 border-green-600': menuPreferences.dietary.includes('saludable')
+              }" style="border-color: var(--border);">
+                <span v-if="menuPreferences.dietary.includes('saludable')" class="text-white text-xs">✓</span>
+              </span>
+              <span class="font-medium" style="color: var(--foreground);">Saludable</span>
+            </label>
+            <label class="flex items-center gap-2 p-3 rounded-xl border cursor-pointer transition-colors duration-200" style="border-color: var(--border); background-color: var(--card);">
+              <input type="checkbox" v-model="menuPreferences.dietary" value="rapido" class="hidden">
+              <span class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all" :class="{
+                'bg-green-600 border-green-600': menuPreferences.dietary.includes('rapido')
+              }" style="border-color: var(--border);">
+                <span v-if="menuPreferences.dietary.includes('rapido')" class="text-white text-xs">✓</span>
+              </span>
+              <span class="font-medium" style="color: var(--foreground);">Rápido</span>
+            </label>
           </div>
         </div>
 
-        <div v-if="generatedMenu.length > 0" class="generated-menu">
-          <div class="generated-meal" v-for="meal in generatedMenu" :key="meal.type">
-            <div class="generated-meal-header">
-              <h4>{{ getMealTypeText(meal.type) }}</h4>
+        <div v-if="generatedMenu.length > 0" class="mb-8 max-h-75 overflow-y-auto rounded-xl p-4" style="background-color: var(--muted);">
+          <div v-for="meal in generatedMenu" :key="meal.type" class="rounded-xl border mb-3 last:mb-0 overflow-hidden" style="border-color: var(--border); background-color: var(--card);">
+            <div class="px-4 py-2 border-b" style="background-color: var(--muted); border-color: var(--border);">
+              <h4 class="font-semibold" style="color: var(--primary);">{{ getMealTypeText(meal.type) }}</h4>
             </div>
-            <div class="generated-meal-content">
-              <img :src="meal.image" :alt="meal.title">
-              <div class="generated-meal-info">
-                <h5>{{ meal.title }}</h5>
-                <div class="generated-meal-details">
+            <div class="flex p-4 gap-4 items-center">
+              <img :src="meal.image" :alt="meal.title" class="w-20 h-20 rounded-lg object-cover">
+              <div class="flex-1">
+                <h5 class="font-medium mb-1" style="color: var(--foreground);">{{ meal.title }}</h5>
+                <div class="flex gap-3 text-xs" style="color: var(--muted-foreground);">
                   <span>⏱️ {{ meal.time }}</span>
                   <span>👥 {{ meal.servings }}</span>
                 </div>
@@ -462,17 +532,25 @@
             </div>
           </div>
         </div>
-        <div v-else class="empty-menu">
+        <div v-else class="mb-8 text-center py-8 rounded-xl" style="background-color: var(--muted); color: var(--muted-foreground);">
           <p>Genera un menú para ver la previsualización</p>
         </div>
 
-        <div class="modal-actions">
-          <button class="modal-btn cancel-btn" @click="closeGenerateMenuModal">Cancelar</button>
-          <button class="modal-btn generate-btn" @click="generateNewMenu">
-            <span class="iconify" data-icon="mdi:sparkles"></span>
+        <div class="flex gap-4 justify-end">
+          <button @click="closeGenerateMenuModal" 
+            class="px-6 py-3 rounded-xl border transition-colors duration-200 font-medium"
+            style="border-color: var(--border); background-color: transparent; color: var(--foreground);">
+            Cancelar
+          </button>
+          <button @click="generateNewMenu" 
+            class="px-6 py-3 rounded-xl text-white font-medium transition-colors duration-200 flex items-center gap-2"
+            style="background-color: #8b5cf6;">
+            <span class="iconify w-5 h-5" data-icon="mdi:sparkles"></span>
             Generar Menú
           </button>
-          <button v-if="generatedMenu.length > 0" class="modal-btn confirm-btn" @click="applyGeneratedMenu">
+          <button v-if="generatedMenu.length > 0" @click="applyGeneratedMenu" 
+            class="px-6 py-3 rounded-xl text-white font-medium transition-colors duration-200"
+            style="background-color: var(--primary);">
             Aplicar Menú
           </button>
         </div>
@@ -480,33 +558,35 @@
     </div>
 
     <!-- Add Ingredient Modal -->
-    <div v-if="showAddIngredientModal" class="modal-overlay" @click="closeAddIngredientModal">
-      <div class="modal-content add-ingredient-modal" @click.stop>
-        <button class="modal-close" @click="closeAddIngredientModal">
-          <span class="iconify" data-icon="mdi:close"></span>
+    <div v-if="showAddIngredientModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-4 animate-fade-in" @click="closeAddIngredientModal">
+      <div class="rounded-2xl max-w-200 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in p-8" @click.stop style="background-color: var(--card);">
+        <button @click="closeAddIngredientModal" 
+          class="absolute top-4 right-4 w-10 h-10 rounded-xl border transition-all duration-200 flex items-center justify-center"
+          style="background-color: var(--background); border-color: var(--border);">
+          <span class="iconify w-5 h-5" data-icon="mdi:close" style="color: var(--foreground);"></span>
         </button>
 
-        <h2 class="modal-title">Agregar Ingrediente</h2>
+        <h2 class="text-2xl font-semibold text-center mb-6" style="color: var(--foreground);">Agregar Ingrediente</h2>
 
-        <div class="search-section">
-          <div class="search-input">
-            <span class="iconify" data-icon="mdi:magnify"></span>
-            <input type="text" v-model="ingredientSearch" placeholder="Buscar ingrediente..."
-              @input="filterIngredients">
+        <div class="mb-6">
+          <div class="relative">
+            <span class="iconify w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2" style="color: var(--muted-foreground);" data-icon="mdi:magnify"></span>
+            <input type="text" v-model="ingredientSearch" @input="filterIngredients" placeholder="Buscar ingrediente..." 
+              class="w-full pl-12 pr-4 py-3.5 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200"
+              style="border-color: var(--border); background-color: var(--input-background); color: var(--foreground);">
           </div>
         </div>
 
-        <div class="ingredients-grid">
-          <div v-for="ingredient in filteredIngredientList" :key="ingredient.id" class="ingredient-option"
-            @click="selectIngredient(ingredient)">
-            <div class="ingredient-option-image">
-              <img
-                :src="ingredient.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200'"
-                :alt="ingredient.name">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-100 overflow-y-auto p-1">
+          <div v-for="ingredient in filteredIngredientList" :key="ingredient.id" @click="selectIngredient(ingredient)" 
+            class="relative rounded-xl border p-4 flex flex-col items-center gap-2 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
+            style="border-color: var(--border); background-color: var(--card);">
+            <div class="w-20 h-20 rounded-lg overflow-hidden">
+              <img :src="ingredient.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200'" :alt="ingredient.name" class="w-full h-full object-cover">
             </div>
-            <div class="ingredient-option-name">{{ ingredient.name }}</div>
-            <button class="ingredient-add-btn">
-              <span class="iconify" data-icon="mdi:plus"></span>
+            <div class="font-medium text-sm text-center" style="color: var(--foreground);">{{ ingredient.name }}</div>
+            <button class="absolute top-2 right-2 w-8 h-8 rounded-full text-white flex items-center justify-center transition-all duration-200 hover:scale-110" style="background-color: var(--primary);">
+              <span class="iconify w-4 h-4" data-icon="mdi:plus"></span>
             </button>
           </div>
         </div>
@@ -514,24 +594,26 @@
     </div>
 
     <!-- Ingredient Details Modal -->
-    <div v-if="showIngredientDetailsModal" class="modal-overlay" @click="closeIngredientDetailsModal">
-      <div class="modal-content ingredient-details-modal" @click.stop>
-        <button class="modal-close" @click="closeIngredientDetailsModal">
-          <span class="iconify" data-icon="mdi:close"></span>
+    <div v-if="showIngredientDetailsModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-4 animate-fade-in" @click="closeIngredientDetailsModal">
+      <div class="rounded-2xl max-w-125 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in p-8" @click.stop style="background-color: var(--card);">
+        <button @click="closeIngredientDetailsModal" 
+          class="absolute top-4 right-4 w-10 h-10 rounded-xl border transition-all duration-200 flex items-center justify-center"
+          style="background-color: var(--background); border-color: var(--border);">
+          <span class="iconify w-5 h-5" data-icon="mdi:close" style="color: var(--foreground);"></span>
         </button>
 
-        <h2 class="modal-title">{{ selectedIngredient.name }}</h2>
+        <h2 class="text-2xl font-semibold text-center mb-6" style="color: var(--foreground);">{{ selectedIngredient.name }}</h2>
 
-        <div class="ingredient-image-large">
-          <img
-            :src="selectedIngredient.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=300'"
-            :alt="selectedIngredient.name">
+        <div class="w-full h-50 rounded-xl overflow-hidden mb-6">
+          <img :src="selectedIngredient.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=300'" :alt="selectedIngredient.name" class="w-full h-full object-cover">
         </div>
 
-        <div class="ingredient-form">
-          <div class="form-group">
-            <label>Categoría</label>
-            <select v-model="newIngredientData.category" class="form-select">
+        <div class="flex flex-col gap-5 mb-8">
+          <div>
+            <label class="block font-medium mb-2" style="color: var(--foreground);">Categoría</label>
+            <select v-model="newIngredientData.category" 
+              class="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200"
+              style="border-color: var(--border); background-color: var(--input-background); color: var(--foreground);">
               <option value="verduras">Verduras</option>
               <option value="frutas">Frutas</option>
               <option value="proteínas">Proteínas</option>
@@ -542,11 +624,13 @@
             </select>
           </div>
 
-          <div class="form-group">
-            <label>Cantidad</label>
-            <div class="quantity-input-group">
-              <input type="number" v-model="newIngredientData.quantity" min="1" class="form-input">
-              <select v-model="newIngredientData.unit" class="form-select">
+          <div>
+            <label class="block font-medium mb-2" style="color: var(--foreground);">Cantidad</label>
+            <div class="flex gap-2">
+              <input type="number" v-model="newIngredientData.quantity" min="1" 
+                class="flex-1 p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200"
+                style="border-color: var(--border); background-color: var(--input-background); color: var(--foreground);">
+              <select v-model="newIngredientData.unit" class="w-30 p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200" style="border-color: var(--border); background-color: var(--input-background); color: var(--foreground);">
                 <option value="unidades">Unidades</option>
                 <option value="gramos">Gramos</option>
                 <option value="kg">Kilogramos</option>
@@ -558,25 +642,33 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label>Días hasta vencer (opcional)</label>
-            <div class="expiry-input">
-              <input type="number" v-model="newIngredientData.expiryDays" min="1" class="form-input"
-                placeholder="Ej: 7">
-              <span class="expiry-label">días</span>
+          <div>
+            <label class="block font-medium mb-2" style="color: var(--foreground);">Días hasta vencer (opcional)</label>
+            <div class="relative">
+              <input type="number" v-model="newIngredientData.expiryDays" min="1" placeholder="Ej: 7" 
+                class="w-full p-3 pr-16 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200"
+                style="border-color: var(--border); background-color: var(--input-background); color: var(--foreground);">
+              <span class="absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--muted-foreground);">días</span>
             </div>
           </div>
 
-          <div class="form-group">
-            <label>Notas adicionales (opcional)</label>
-            <textarea v-model="newIngredientData.notes" class="form-textarea"
-              placeholder="Ej: Tomates orgánicos, maduros"></textarea>
+          <div>
+            <label class="block font-medium mb-2" style="color: var(--foreground);">Notas adicionales (opcional)</label>
+            <textarea v-model="newIngredientData.notes" rows="3" placeholder="Ej: Tomates orgánicos, maduros" 
+              class="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200 resize-none"
+              style="border-color: var(--border); background-color: var(--input-background); color: var(--foreground);"></textarea>
           </div>
         </div>
 
-        <div class="modal-actions">
-          <button class="modal-btn cancel-btn" @click="closeIngredientDetailsModal">Cancelar</button>
-          <button class="modal-btn confirm-btn" @click="addIngredientToPantry">
+        <div class="flex gap-4 justify-end">
+          <button @click="closeIngredientDetailsModal" 
+            class="px-6 py-3 rounded-xl border transition-colors duration-200 font-medium"
+            style="border-color: var(--border); background-color: transparent; color: var(--foreground);">
+            Cancelar
+          </button>
+          <button @click="addIngredientToPantry" 
+            class="px-6 py-3 rounded-xl text-white font-medium transition-colors duration-200"
+            style="background-color: var(--primary);">
             Agregar a Despensa
           </button>
         </div>
@@ -584,58 +676,59 @@
     </div>
 
     <!-- Weather Recipe Modal -->
-    <div v-if="showWeatherRecipeModal" class="modal-overlay" @click="closeWeatherRecipeModal">
-      <div class="modal-content weather-recipe-modal" @click.stop>
-        <button class="modal-close" @click="closeWeatherRecipeModal">
-          <span class="iconify" data-icon="mdi:close"></span>
+    <div v-if="showWeatherRecipeModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-4 animate-fade-in" @click="closeWeatherRecipeModal">
+      <div class="rounded-2xl max-w-150 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in p-8" @click.stop style="background-color: var(--card);">
+        <button @click="closeWeatherRecipeModal" 
+          class="absolute top-4 right-4 w-10 h-10 rounded-xl border transition-all duration-200 flex items-center justify-center"
+          style="background-color: var(--background); border-color: var(--border);">
+          <span class="iconify w-5 h-5" data-icon="mdi:close" style="color: var(--foreground);"></span>
         </button>
 
-        <div class="weather-recipe-header">
-          <div class="weather-icon-container-large">
-            <span class="iconify weather-icon-large" data-icon="mdi:weather-partly-cloudy"></span>
+        <div class="flex items-center gap-4 mb-6">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);">
+            <span class="iconify w-10 h-10 text-white" data-icon="mdi:weather-partly-cloudy"></span>
           </div>
           <div>
-            <h2 class="weather-recipe-title">Receta Sugerida por el Clima</h2>
-            <p class="weather-recipe-subtitle">{{ weatherSuggestion ? `${weatherSuggestion.temperature}°C -
-              ${weatherSuggestion.condition}` : '18°C - Parcialmente nublado' }}</p>
+            <h2 class="text-2xl font-semibold" style="color: var(--foreground);">Receta Sugerida por el Clima</h2>
+            <p style="color: var(--muted-foreground);">{{ weatherSuggestion ? `${weatherSuggestion.temperature}°C - ${weatherSuggestion.condition}` : '18°C - Parcialmente nublado' }}</p>
           </div>
         </div>
 
-        <div class="weather-recipe-content">
-          <div class="weather-recipe-image">
-            <img
-              :src="weatherSuggestion?.recipe?.image_url || 'https://images.unsplash.com/photo-1643786661490-966f1877effa?crop=entropy&cs=tinysrgb&fit=crop&w=800&h=300'"
-              alt="Receta sugerida">
-            <div class="weather-recipe-badge">🌤️ Perfecta para días frescos</div>
+        <div class="rounded-xl overflow-hidden mb-8" style="background-color: var(--muted);">
+          <div class="relative h-50">
+            <img :src="weatherSuggestion?.recipe?.image_url || 'https://images.unsplash.com/photo-1643786661490-966f1877effa?crop=entropy&cs=tinysrgb&fit=crop&w=800&h=300'" alt="Receta sugerida" class="w-full h-full object-cover">
+            <span class="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm font-medium text-sm" style="color: var(--primary);">🌤️ Perfecta para días frescos</span>
           </div>
-
-          <div class="weather-recipe-info">
-            <h3>{{ weatherSuggestion?.recipe?.title || 'Sopa de Verduras Nutritiva' }}</h3>
-            <p class="weather-recipe-desc">{{ weatherSuggestion?.suggestionText || 'Esta receta caliente y reconfortante es ideal para el clima fresco de hoy.Las verduras de temporada y el caldo casero te mantendrán abrigado.'
-              }}</p>
-
-            <div class="weather-recipe-stats">
-              <div class="stat-box">
-                <span class="iconify" data-icon="mdi:clock-outline"></span>
-                <span class="stat-value">35 min</span>
+          <div class="p-6">
+            <h3 class="text-xl font-semibold mb-3" style="color: var(--foreground);">{{ weatherSuggestion?.recipe?.title || 'Sopa de Verduras Nutritiva' }}</h3>
+            <p class="mb-6 leading-relaxed" style="color: var(--muted-foreground);">{{ weatherSuggestion?.suggestionText || 'Esta receta caliente y reconfortante es ideal para el clima fresco de hoy. Las verduras de temporada y el caldo casero te mantendrán abrigado.' }}</p>
+            <div class="grid grid-cols-3 gap-4 p-4 rounded-xl border" style="border-color: var(--border); background-color: var(--card);">
+              <div class="text-center">
+                <span class="iconify w-6 h-6 mx-auto mb-2" data-icon="mdi:clock-outline" style="color: var(--primary);"></span>
+                <span class="block font-semibold" style="color: var(--foreground);">35 min</span>
               </div>
-              <div class="stat-box">
-                <span class="iconify" data-icon="mdi:account-group-outline"></span>
-                <span class="stat-value">6 porciones</span>
+              <div class="text-center">
+                <span class="iconify w-6 h-6 mx-auto mb-2" data-icon="mdi:account-group-outline" style="color: var(--primary);"></span>
+                <span class="block font-semibold" style="color: var(--foreground);">6 porciones</span>
               </div>
-              <div class="stat-box">
-                <span class="iconify" data-icon="mdi:fire"></span>
-                <span class="stat-value">210 kcal</span>
+              <div class="text-center">
+                <span class="iconify w-6 h-6 mx-auto mb-2" data-icon="mdi:fire" style="color: var(--primary);"></span>
+                <span class="block font-semibold" style="color: var(--foreground);">210 kcal</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="modal-actions">
-          <button class="modal-btn cancel-btn" @click="closeWeatherRecipeModal">Cancelar</button>
-          <button class="modal-btn cook-btn"
-            @click="openRecipeModal(weatherSuggestion?.recipe?.id || 'aaaaaaaa-0000-0000-0000-000000000005')">
-            <span class="iconify" data-icon="mdi:chef-hat"></span>
+        <div class="flex gap-4 justify-end">
+          <button @click="closeWeatherRecipeModal" 
+            class="px-6 py-3 rounded-xl border transition-colors duration-200 font-medium"
+            style="border-color: var(--border); background-color: transparent; color: var(--foreground);">
+            Cancelar
+          </button>
+          <button @click="openRecipeModal(weatherSuggestion?.recipe?.id || 'aaaaaaaa-0000-0000-0000-000000000005')" 
+            class="px-6 py-3 rounded-xl text-white font-medium transition-colors duration-200 flex items-center gap-2"
+            style="background-color: var(--primary);">
+            <span class="iconify w-5 h-5" data-icon="mdi:chef-hat"></span>
             Ver Receta Completa
           </button>
         </div>
@@ -644,14 +737,58 @@
   </div>
 </template>
 
+<style>
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease;
+}
+</style>
+
 <script>
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/supabase'
 import { useAuthStore } from '@/stores/auth'
 import Sidebar from '../components/layout/Sidebar.vue'
 import Header from '../components/layout/Header.vue'
-import { onUnmounted, onBeforeUnmount } from 'vue'
 
 export default {
   name: 'InicioView',
@@ -727,13 +864,8 @@ export default {
       recipeModal: false
     })
 
-
-
-    // Al inicio del setup() de HomeView.vue
-
     onBeforeUnmount(() => {
       console.log('HomeView se desmontará')
-      // Limpiar modales
       showRecipeModal.value = false
       showToast.value = false
     })
@@ -741,7 +873,6 @@ export default {
     onUnmounted(() => {
       console.log('HomeView desmontado')
     })
-
 
     // ============================================
     // TOAST NOTIFICATION SYSTEM
@@ -778,272 +909,217 @@ export default {
         showToast.value = false
       }, 3000)
     }
+
     // ============================================
-    // DATABASE FUNCTIONS - CORREGIDAS
+    // DATABASE FUNCTIONS
     // ============================================
 
-    // 1. Load today's meals from database - VERSIÓN CORREGIDA
-// REEMPLAZA LA FUNCIÓN loadTodayMeals EN EL SCRIPT CON ESTA VERSIÓN CORREGIDA:
+    const loadTodayMeals = async () => {
+      try {
+        loadingStates.meals = true
+        const today = new Date()
+        const formattedToday = today.toISOString().split('T')[0]
+        const dayOfWeek = (today.getDay() + 6) % 7
+        const weekStart = new Date(today)
+        const dayDiff = today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)
+        weekStart.setDate(dayDiff)
+        const formattedWeekStart = weekStart.toISOString().split('T')[0]
 
-// 1. Load today's meals from database - VERSIÓN ROBUSTA
-const loadTodayMeals = async () => {
-  try {
-    loadingStates.meals = true
+        let plannerId = null
+        const { data: existingPlanner, error: plannerError } = await supabase
+          .from('weekly_planner')
+          .select('id')
+          .eq('user_id', authStore.user.id)
+          .eq('week_start', formattedWeekStart)
+          .maybeSingle()
 
-    console.log('📅 Cargando comidas del día...')
+        if (plannerError) {
+          console.error('Error buscando planificador:', plannerError)
+        }
 
-    // Obtener la fecha actual
-    const today = new Date()
-    const formattedToday = today.toISOString().split('T')[0]
-
-    // Obtener día de la semana ajustado (0=lunes, 1=martes, ..., 6=domingo)
-    const dayOfWeek = (today.getDay() + 6) % 7 // Convertir: domingo(0)->6, lunes(1)->0
-
-    console.log(`📅 Fecha actual: ${formattedToday}, Día de semana: ${dayOfWeek}`)
-
-    // Obtener inicio de semana (lunes)
-    const weekStart = new Date(today)
-    const dayDiff = today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)
-    weekStart.setDate(dayDiff)
-    const formattedWeekStart = weekStart.toISOString().split('T')[0]
-
-    console.log(`📅 Semana actual comienza: ${formattedWeekStart}`)
-
-    // Buscar o crear planificador semanal
-    let plannerId = null
-
-    // Primero, buscar planificador existente
-    const { data: existingPlanner, error: plannerError } = await supabase
-      .from('weekly_planner')
-      .select('id')
-      .eq('user_id', authStore.user.id)
-      .eq('week_start', formattedWeekStart)
-      .maybeSingle()
-
-    if (plannerError) {
-      console.error('Error buscando planificador:', plannerError)
-    }
-
-    if (existingPlanner) {
-      plannerId = existingPlanner.id
-      console.log('✅ Planificador existente encontrado:', plannerId)
-    } else {
-      console.log('📝 Creando nuevo planificador...')
-      
-      // Crear planificador directamente
-      const weekEnd = new Date(weekStart)
-      weekEnd.setDate(weekStart.getDate() + 6)
-
-      const { data: newPlanner, error: createError } = await supabase
-        .from('weekly_planner')
-        .insert({
-          user_id: authStore.user.id,
-          week_start: formattedWeekStart,
-          week_end: weekEnd.toISOString().split('T')[0],
-          preferences: { dietary: [] }
-        })
-        .select()
-        .single()
-
-      if (createError) {
-        console.error('Error creando planificador:', createError)
-        
-        // Intentar método alternativo
-        try {
-          const { data: altPlanner, error: altError } = await supabase
-            .rpc('create_weekly_planner', {
-              p_user_id: authStore.user.id,
-              p_week_start: formattedWeekStart
+        if (existingPlanner) {
+          plannerId = existingPlanner.id
+        } else {
+          const weekEnd = new Date(weekStart)
+          weekEnd.setDate(weekStart.getDate() + 6)
+          const { data: newPlanner, error: createError } = await supabase
+            .from('weekly_planner')
+            .insert({
+              user_id: authStore.user.id,
+              week_start: formattedWeekStart,
+              week_end: weekEnd.toISOString().split('T')[0],
+              preferences: { dietary: [] }
             })
+            .select()
+            .single()
 
-          if (altError) throw altError
-          plannerId = altPlanner
-        } catch (rpcError) {
-          console.error('Error RPC:', rpcError)
-          
-          // Crear comidas por defecto directamente
-          console.log('⚠️ Usando comidas por defecto sin planificador')
-          todayMeals.value = getDefaultMeals()
-          return
+          if (createError) {
+            console.error('Error creando planificador:', createError)
+            try {
+              const { data: altPlanner, error: altError } = await supabase
+                .rpc('create_weekly_planner', {
+                  p_user_id: authStore.user.id,
+                  p_week_start: formattedWeekStart
+                })
+              if (altError) throw altError
+              plannerId = altPlanner
+            } catch (rpcError) {
+              console.error('Error RPC:', rpcError)
+              todayMeals.value = getDefaultMeals()
+              return
+            }
+          } else {
+            plannerId = newPlanner.id
+          }
         }
-      } else {
-        plannerId = newPlanner.id
-        console.log('✅ Nuevo planificador creado:', plannerId)
-      }
-    }
 
-    // Obtener comidas planificadas para hoy
-    const { data: plannedMeals, error: mealsError } = await supabase
-      .from('planned_meals')
-      .select(`
-        id,
-        meal_type,
-        day_of_week,
-        recipe:recipes (
-          id,
-          title,
-          description,
-          total_time,
-          servings,
-          image_url,
-          calories_per_serving
-        )
-      `)
-      .eq('planner_id', plannerId)
-      .eq('day_of_week', dayOfWeek)
-
-    if (mealsError) {
-      console.error('Error obteniendo comidas planificadas:', mealsError)
-    }
-
-    console.log(`🔍 Comidas encontradas para hoy: ${plannedMeals?.length || 0}`)
-
-    if (plannedMeals && plannedMeals.length > 0) {
-      // Mapear comidas encontradas
-      todayMeals.value = plannedMeals.map(meal => {
-        const recipe = meal.recipe || {}
-        return {
-          id: meal.id,
-          type: meal.meal_type,
-          title: recipe.title || getDefaultMealTitle(meal.meal_type),
-          description: recipe.description || '',
-          time: `${recipe.total_time || 30} min`,
-          servings: `${recipe.servings || 2} porciones`,
-          image: recipe.image_url || getDefaultMealImage(meal.meal_type),
-          calories: recipe.calories_per_serving,
-          recipeId: recipe.id || getDefaultRecipeId(meal.meal_type)
-        }
-      })
-
-      console.log('✅ Comidas cargadas exitosamente:', todayMeals.value.map(m => m.type))
-    } else {
-      // No hay comidas planificadas para hoy, crear por defecto
-      console.log('⚠️ No hay comidas planificadas, creando por defecto...')
-      const defaultMeals = getDefaultMeals()
-      
-      // Insertar comidas por defecto en la base de datos
-      for (const meal of defaultMeals) {
-        const { error: insertError } = await supabase
+        const { data: plannedMeals, error: mealsError } = await supabase
           .from('planned_meals')
-          .insert({
-            planner_id: plannerId,
-            day_of_week: dayOfWeek,
-            meal_type: meal.type,
-            recipe_id: meal.recipeId
-          })
-          .select()
-          .single()
+          .select(`
+            id,
+            meal_type,
+            day_of_week,
+            recipe:recipes (
+              id,
+              title,
+              description,
+              total_time,
+              servings,
+              image_url,
+              calories_per_serving
+            )
+          `)
+          .eq('planner_id', plannerId)
+          .eq('day_of_week', dayOfWeek)
 
-        if (insertError) {
-          console.error(`Error insertando ${meal.type}:`, insertError)
+        if (mealsError) {
+          console.error('Error obteniendo comidas planificadas:', mealsError)
         }
-      }
 
-      todayMeals.value = defaultMeals
-      console.log('✅ Comidas por defecto creadas')
+        if (plannedMeals && plannedMeals.length > 0) {
+          todayMeals.value = plannedMeals.map(meal => {
+            const recipe = meal.recipe || {}
+            return {
+              id: meal.id,
+              type: meal.meal_type,
+              title: recipe.title || getDefaultMealTitle(meal.meal_type),
+              description: recipe.description || '',
+              time: `${recipe.total_time || 30} min`,
+              servings: `${recipe.servings || 2} porciones`,
+              image: recipe.image_url || getDefaultMealImage(meal.meal_type),
+              calories: recipe.calories_per_serving,
+              recipeId: recipe.id || getDefaultRecipeId(meal.meal_type)
+            }
+          })
+        } else {
+          const defaultMeals = getDefaultMeals()
+          for (const meal of defaultMeals) {
+            const { error: insertError } = await supabase
+              .from('planned_meals')
+              .insert({
+                planner_id: plannerId,
+                day_of_week: dayOfWeek,
+                meal_type: meal.type,
+                recipe_id: meal.recipeId
+              })
+              .select()
+              .single()
+            if (insertError) {
+              console.error(`Error insertando ${meal.type}:`, insertError)
+            }
+          }
+          todayMeals.value = defaultMeals
+        }
+        ensureAllMealsPresent()
+      } catch (error) {
+        console.error('Error cargando comidas del día:', error)
+        showNotification('error', 'Error', 'No se pudieron cargar las comidas del día')
+        todayMeals.value = getDefaultMeals()
+      } finally {
+        loadingStates.meals = false
+      }
     }
 
-    // Asegurar que tenemos las 3 comidas del día
-    ensureAllMealsPresent()
-
-  } catch (error) {
-    console.error('❌ Error cargando comidas del día:', error)
-    showNotification('error', 'Error', 'No se pudieron cargar las comidas del día')
-    
-    // Usar datos por defecto
-    todayMeals.value = getDefaultMeals()
-  } finally {
-    loadingStates.meals = false
-  }
-}
-
-// Función auxiliar para asegurar que haya 3 comidas
-const ensureAllMealsPresent = () => {
-  const requiredMeals = ['desayuno', 'almuerzo', 'cena']
-  const existingTypes = todayMeals.value.map(m => m.type)
-  
-  requiredMeals.forEach(mealType => {
-    if (!existingTypes.includes(mealType)) {
-      console.log(`➕ Agregando comida faltante: ${mealType}`)
-      todayMeals.value.push({
-        id: `temp_${mealType}`,
-        type: mealType,
-        title: getDefaultMealTitle(mealType),
-        time: '30 min',
-        servings: '2 porciones',
-        image: getDefaultMealImage(mealType),
-        recipeId: getDefaultRecipeId(mealType)
+    const ensureAllMealsPresent = () => {
+      const requiredMeals = ['desayuno', 'almuerzo', 'cena']
+      const existingTypes = todayMeals.value.map(m => m.type)
+      requiredMeals.forEach(mealType => {
+        if (!existingTypes.includes(mealType)) {
+          todayMeals.value.push({
+            id: `temp_${mealType}`,
+            type: mealType,
+            title: getDefaultMealTitle(mealType),
+            time: '30 min',
+            servings: '2 porciones',
+            image: getDefaultMealImage(mealType),
+            recipeId: getDefaultRecipeId(mealType)
+          })
+        }
       })
     }
-  })
-}
 
-// Funciones auxiliares para obtener valores por defecto
-const getDefaultMealTitle = (mealType) => {
-  const titles = {
-    'desayuno': 'Bowl de Avena con Frutas',
-    'almuerzo': 'Ensalada de Pollo a la Parrilla',
-    'cena': 'Pasta Primavera'
-  }
-  return titles[mealType] || 'Receta del día'
-}
-
-const getDefaultMealImage = (mealType) => {
-  const images = {
-    'desayuno': 'https://images.unsplash.com/photo-1592503469196-3a7880cc2d05?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
-    'almuerzo': 'https://images.unsplash.com/photo-1604909052743-94e838986d24?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
-    'cena': 'https://images.unsplash.com/photo-1704915912471-070dd75619c9?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
-  }
-  return images[mealType] || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
-}
-
-const getDefaultRecipeId = (mealType) => {
-  const ids = {
-    'desayuno': 'aaaaaaaa-0000-0000-0000-000000000001',
-    'almuerzo': 'aaaaaaaa-0000-0000-0000-000000000002',
-    'cena': 'aaaaaaaa-0000-0000-0000-000000000003'
-  }
-  return ids[mealType] || 'aaaaaaaa-0000-0000-0000-000000000001'
-}
-
-// Mantén la función getDefaultMeals como está
-const getDefaultMeals = () => {
-  return [
-    {
-      id: '1',
-      type: 'desayuno',
-      title: 'Bowl de Avena con Frutas',
-      time: '15 min',
-      servings: '2 porciones',
-      image: 'https://images.unsplash.com/photo-1592503469196-3a7880cc2d05?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
-      recipeId: 'aaaaaaaa-0000-0000-0000-000000000001'
-    },
-    {
-      id: '2',
-      type: 'almuerzo',
-      title: 'Ensalada de Pollo a la Parrilla',
-      time: '30 min',
-      servings: '4 porciones',
-      image: 'https://images.unsplash.com/photo-1604909052743-94e838986d24?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
-      recipeId: 'aaaaaaaa-0000-0000-0000-000000000002'
-    },
-    {
-      id: '3',
-      type: 'cena',
-      title: 'Pasta Primavera',
-      time: '25 min',
-      servings: '4 porciones',
-      image: 'https://images.unsplash.com/photo-1704915912471-070dd75619c9?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
-      recipeId: 'aaaaaaaa-0000-0000-0000-000000000003'
+    const getDefaultMealTitle = (mealType) => {
+      const titles = {
+        'desayuno': 'Bowl de Avena con Frutas',
+        'almuerzo': 'Ensalada de Pollo a la Parrilla',
+        'cena': 'Pasta Primavera'
+      }
+      return titles[mealType] || 'Receta del día'
     }
-  ]
-}
 
-    // 2. Load pantry items
+    const getDefaultMealImage = (mealType) => {
+      const images = {
+        'desayuno': 'https://images.unsplash.com/photo-1592503469196-3a7880cc2d05?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
+        'almuerzo': 'https://images.unsplash.com/photo-1604909052743-94e838986d24?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
+        'cena': 'https://images.unsplash.com/photo-1704915912471-070dd75619c9?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
+      }
+      return images[mealType] || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
+    }
+
+    const getDefaultRecipeId = (mealType) => {
+      const ids = {
+        'desayuno': 'aaaaaaaa-0000-0000-0000-000000000001',
+        'almuerzo': 'aaaaaaaa-0000-0000-0000-000000000002',
+        'cena': 'aaaaaaaa-0000-0000-0000-000000000003'
+      }
+      return ids[mealType] || 'aaaaaaaa-0000-0000-0000-000000000001'
+    }
+
+    const getDefaultMeals = () => {
+      return [
+        {
+          id: '1',
+          type: 'desayuno',
+          title: 'Bowl de Avena con Frutas',
+          time: '15 min',
+          servings: '2 porciones',
+          image: 'https://images.unsplash.com/photo-1592503469196-3a7880cc2d05?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
+          recipeId: 'aaaaaaaa-0000-0000-0000-000000000001'
+        },
+        {
+          id: '2',
+          type: 'almuerzo',
+          title: 'Ensalada de Pollo a la Parrilla',
+          time: '30 min',
+          servings: '4 porciones',
+          image: 'https://images.unsplash.com/photo-1604909052743-94e838986d24?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
+          recipeId: 'aaaaaaaa-0000-0000-0000-000000000002'
+        },
+        {
+          id: '3',
+          type: 'cena',
+          title: 'Pasta Primavera',
+          time: '25 min',
+          servings: '4 porciones',
+          image: 'https://images.unsplash.com/photo-1704915912471-070dd75619c9?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200',
+          recipeId: 'aaaaaaaa-0000-0000-0000-000000000003'
+        }
+      ]
+    }
+
     const loadPantryItems = async () => {
       try {
         loadingStates.pantry = true
-
         const { data, error } = await supabase
           .from('user_pantry')
           .select(`
@@ -1075,7 +1151,6 @@ const getDefaultMeals = () => {
 
           if (expiryDate) {
             daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24))
-
             if (daysUntilExpiry <= 0) expiryBadge = 'expired'
             else if (daysUntilExpiry <= 2) expiryBadge = 'danger'
             else if (daysUntilExpiry <= 5) expiryBadge = 'warning'
@@ -1095,9 +1170,8 @@ const getDefaultMeals = () => {
             daysUntilExpiry
           }
         })
-
       } catch (error) {
-        console.error('❌ Error cargando despensa:', error)
+        console.error('Error cargando despensa:', error)
         showNotification('error', 'Error', 'No se pudo cargar la despensa')
         pantryItems.value = []
       } finally {
@@ -1105,12 +1179,9 @@ const getDefaultMeals = () => {
       }
     }
 
-    // 3. Load recommended recipes
     const loadRecommendedRecipes = async () => {
       try {
         loadingStates.recipes = true
-
-        // Primero intentar con la vista
         try {
           const { data, error } = await supabase
             .from('available_recipes_view')
@@ -1121,7 +1192,6 @@ const getDefaultMeals = () => {
 
           if (!error && data && data.length > 0) {
             const recipeIds = data.map(r => r.recipe_id)
-
             const { data: recipesData, error: recipesError } = await supabase
               .from('recipes')
               .select('*')
@@ -1147,7 +1217,6 @@ const getDefaultMeals = () => {
           console.log('Vista no disponible, usando recetas por defecto')
         }
 
-        // Si falla la vista, usar recetas por defecto
         const { data: defaultRecipes, error: defaultError } = await supabase
           .from('recipes')
           .select('*')
@@ -1166,21 +1235,17 @@ const getDefaultMeals = () => {
             badge: 'Popular'
           }))
         }
-
       } catch (error) {
-        console.error('❌ Error cargando recetas recomendadas:', error)
+        console.error('Error cargando recetas recomendadas:', error)
         recommendedRecipes.value = []
       } finally {
         loadingStates.recipes = false
       }
     }
 
-    // 4. Load weather suggestion
     const loadWeatherSuggestion = async () => {
       try {
         loadingStates.weather = true
-
-        // Verificar sugerencia reciente (últimas 24 horas)
         const twentyFourHoursAgo = new Date()
         twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24)
 
@@ -1212,7 +1277,6 @@ const getDefaultMeals = () => {
           return
         }
 
-        // Si no hay sugerencia reciente, usar datos por defecto
         const { data: soupRecipe, error: recipeError } = await supabase
           .from('recipes')
           .select('*')
@@ -1237,9 +1301,8 @@ const getDefaultMeals = () => {
             }
           }
         }
-
       } catch (error) {
-        console.error('❌ Error cargando sugerencia de clima:', error)
+        console.error('Error cargando sugerencia de clima:', error)
         weatherSuggestion.value = {
           temperature: 18,
           condition: 'Parcialmente nublado',
@@ -1254,11 +1317,9 @@ const getDefaultMeals = () => {
       }
     }
 
-    // 5. Load notifications
     const loadNotifications = async () => {
       try {
         loadingStates.notifications = true
-
         const { data, error } = await supabase
           .from('notifications')
           .select('*')
@@ -1269,29 +1330,10 @@ const getDefaultMeals = () => {
 
         if (error) {
           console.error('Error al cargar notificaciones:', error)
-          // Usar notificaciones por defecto
           notifications.value = [
-            {
-              id: 1,
-              type: 'alert',
-              icon: 'mdi:alert-circle-outline',
-              text: 'El pollo caduca en 2 días',
-              time: 'Hace 1 hora'
-            },
-            {
-              id: 2,
-              type: 'recipe',
-              icon: 'mdi:food',
-              text: 'Nueva receta sugerida para ti',
-              time: 'Hace 3 horas'
-            },
-            {
-              id: 3,
-              type: 'shopping',
-              icon: 'mdi:cart',
-              text: 'La leche se está agotando',
-              time: 'Hace 5 horas'
-            }
+            { id: 1, type: 'alert', icon: 'mdi:alert-circle-outline', text: 'El pollo caduca en 2 días', time: 'Hace 1 hora' },
+            { id: 2, type: 'recipe', icon: 'mdi:food', text: 'Nueva receta sugerida para ti', time: 'Hace 3 horas' },
+            { id: 3, type: 'shopping', icon: 'mdi:cart', text: 'La leche se está agotando', time: 'Hace 5 horas' }
           ]
           return
         }
@@ -1307,27 +1349,13 @@ const getDefaultMeals = () => {
             relatedType: notif.related_type
           }))
         } else {
-          // Si no hay notificaciones en la base de datos, mostrar por defecto
           notifications.value = [
-            {
-              id: 1,
-              type: 'alert',
-              icon: 'mdi:alert-circle-outline',
-              text: 'Bienvenido a Esencia Casera!',
-              time: 'Recién'
-            },
-            {
-              id: 2,
-              type: 'recipe',
-              icon: 'mdi:food',
-              text: 'Agrega ingredientes a tu despensa para recibir recomendaciones',
-              time: 'Recién'
-            }
+            { id: 1, type: 'alert', icon: 'mdi:alert-circle-outline', text: 'Bienvenido a Esencia Casera!', time: 'Recién' },
+            { id: 2, type: 'recipe', icon: 'mdi:food', text: 'Agrega ingredientes a tu despensa para recibir recomendaciones', time: 'Recién' }
           ]
         }
-
       } catch (error) {
-        console.error('❌ Error cargando notificaciones:', error)
+        console.error('Error cargando notificaciones:', error)
         showNotification('error', 'Error', 'No se pudieron cargar las notificaciones')
         notifications.value = []
       } finally {
@@ -1335,25 +1363,20 @@ const getDefaultMeals = () => {
       }
     }
 
-    // 6. Load all ingredients for search
     const loadAllIngredients = async () => {
       try {
         const { data, error } = await supabase
           .from('ingredients')
           .select('id, name, category, image_url')
           .order('name')
-
         if (error) throw error
-
         allIngredients.value = data
-
       } catch (error) {
-        console.error('❌ Error cargando ingredientes:', error)
+        console.error('Error cargando ingredientes:', error)
         allIngredients.value = []
       }
     }
 
-    // 7. Load all meals for change modal
     const loadAllMeals = async () => {
       try {
         const { data, error } = await supabase
@@ -1361,9 +1384,7 @@ const getDefaultMeals = () => {
           .select('id, title, category, total_time, servings, image_url')
           .eq('is_public', true)
           .order('title')
-
         if (error) throw error
-
         allMeals.value = data.map(meal => ({
           id: meal.id,
           type: meal.category,
@@ -1372,9 +1393,8 @@ const getDefaultMeals = () => {
           servings: `${meal.servings} porciones`,
           image: meal.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=120'
         }))
-
       } catch (error) {
-        console.error('❌ Error cargando todas las comidas:', error)
+        console.error('Error cargando todas las comidas:', error)
         allMeals.value = []
       }
     }
@@ -1405,7 +1425,6 @@ const getDefaultMeals = () => {
       if (diffMins < 60) return `Hace ${diffMins} minuto${diffMins !== 1 ? 's' : ''}`
       if (diffHours < 24) return `Hace ${diffHours} hora${diffHours !== 1 ? 's' : ''}`
       if (diffDays < 7) return `Hace ${diffDays} día${diffDays !== 1 ? 's' : ''}`
-
       return date.toLocaleDateString('es-ES')
     }
 
@@ -1421,21 +1440,30 @@ const getDefaultMeals = () => {
       return typeMap[type] || type
     }
 
+    const getMealEmoji = (mealType) => {
+      const emojis = {
+        'desayuno': '🌅',
+        'almuerzo': '🍽️',
+        'cena': '🌙',
+        'breakfast': '🌅',
+        'lunch': '🍽️',
+        'dinner': '🌙'
+      }
+      return emojis[mealType] || '🍴'
+    }
+
     // ============================================
     // COMPUTED PROPERTIES
     // ============================================
 
     const filteredMeals = computed(() => {
       if (!currentMealType.value) return []
-
       const typeMap = {
         'breakfast': 'desayuno',
         'lunch': 'almuerzo',
         'dinner': 'cena'
       }
-
       const targetType = typeMap[currentMealType.value] || currentMealType.value
-
       return allMeals.value.filter(meal => meal.type === targetType)
     })
 
@@ -1447,24 +1475,17 @@ const getDefaultMeals = () => {
     })
 
     // ============================================
-    // MODAL FUNCTIONS - CORREGIDAS
+    // MODAL FUNCTIONS
     // ============================================
 
-    // Recipe Modal
     const openRecipeModal = async (recipeId) => {
       try {
         loadingStates.recipeModal = true
-
-        console.log('🔍 Cargando receta ID:', recipeId)
-
         if (!recipeId || typeof recipeId !== 'string') {
-          console.error('ID de receta inválido:', recipeId)
           showNotification('error', 'Error', 'ID de receta inválido')
           return
         }
 
-        // 1. Cargar la receta básica
-        console.log('📋 1. Cargando datos básicos de la receta...')
         const { data: recipeData, error: recipeError } = await supabase
           .from('recipes')
           .select('*')
@@ -1472,69 +1493,32 @@ const getDefaultMeals = () => {
           .single()
 
         if (recipeError) {
-          console.error('❌ Error al cargar receta:', recipeError)
           currentRecipe.value = getDefaultRecipe()
           isFavorite.value = false
         } else {
-          console.log('✅ Receta cargada:', recipeData.title)
-          console.log('📊 Datos de receta:', {
-            total_time: recipeData.total_time,
-            servings: recipeData.servings,
-            calories: recipeData.calories_per_serving,
-            tags: recipeData.tags,
-            rating: recipeData.rating
-          })
-
-          // 2. Cargar los ingredientes
-          console.log('📋 2. Cargando ingredientes...')
           let ingredientsList = []
           try {
             const { data: ingredientsData, error: ingredientsError } = await supabase
               .from('recipe_ingredients')
               .select(`
-            quantity,
-            unit,
-            ingredient:ingredients (
-              name
-            )
-          `)
+                quantity,
+                unit,
+                ingredient:ingredients (name)
+              `)
               .eq('recipe_id', recipeId)
 
-            console.log('📊 Resultado de consulta de ingredientes:', {
-              tieneError: !!ingredientsError,
-              error: ingredientsError,
-              cantidadDatos: ingredientsData?.length || 0,
-              datos: ingredientsData
-            })
-
             if (!ingredientsError && ingredientsData && ingredientsData.length > 0) {
-              console.log('✅ Ingredientes encontrados:', ingredientsData.length)
               ingredientsList = ingredientsData.map(ri => ({
                 name: ri.ingredient?.name || 'Ingrediente desconocido',
                 quantity: `${ri.quantity} ${ri.unit}`
               }))
             } else {
-              console.warn('⚠️ No se pudieron cargar ingredientes, usando por defecto')
-              // Intentar consulta alternativa sin JOIN para debug
-              const { data: simpleIngredients, error: simpleError } = await supabase
-                .from('recipe_ingredients')
-                .select('quantity, unit, ingredient_id')
-                .eq('recipe_id', recipeId)
-
-              console.log('🔍 Consulta simple de ingredientes:', {
-                simpleError,
-                simpleData: simpleIngredients
-              })
-
               ingredientsList = getDefaultRecipe().ingredients
             }
           } catch (ingredientsError) {
-            console.error('❌ Error cargando ingredientes:', ingredientsError)
             ingredientsList = getDefaultRecipe().ingredients
           }
 
-          // 3. Verificar favoritos
-          console.log('📋 3. Verificando favoritos...')
           try {
             const { data: favoriteData, error: favoriteError } = await supabase
               .from('favorites')
@@ -1542,21 +1526,11 @@ const getDefaultMeals = () => {
               .eq('user_id', authStore.user.id)
               .eq('recipe_id', recipeId)
               .maybeSingle()
-
-            if (favoriteError) {
-              console.warn('⚠️ No se pudo verificar favoritos:', favoriteError.message)
-              isFavorite.value = false
-            } else {
-              isFavorite.value = !!favoriteData
-              console.log('✅ Estado favorito:', isFavorite.value)
-            }
+            isFavorite.value = !!favoriteData
           } catch (favoriteCheckError) {
-            console.warn('⚠️ Error verificando favoritos:', favoriteCheckError)
             isFavorite.value = false
           }
 
-          // 4. Formatear receta para el modal
-          console.log('📋 4. Formateando datos para el modal...')
           currentRecipe.value = {
             id: recipeData.id,
             title: recipeData.title,
@@ -1569,25 +1543,13 @@ const getDefaultMeals = () => {
             ingredients: ingredientsList,
             steps: Array.isArray(recipeData.steps) ? recipeData.steps : []
           }
-
-          console.log('✅ Receta formateada:', {
-            title: currentRecipe.value.title,
-            time: currentRecipe.value.time,
-            servings: currentRecipe.value.servings,
-            calories: currentRecipe.value.calories,
-            ingredientesCount: currentRecipe.value.ingredients.length,
-            ingredientes: currentRecipe.value.ingredients
-          })
         }
 
         currentStep.value = 0
         showRecipeModal.value = true
-        console.log('✅ Modal abierto exitosamente')
-
       } catch (error) {
-        console.error('❌ Error cargando receta:', error)
+        console.error('Error cargando receta:', error)
         showNotification('error', 'Error', 'No se pudo cargar la receta')
-        // Usar receta por defecto
         currentRecipe.value = getDefaultRecipe()
         isFavorite.value = false
         showRecipeModal.value = true
@@ -1654,33 +1616,27 @@ const getDefaultMeals = () => {
         }
 
         if (isFavorite.value) {
-          // Eliminar de favoritos
           const { error } = await supabase
             .from('favorites')
             .delete()
             .eq('user_id', authStore.user.id)
             .eq('recipe_id', currentRecipe.value.id)
-
           if (error) throw error
-
           isFavorite.value = false
           showNotification('success', 'Éxito', 'Receta eliminada de favoritos')
         } else {
-          // Agregar a favoritos
           const { error } = await supabase
             .from('favorites')
             .insert({
               user_id: authStore.user.id,
               recipe_id: currentRecipe.value.id
             })
-
           if (error) throw error
-
           isFavorite.value = true
           showNotification('success', 'Éxito', 'Receta agregada a favoritos')
         }
       } catch (error) {
-        console.error('❌ Error actualizando favoritos:', error)
+        console.error('Error actualizando favoritos:', error)
         showNotification('error', 'Error', 'No se pudo actualizar favoritos')
       }
     }
@@ -1692,7 +1648,6 @@ const getDefaultMeals = () => {
           return
         }
 
-        // Obtener o crear lista de compras activa
         const { data: lists, error: listsError } = await supabase
           .from('shopping_lists')
           .select('id')
@@ -1703,11 +1658,9 @@ const getDefaultMeals = () => {
         if (listsError) throw listsError
 
         let listId = null
-
         if (lists && lists.length > 0) {
           listId = lists[0].id
         } else {
-          // Crear nueva lista de compras
           const { data: newList, error: createError } = await supabase
             .from('shopping_lists')
             .insert({
@@ -1717,12 +1670,10 @@ const getDefaultMeals = () => {
             })
             .select()
             .single()
-
           if (createError) throw createError
           listId = newList.id
         }
 
-        // Obtener ingredientes de la receta
         const { data: ingredients, error: ingredientsError } = await supabase
           .from('recipe_ingredients')
           .select(`
@@ -1735,7 +1686,6 @@ const getDefaultMeals = () => {
 
         if (ingredientsError) throw ingredientsError
 
-        // Agregar cada ingrediente a la lista de compras
         if (ingredients && ingredients.length > 0) {
           const itemsToAdd = ingredients.map(ingredient => ({
             list_id: listId,
@@ -1750,19 +1700,16 @@ const getDefaultMeals = () => {
             .insert(itemsToAdd)
 
           if (insertError) throw insertError
-
           showNotification('success', 'Éxito', 'Ingredientes agregados a la lista de compras')
         } else {
           showNotification('info', 'Información', 'Esta receta no tiene ingredientes registrados')
         }
-
       } catch (error) {
-        console.error('❌ Error agregando a lista de compras:', error)
+        console.error('Error agregando a lista de compras:', error)
         showNotification('error', 'Error', 'No se pudieron agregar los ingredientes')
       }
     }
 
-    // Change Meal Modal
     const openChangeMealModal = (mealType) => {
       currentMealType.value = mealType
       selectedMeal.value = null
@@ -1784,16 +1731,12 @@ const getDefaultMeals = () => {
           return
         }
 
-        // Obtener día de la semana actual
         const today = new Date()
         const dayOfWeek = (today.getDay() + 6) % 7
-
-        // Obtener semana actual (lunes)
         const weekStart = new Date(today)
         weekStart.setDate(today.getDate() - today.getDay() + 1)
         const formattedWeekStart = weekStart.toISOString().split('T')[0]
 
-        // Obtener planificador de esta semana
         const { data: planner, error: plannerError } = await supabase
           .from('weekly_planner')
           .select('id')
@@ -1807,16 +1750,13 @@ const getDefaultMeals = () => {
           return
         }
 
-        // Mapear tipo de comida
         const typeMap = {
           'breakfast': 'desayuno',
           'lunch': 'almuerzo',
           'dinner': 'cena'
         }
-
         const targetType = typeMap[currentMealType.value] || currentMealType.value
 
-        // Actualizar comida planificada usando upsert
         const { error: updateError } = await supabase
           .from('planned_meals')
           .upsert({
@@ -1830,19 +1770,15 @@ const getDefaultMeals = () => {
 
         if (updateError) throw updateError
 
-        // Recargar comidas del día
         await loadTodayMeals()
-
         showNotification('success', 'Éxito', `Comida cambiada a: ${selectedMeal.value.title}`)
         closeChangeMealModal()
-
       } catch (error) {
-        console.error('❌ Error cambiando comida:', error)
+        console.error('Error cambiando comida:', error)
         showNotification('error', 'Error', 'No se pudo cambiar la comida')
       }
     }
 
-    // Generate Menu Modal
     const openGenerateMenuModal = () => {
       showGenerateMenuModal.value = true
       menuPreferences.dietary = []
@@ -1855,19 +1791,12 @@ const getDefaultMeals = () => {
 
     const generateNewMenu = async () => {
       try {
-        // Calcular inicio de la semana actual (lunes de esta semana)
         const today = new Date()
-
-        // Obtener el lunes de esta semana
         const weekStart = new Date(today)
         const dayDiff = today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)
         weekStart.setDate(dayDiff)
-
         const formattedWeekStart = weekStart.toISOString().split('T')[0]
 
-        console.log('📅 Generando menú para la semana comenzando:', formattedWeekStart)
-
-        // Generar menú usando la función RPC para ESTA semana
         const { data: plannerId, error } = await supabase
           .rpc('generate_weekly_menu', {
             p_user_id: authStore.user.id,
@@ -1880,61 +1809,36 @@ const getDefaultMeals = () => {
           throw error
         }
 
-        console.log('✅ Menú generado, planner ID:', plannerId)
-
         if (!plannerId) {
           showNotification('warning', 'Advertencia', 'No se pudo generar el menú')
           return
         }
 
-        // Obtener el día de hoy para mostrar previsualización
         const jsDayOfWeek = today.getDay()
-        const dayOfWeek = (jsDayOfWeek + 6) % 7 // Convertir a nuestro sistema (0=lunes)
+        const dayOfWeek = (jsDayOfWeek + 6) % 7
 
-        // Cargar menú generado para previsualización (solo comidas de hoy)
         const { data: plannedMeals, error: mealsError } = await supabase
           .from('planned_meals')
           .select(`
-        meal_type,
-        recipe:recipes (
-          title,
-          image_url,
-          total_time,
-          servings
-        )
-      `)
+            meal_type,
+            recipe:recipes (
+              title,
+              image_url,
+              total_time,
+              servings
+            )
+          `)
           .eq('planner_id', plannerId)
-          .eq('day_of_week', dayOfWeek) // Solo comidas de hoy
+          .eq('day_of_week', dayOfWeek)
           .order('meal_type')
 
         if (mealsError) {
-          console.error('Error cargando menú:', mealsError)
-          // Usar datos de ejemplo si hay error
           generatedMenu.value = [
-            {
-              type: 'desayuno',
-              title: 'Smoothie Bowl de Frutas Tropicales',
-              time: '10 min',
-              servings: '2 porciones',
-              image: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
-            },
-            {
-              type: 'almuerzo',
-              title: 'Quinoa con Vegetales Salteados',
-              time: '25 min',
-              servings: '4 porciones',
-              image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
-            },
-            {
-              type: 'cena',
-              title: 'Crema de Calabaza',
-              time: '30 min',
-              servings: '4 porciones',
-              image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
-            }
+            { type: 'desayuno', title: 'Smoothie Bowl de Frutas Tropicales', time: '10 min', servings: '2 porciones', image: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200' },
+            { type: 'almuerzo', title: 'Quinoa con Vegetales Salteados', time: '25 min', servings: '4 porciones', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200' },
+            { type: 'cena', title: 'Crema de Calabaza', time: '30 min', servings: '4 porciones', image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200' }
           ]
         } else {
-          // Formatear las comidas generadas para hoy
           generatedMenu.value = plannedMeals.map(meal => ({
             type: meal.meal_type,
             title: meal.recipe?.title || 'Receta no disponible',
@@ -1942,38 +1846,25 @@ const getDefaultMeals = () => {
             servings: `${meal.recipe?.servings || 4} porciones`,
             image: meal.recipe?.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'
           }))
-
-          console.log('✅ Comidas generadas para hoy:', generatedMenu.value)
         }
 
         showNotification('success', 'Éxito', 'Nuevo menú generado según tus preferencias')
-
       } catch (error) {
-        console.error('❌ Error generando menú:', error)
+        console.error('Error generando menú:', error)
         showNotification('error', 'Error', 'No se pudo generar el menú')
       }
     }
 
     const applyGeneratedMenu = async () => {
       try {
-        // Obtener día de la semana actual
         const today = new Date()
         const jsDayOfWeek = today.getDay()
-        const dayOfWeek = (jsDayOfWeek + 6) % 7 // Convertir a nuestro sistema (0=lunes)
-
-        // Obtener semana actual (lunes)
+        const dayOfWeek = (jsDayOfWeek + 6) % 7
         const weekStart = new Date(today)
         const dayDiff = today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)
         weekStart.setDate(dayDiff)
         const formattedWeekStart = weekStart.toISOString().split('T')[0]
 
-        console.log('📅 Aplicando menú para:', {
-          fecha: today.toLocaleDateString(),
-          diaSemana: dayOfWeek,
-          semanaInicio: formattedWeekStart
-        })
-
-        // Obtener planificador de esta semana
         const { data: planner, error: plannerError } = await supabase
           .from('weekly_planner')
           .select('id')
@@ -1982,15 +1873,10 @@ const getDefaultMeals = () => {
           .single()
 
         if (plannerError) {
-          console.error('Error obteniendo planificador:', plannerError)
           showNotification('error', 'Error', 'No se encontró el planificador semanal')
           return
         }
 
-        console.log('✅ Planificador encontrado:', planner.id)
-        console.log('📋 Comidas generadas a aplicar:', generatedMenu.value)
-
-        // Eliminar comidas existentes para hoy
         const { error: deleteError } = await supabase
           .from('planned_meals')
           .delete()
@@ -1998,61 +1884,37 @@ const getDefaultMeals = () => {
           .eq('day_of_week', dayOfWeek)
 
         if (deleteError) {
-          console.error('Error eliminando comidas anteriores:', deleteError)
           showNotification('error', 'Error', 'No se pudieron eliminar las comidas anteriores')
           return
         }
 
-        console.log('🗑️ Comidas anteriores eliminadas para hoy')
+        const mealsToInsert = generatedMenu.value.map(meal => ({
+          planner_id: planner.id,
+          day_of_week: dayOfWeek,
+          meal_type: meal.type,
+          recipe_id: getRecipeIdByTitle(meal.title) || getDefaultRecipeIdForType(meal.type)
+        }))
 
-        // Preparar comidas a insertar
-        const mealsToInsert = generatedMenu.value.map(meal => {
-          // Obtener ID de receta por título (esto debería mejorarse)
-          const recipeId = getRecipeIdByTitle(meal.title) || meal.recipeId
-
-          return {
-            planner_id: planner.id,
-            day_of_week: dayOfWeek,
-            meal_type: meal.type,
-            recipe_id: recipeId || getDefaultRecipeIdForType(meal.type)
-          }
-        })
-
-        console.log('📝 Comidas a insertar:', mealsToInsert)
-
-        // Insertar nuevas comidas
         const { error: insertError } = await supabase
           .from('planned_meals')
           .insert(mealsToInsert)
 
-        if (insertError) {
-          console.error('Error insertando nuevas comidas:', insertError)
-          showNotification('error', 'Error', 'No se pudieron aplicar las nuevas comidas')
-          return
-        }
+        if (insertError) throw insertError
 
-        console.log('✅ Nuevas comidas insertadas en la base de datos')
-
-        // Recargar comidas del día para mostrar el nuevo menú
         await loadTodayMeals()
-
         showNotification('success', 'Éxito', 'Nuevo menú aplicado exitosamente')
         closeGenerateMenuModal()
-
       } catch (error) {
-        console.error('❌ Error aplicando menú:', error)
+        console.error('Error aplicando menú:', error)
         showNotification('error', 'Error', 'No se pudo aplicar el menú')
       }
     }
 
-    // Función auxiliar para obtener ID de receta por título
     const getRecipeIdByTitle = (title) => {
-      // Buscar en las recetas cargadas
       const recipe = allMeals.value.find(r => r.title === title)
       return recipe ? recipe.id : null
     }
 
-    // Función auxiliar para obtener ID de receta por defecto según tipo
     const getDefaultRecipeIdForType = (type) => {
       const defaultMap = {
         'desayuno': 'aaaaaaaa-0000-0000-0000-000000000001',
@@ -2062,7 +1924,6 @@ const getDefaultMeals = () => {
       return defaultMap[type] || 'aaaaaaaa-0000-0000-0000-000000000001'
     }
 
-    // Add Ingredient Modal
     const openAddIngredientModal = () => {
       ingredientSearch.value = ''
       showAddIngredientModal.value = true
@@ -2072,16 +1933,12 @@ const getDefaultMeals = () => {
       showAddIngredientModal.value = false
     }
 
-    const filterIngredients = () => {
-      // El filtrado se maneja en la propiedad computed
-    }
+    const filterIngredients = () => {}
 
     const selectIngredient = (ingredient) => {
       selectedIngredient.value = ingredient
       showAddIngredientModal.value = false
       showIngredientDetailsModal.value = true
-
-      // Reiniciar formulario con valores por defecto del ingrediente
       newIngredientData.category = ingredient.category || 'verduras'
       newIngredientData.quantity = 1
       newIngredientData.unit = ingredient.default_unit || 'unidades'
@@ -2089,7 +1946,6 @@ const getDefaultMeals = () => {
       newIngredientData.notes = ''
     }
 
-    // Ingredient Details Modal
     const closeIngredientDetailsModal = () => {
       showIngredientDetailsModal.value = false
     }
@@ -2101,23 +1957,13 @@ const getDefaultMeals = () => {
           return
         }
 
-        // Calcular fecha de vencimiento
         let expiryDate = null
         if (newIngredientData.expiryDays) {
           expiryDate = new Date()
           expiryDate.setDate(expiryDate.getDate() + parseInt(newIngredientData.expiryDays))
         }
 
-        console.log('➕ Agregando a despensa:', {
-          user_id: authStore.user.id,
-          ingredient_id: selectedIngredient.value.id,
-          quantity: newIngredientData.quantity,
-          unit: newIngredientData.unit,
-          expiry_date: expiryDate ? expiryDate.toISOString().split('T')[0] : null
-        })
-
-        // Usar función de base de datos para agregar a la despensa
-        const { data, error } = await supabase
+        const { error } = await supabase
           .rpc('add_to_pantry', {
             p_user_id: authStore.user.id,
             p_ingredient_id: selectedIngredient.value.id,
@@ -2128,8 +1974,6 @@ const getDefaultMeals = () => {
           })
 
         if (error) {
-          console.error('Error RPC:', error)
-          // Intentar insertar directamente si falla la función RPC
           const { error: insertError } = await supabase
             .from('user_pantry')
             .insert({
@@ -2140,26 +1984,18 @@ const getDefaultMeals = () => {
               expiry_date: expiryDate ? expiryDate.toISOString().split('T')[0] : null,
               notes: newIngredientData.notes
             })
-
           if (insertError) throw insertError
         }
 
-        // Recargar despensa
         await loadPantryItems()
-
-        showNotification('success', 'Éxito',
-          `${selectedIngredient.value.name} agregado a la despensa`
-        )
-
+        showNotification('success', 'Éxito', `${selectedIngredient.value.name} agregado a la despensa`)
         closeIngredientDetailsModal()
-
       } catch (error) {
-        console.error('❌ Error agregando ingrediente:', error)
+        console.error('Error agregando ingrediente:', error)
         showNotification('error', 'Error', 'No se pudo agregar el ingrediente')
       }
     }
 
-    // Weather Recipe Modal
     const openWeatherRecipeModal = () => {
       showWeatherRecipeModal.value = true
     }
@@ -2168,7 +2004,6 @@ const getDefaultMeals = () => {
       showWeatherRecipeModal.value = false
     }
 
-    // Pantry actions
     const decreaseQuantity = async (pantryItem) => {
       try {
         if (!pantryItem.id) {
@@ -2177,24 +2012,16 @@ const getDefaultMeals = () => {
         }
 
         const newQuantity = Math.max(0, pantryItem.quantityValue - 1)
-
         const { error } = await supabase
           .from('user_pantry')
-          .update({
-            quantity: newQuantity,
-            updated_at: new Date().toISOString()
-          })
+          .update({ quantity: newQuantity, updated_at: new Date().toISOString() })
           .eq('id', pantryItem.id)
 
         if (error) throw error
-
-        // Recargar despensa
         await loadPantryItems()
-
         showNotification('success', 'Éxito', `Cantidad disminuida de: ${pantryItem.name}`)
-
       } catch (error) {
-        console.error('❌ Error disminuyendo cantidad:', error)
+        console.error('Error disminuyendo cantidad:', error)
         showNotification('error', 'Error', 'No se pudo actualizar la cantidad')
       }
     }
@@ -2207,24 +2034,16 @@ const getDefaultMeals = () => {
         }
 
         const newQuantity = pantryItem.quantityValue + 1
-
         const { error } = await supabase
           .from('user_pantry')
-          .update({
-            quantity: newQuantity,
-            updated_at: new Date().toISOString()
-          })
+          .update({ quantity: newQuantity, updated_at: new Date().toISOString() })
           .eq('id', pantryItem.id)
 
         if (error) throw error
-
-        // Recargar despensa
         await loadPantryItems()
-
         showNotification('success', 'Éxito', `Cantidad aumentada de: ${pantryItem.name}`)
-
       } catch (error) {
-        console.error('❌ Error aumentando cantidad:', error)
+        console.error('Error aumentando cantidad:', error)
         showNotification('error', 'Error', 'No se pudo actualizar la cantidad')
       }
     }
@@ -2242,37 +2061,28 @@ const getDefaultMeals = () => {
           .eq('id', pantryItem.id)
 
         if (error) throw error
-
-        // Recargar despensa
         await loadPantryItems()
-
         showNotification('success', 'Éxito', `${pantryItem.name} eliminado de la despensa`)
-
       } catch (error) {
-        console.error('❌ Error eliminando ingrediente:', error)
+        console.error('Error eliminando ingrediente:', error)
         showNotification('error', 'Error', 'No se pudo eliminar el ingrediente')
       }
     }
 
-    // Original methods
     const goToRecipes = () => {
       router.push('/recetas')
     }
 
     const handleNotification = async (notification) => {
       try {
-        // Marcar como leída si tiene ID de base de datos
         if (notification.id && typeof notification.id === 'string' && notification.id.includes('-')) {
           await supabase
             .from('notifications')
             .update({ is_read: true, read_at: new Date().toISOString() })
             .eq('id', notification.id)
-
-          // Recargar notificaciones
           await loadNotifications()
         }
 
-        // Manejar según tipo
         switch (notification.type) {
           case 'expiry':
             showNotification('info', 'Ingrediente próximo a vencer', notification.text)
@@ -2296,13 +2106,11 @@ const getDefaultMeals = () => {
           default:
             showNotification('info', 'Notificación', notification.text)
         }
-
       } catch (error) {
-        console.error('❌ Error manejando notificación:', error)
+        console.error('Error manejando notificación:', error)
       }
     }
 
-    // Layout functions
     const toggleMobileMenu = () => {
       isMobileMenuOpen.value = !isMobileMenuOpen.value
     }
@@ -2316,17 +2124,13 @@ const getDefaultMeals = () => {
         await authStore.logout()
         router.push('/login')
       } catch (error) {
-        console.error('❌ Error cerrando sesión:', error)
+        console.error('Error cerrando sesión:', error)
         showNotification('error', 'Error', 'No se pudo cerrar sesión')
       }
     }
 
-    // Initialize data on mount
     onMounted(async () => {
       if (authStore.isAuthenticated) {
-        console.log('🚀 Inicializando datos del HomeView...')
-
-        // Cargar datos en paralelo
         await Promise.all([
           loadTodayMeals(),
           loadPantryItems(),
@@ -2336,25 +2140,9 @@ const getDefaultMeals = () => {
           loadAllIngredients(),
           loadAllMeals()
         ])
-
-        console.log('✅ Todos los datos cargados')
       }
     })
 
-
-    
-// En el setup(), después de las otras funciones, agrega:
-const getMealEmoji = (mealType) => {
-  const emojis = {
-    'desayuno': '🌅',
-    'almuerzo': '🍽️',
-    'cena': '🌙',
-    'breakfast': '🌅',
-    'lunch': '🍽️',
-    'dinner': '🌙'
-  }
-  return emojis[mealType] || '🍴'
-}
     return {
       isMobileMenuOpen,
       notifications,
@@ -2362,22 +2150,16 @@ const getMealEmoji = (mealType) => {
       todayMeals,
       recommendedRecipes,
       weatherSuggestion,
-
-      // Modal states
       showRecipeModal,
       showChangeMealModal,
       showGenerateMenuModal,
       showAddIngredientModal,
       showIngredientDetailsModal,
       showWeatherRecipeModal,
-
-      // Toast
       showToast,
       toastType,
       toastTitle,
       toastMessage,
-
-      // Current states
       currentRecipe,
       currentMealType,
       currentStep,
@@ -2385,2018 +2167,46 @@ const getMealEmoji = (mealType) => {
       selectedMeal,
       ingredientSearch,
       selectedIngredient,
-
-      // Data
       menuPreferences,
       generatedMenu,
       filteredMeals,
       filteredIngredientList,
       newIngredientData,
-
-      // Loading states
       loadingStates,
-
-      // Methods
       openRecipeModal,
       closeRecipeModal,
       nextStep,
       prevStep,
       toggleFavorite,
       addToShoppingList,
-
       openChangeMealModal,
       closeChangeMealModal,
       selectMeal,
       confirmMealChange,
-
       openGenerateMenuModal,
       closeGenerateMenuModal,
       generateNewMenu,
       applyGeneratedMenu,
-
       openAddIngredientModal,
       closeAddIngredientModal,
       filterIngredients,
       selectIngredient,
-
       closeIngredientDetailsModal,
       addIngredientToPantry,
-
       openWeatherRecipeModal,
       closeWeatherRecipeModal,
-
       decreaseQuantity,
       increaseQuantity,
       removeIngredient,
-
       goToRecipes,
       handleNotification,
       toggleMobileMenu,
       closeMobileMenu,
       handleLogout,
       getMealTypeText,
-
-
-  getMealEmoji,
-
-      toastIcon,
+      getMealEmoji,
+      toastIcon
     }
   }
 }
 </script>
-
-<style scoped>
-/* Solo agregamos estilos para toast y loading states */
-
-/* Toast Notification */
-.toast-notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  max-width: 400px;
-  min-width: 300px;
-  animation: slideInRight 0.3s ease;
-  backdrop-filter: blur(10px);
-}
-
-.toast-notification.success {
-  background: linear-gradient(135deg, #5DA271 0%, #4a8a5c 100%);
-  color: white;
-  border-left: 4px solid #3a6a48;
-}
-
-.toast-notification.error {
-  background: linear-gradient(135deg, #D4183D 0%, #b31534 100%);
-  color: white;
-  border-left: 4px solid #911129;
-}
-
-.toast-notification.warning {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: white;
-  border-left: 4px solid #b45309;
-}
-
-.toast-notification.info {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-  border-left: 4px solid #1d4ed8;
-}
-
-.toast-content {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  width: 100%;
-}
-
-.toast-icon {
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-}
-
-.toast-title {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  margin-top: 0;
-}
-
-.toast-message {
-  font-size: 13px;
-  margin: 0;
-  opacity: 0.9;
-  line-height: 1.4;
-  white-space: pre-line;
-}
-
-.toast-close {
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  margin-left: auto;
-}
-
-.toast-close:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-}
-
-.toast-close .iconify {
-  width: 16px;
-  height: 16px;
-  color: white;
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* Loading States */
-.loading-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  text-align: center;
-  color: var(--muted-foreground);
-  grid-column: 1 / -1;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #5DA271;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-.modal-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-  text-align: center;
-  color: var(--muted-foreground);
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  text-align: center;
-  color: var(--muted-foreground);
-  grid-column: 1 / -1;
-}
-
-.empty-state .iconify {
-  margin-bottom: 1rem;
-  opacity: 0.5;
-}
-
-.empty-menu {
-  text-align: center;
-  padding: 2rem;
-  color: var(--muted-foreground);
-  background-color: rgba(168, 213, 186, 0.1);
-  border-radius: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .toast-notification {
-    left: 20px;
-    right: 20px;
-    max-width: none;
-  }
-}
-
-/* EL RESTO DEL CSS ORIGINAL PERMANECE EXACTAMENTE IGUAL */
-
-/* Layout - Igual que las otras vistas */
-.inicio-container {
-  min-height: 100vh;
-  background-color: var(--background);
-}
-
-.sidebar-fixed {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 260px;
-  height: 100vh;
-  z-index: 1000;
-  background-color: var(--card);
-  border-right: 1px solid var(--border);
-  transform: translateX(0);
-  transition: transform 0.3s ease-in-out;
-}
-
-.header-fixed {
-  position: fixed;
-  top: 0;
-  left: 260px;
-  right: 0;
-  height: 70px;
-  z-index: 900;
-  background-color: var(--card);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: left 0.3s ease-in-out;
-}
-
-.main-content-wrapper {
-  margin-left: 260px;
-  min-height: 100vh;
-  background-color: var(--background);
-  transition: margin-left 0.3s ease;
-}
-
-.content-main {
-  padding-top: 70px;
-  min-height: calc(100vh - 70px);
-  overflow-y: auto;
-  background-color: var(--background);
-}
-
-.content-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-  padding: 20px;
-}
-
-/* Inicio View Styles */
-.inicio-view {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* Contenido de las secciones */
-.sections-container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.section-card {
-  background-color: var(--card);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--border);
-}
-
-.section-header {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.section-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin: 0;
-}
-
-.bg-white-card {
-  background-color: white;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* Botones */
-.generate-menu-btn,
-.add-ingredient-btn,
-.view-all-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1rem;
-  background-color: transparent;
-  border: 1px solid var(--border);
-  color: var(--primary);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  border-radius: 0.75rem;
-  transition: all 0.2s;
-}
-
-.generate-menu-btn:hover,
-.add-ingredient-btn:hover,
-.view-all-btn:hover {
-  background-color: rgba(93, 162, 113, 0.1);
-  border-color: var(--primary);
-}
-
-/* Daily Meals */
-.meals-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-}
-
-.meal-card {
-  background-color: white;
-  border-radius: 1rem;
-  border: 1px solid var(--border);
-  overflow: hidden;
-  transition: all 0.2s;
-}
-
-.meal-card:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.meal-image {
-  position: relative;
-  height: 10rem;
-  overflow: hidden;
-}
-
-.meal-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.meal-emoji {
-  position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
-  font-size: 1.5rem;
-}
-
-.meal-gradient {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
-}
-
-.meal-label {
-  position: absolute;
-  bottom: 0.75rem;
-  left: 0.75rem;
-  right: 0.75rem;
-}
-
-.meal-label h4 {
-  color: white;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.meal-content {
-  padding: 1rem;
-}
-
-.meal-content h3 {
-  font-size: 1rem;
-  font-weight: 500;
-  margin-bottom: 0.75rem;
-}
-
-.meal-details {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-}
-
-.detail-item {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-}
-
-.detail-item .iconify {
-  width: 0.875rem;
-  height: 0.875rem;
-}
-
-.meal-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.cook-btn {
-  flex: 1;
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  border: none;
-  padding: 0.625rem;
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.cook-btn:hover {
-  background-color: rgba(93, 162, 113, 0.9);
-}
-
-.change-btn {
-  flex: none;
-  background-color: transparent;
-  color: var(--foreground);
-  border: 1px solid var(--border);
-  padding: 0.625rem 1rem;
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.change-btn:hover {
-  background-color: rgba(168, 213, 186, 0.3);
-  border-color: var(--primary);
-}
-
-/* My Pantry */
-.pantry-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-}
-
-.pantry-item {
-  background-color: white;
-  border-radius: 1rem;
-  border: 1px solid var(--border);
-  overflow: hidden;
-  transition: all 0.2s;
-}
-
-.pantry-item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.pantry-image {
-  position: relative;
-  height: 8rem;
-}
-
-.pantry-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.expiry-badge {
-  position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
-  color: white;
-  padding: 0.25rem 0.625rem;
-  border-radius: 9999px;
-  font-size: 0.625rem;
-  font-weight: 500;
-}
-
-.expiry-badge.safe {
-  background-color: var(--primary);
-}
-
-.expiry-badge.warning {
-  background-color: #f59e0b;
-}
-
-.expiry-badge.danger {
-  background-color: var(--destructive);
-}
-
-.pantry-info {
-  padding: 1rem;
-}
-
-.pantry-info h4 {
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-bottom: 0.375rem;
-}
-
-.pantry-quantity {
-  font-size: 0.75rem;
-  color: var(--foreground);
-  margin-bottom: 0.25rem;
-}
-
-.pantry-category {
-  font-size: 0.625rem;
-  color: var(--muted-foreground);
-  margin-bottom: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.pantry-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.quantity-btn {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--border);
-  background-color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.quantity-btn:hover {
-  background-color: rgba(168, 213, 186, 0.3);
-}
-
-.quantity-btn .iconify {
-  width: 1rem;
-  height: 1rem;
-  color: var(--foreground);
-}
-
-.delete-btn {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.5rem;
-  border: 1px solid rgba(212, 24, 61, 0.2);
-  background-color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-left: auto;
-}
-
-.delete-btn:hover {
-  background-color: rgba(212, 24, 61, 0.1);
-  border-color: var(--destructive);
-}
-
-.delete-btn .iconify {
-  width: 1rem;
-  height: 1rem;
-  color: var(--destructive);
-}
-
-/* Grid Layout */
-.grid-layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-}
-
-/* Recommended Recipes */
-.recipes-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-}
-
-.recipe-card {
-  background-color: white;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.recipe-card:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.recipe-image {
-  position: relative;
-  height: 8rem;
-}
-
-.recipe-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.recipe-badge {
-  position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  padding: 0.25rem 0.625rem;
-  border-radius: 0.25rem;
-  font-size: 0.625rem;
-  font-weight: 500;
-}
-
-.recipe-content {
-  padding: 1rem;
-}
-
-.recipe-content h4 {
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}
-
-.recipe-details {
-  display: flex;
-  gap: 1rem;
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-  margin-bottom: 0.75rem;
-}
-
-.recipe-view-btn {
-  width: 100%;
-  background-color: rgba(93, 162, 113, 0.1);
-  color: var(--primary);
-  border: 1px solid var(--primary);
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.recipe-view-btn:hover {
-  background-color: var(--primary);
-  color: white;
-}
-
-/* Weather Suggestion */
-.weather-suggestion-card {
-  background: linear-gradient(135deg, #a8d5ba 0%, #8bb174 100%);
-  border-radius: 1rem;
-  border: 1px solid rgba(139, 177, 116, 0.3);
-  padding: 1.5rem;
-  color: white;
-}
-
-.weather-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.weather-icon-container {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 0.75rem;
-  background-color: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.weather-icon {
-  width: 2rem;
-  height: 2rem;
-  color: white;
-}
-
-.weather-title {
-  font-size: 1rem;
-  font-weight: 500;
-  margin-bottom: 0.125rem;
-}
-
-.weather-subtitle {
-  font-size: 0.75rem;
-  opacity: 0.9;
-}
-
-.weather-content {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 0.75rem;
-  padding: 1rem;
-  backdrop-filter: blur(10px);
-}
-
-.weather-desc {
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
-  line-height: 1.5;
-}
-
-.weather-desc .iconify {
-  width: 1rem;
-  height: 1rem;
-  margin-right: 0.375rem;
-  vertical-align: middle;
-}
-
-.weather-desc strong {
-  font-weight: 600;
-}
-
-.weather-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.weather-stats .stat-item {
-  background-color: rgba(255, 255, 255, 0.15);
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  text-align: center;
-}
-
-.weather-stats .stat-label {
-  display: block;
-  font-size: 0.625rem;
-  opacity: 0.8;
-  margin-bottom: 0.25rem;
-}
-
-.weather-stats .stat-value {
-  display: block;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--primary-foreground);
-}
-
-.weather-recipe-btn {
-  width: 100%;
-  background-color: white;
-  color: var(--primary);
-  border: none;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: all 0.2s;
-}
-
-.weather-recipe-btn:hover {
-  background-color: rgba(255, 255, 255, 0.9);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.weather-recipe-btn .iconify {
-  width: 1rem;
-  height: 1rem;
-}
-
-/* Notifications */
-.notifications-section {
-  background-color: var(--card);
-  border-radius: 1rem;
-  border: 1px solid var(--border);
-  padding: 1.5rem;
-}
-
-.notifications-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.notifications-header h3 {
-  font-size: 1rem;
-  font-weight: 500;
-}
-
-.notifications-badge {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 9999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.notifications-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.notification-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  background-color: rgba(168, 213, 186, 0.1);
-  transition: background-color 0.2s;
-  cursor: pointer;
-}
-
-.notification-item:hover {
-  background-color: rgba(168, 213, 186, 0.2);
-}
-
-.notification-icon {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.notification-icon.alert {
-  background-color: rgba(212, 24, 61, 0.1);
-}
-
-.notification-icon.alert .iconify {
-  color: var(--destructive);
-}
-
-.notification-icon.recipe {
-  background-color: rgba(93, 162, 113, 0.1);
-}
-
-.notification-icon.recipe .iconify {
-  color: var(--primary);
-}
-
-.notification-icon.shopping {
-  background-color: rgba(139, 177, 116, 0.1);
-}
-
-.notification-icon.shopping .iconify {
-  color: var(--secondary);
-}
-
-.notification-icon .iconify {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.notification-content {
-  flex: 1;
-}
-
-.notification-text {
-  font-size: 0.875rem;
-  color: var(--foreground);
-  margin-bottom: 0.125rem;
-}
-
-.notification-time {
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-}
-
-.right-column {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-/* MODAL STYLES */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  padding: 1rem;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-content {
-  background-color: var(--card);
-  border-radius: 1rem;
-  max-width: 800px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
-  animation: slideIn 0.3s ease;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modal-close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 0.75rem;
-  background-color: var(--background);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  transition: all 0.2s;
-}
-
-.modal-close:hover {
-  background-color: rgba(212, 24, 61, 0.1);
-  border-color: var(--destructive);
-}
-
-.modal-close .iconify {
-  width: 1.25rem;
-  height: 1.25rem;
-  color: var(--foreground);
-}
-
-/* Recipe Modal */
-.recipe-modal {
-  max-width: 900px;
-}
-
-.recipe-modal-image {
-  position: relative;
-  height: 300px;
-  overflow: hidden;
-  border-radius: 1rem 1rem 0 0;
-}
-
-.recipe-modal-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.recipe-image-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-  padding: 2rem;
-  color: white;
-}
-
-.recipe-badges {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.recipe-badge-item {
-  background-color: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  padding: 0.375rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.recipe-title-overlay h2 {
-  font-size: 2rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.recipe-rating {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1rem;
-}
-
-.rating-stars {
-  color: #ffd700;
-}
-
-.recipe-modal-details {
-  padding: 2rem;
-}
-
-.recipe-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  background-color: rgba(168, 213, 186, 0.1);
-  padding: 1rem;
-  border-radius: 1rem;
-}
-
-.stat-box {
-  text-align: center;
-  padding: 0.5rem;
-}
-
-.stat-box .iconify {
-  width: 1.5rem;
-  height: 1.5rem;
-  color: var(--primary);
-  margin-bottom: 0.5rem;
-}
-
-.stat-value {
-  display: block;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--foreground);
-}
-
-.stat-label {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-  margin-top: 0.25rem;
-}
-
-.recipe-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.action-btn {
-  padding: 1rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  background-color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-weight: 500;
-}
-
-.favorite-btn:hover {
-  background-color: rgba(212, 24, 61, 0.1);
-  border-color: var(--destructive);
-  color: var(--destructive);
-}
-
-.shopping-btn:hover {
-  background-color: rgba(93, 162, 113, 0.1);
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.recipe-section {
-  margin-bottom: 2rem;
-}
-
-.recipe-section .section-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  font-size: 1.25rem;
-}
-
-.ingredients-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  background-color: rgba(168, 213, 186, 0.1);
-  padding: 1.5rem;
-  border-radius: 1rem;
-}
-
-.ingredient-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem;
-  background-color: white;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-}
-
-.ingredient-name {
-  font-weight: 500;
-}
-
-.ingredient-quantity {
-  color: var(--primary);
-  font-weight: 600;
-}
-
-.instructions-container {
-  background-color: rgba(168, 213, 186, 0.1);
-  padding: 1.5rem;
-  border-radius: 1rem;
-}
-
-.step-navigation {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.step-btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  background-color: white;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-weight: 500;
-}
-
-.step-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.step-btn:not(:disabled):hover {
-  background-color: var(--primary);
-  color: white;
-  border-color: var(--primary);
-}
-
-.step-indicator {
-  font-weight: 600;
-  color: var(--foreground);
-}
-
-.step-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-.step-image {
-  border-radius: 0.75rem;
-  overflow: hidden;
-  height: 250px;
-}
-
-.step-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.step-description h4 {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-  color: var(--foreground);
-}
-
-.step-description p {
-  line-height: 1.6;
-  color: var(--muted-foreground);
-}
-
-/* Change Meal Modal */
-.change-meal-modal {
-  max-width: 800px;
-  padding: 2rem;
-}
-
-.modal-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.meal-options-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 1rem;
-}
-
-.meal-option {
-  background-color: white;
-  border-radius: 0.75rem;
-  border: 2px solid var(--border);
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.meal-option:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border-color: var(--primary);
-}
-
-.meal-option.selected {
-  border-color: var(--primary);
-  background-color: rgba(93, 162, 113, 0.1);
-}
-
-.meal-option-image {
-  position: relative;
-  height: 120px;
-}
-
-.meal-option-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.meal-option-badge {
-  position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
-  background-color: var(--primary);
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.meal-option-content {
-  padding: 1rem;
-}
-
-.meal-option-content h4 {
-  font-size: 1rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}
-
-.meal-option-details {
-  display: flex;
-  gap: 1rem;
-  font-size: 0.875rem;
-  color: var(--muted-foreground);
-}
-
-.modal-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-}
-
-.modal-btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-}
-
-.cancel-btn {
-  background-color: transparent;
-  border: 1px solid var(--border);
-  color: var(--foreground);
-}
-
-.cancel-btn:hover {
-  background-color: rgba(168, 213, 186, 0.1);
-}
-
-.confirm-btn {
-  background-color: var(--primary);
-  color: white;
-}
-
-.confirm-btn:hover {
-  background-color: rgba(93, 162, 113, 0.9);
-}
-
-.confirm-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.generate-btn {
-  background-color: #8b5cf6;
-  color: white;
-}
-
-.generate-btn:hover {
-  background-color: #7c3aed;
-}
-
-/* Generate Menu Modal */
-.generate-menu-modal {
-  max-width: 800px;
-  padding: 2rem;
-}
-
-.preferences-section {
-  margin-bottom: 2rem;
-}
-
-.preferences-section h3 {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-}
-
-.preferences-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
-}
-
-.preference-item {
-  display: flex;
-  align-items: center;
-}
-
-.preference-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  width: 100%;
-  transition: all 0.2s;
-}
-
-.preference-label:hover {
-  background-color: rgba(168, 213, 186, 0.1);
-}
-
-.preference-label input {
-  display: none;
-}
-
-.checkbox-custom {
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid var(--border);
-  border-radius: 0.375rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.preference-label input:checked+.checkbox-custom {
-  background-color: var(--primary);
-  border-color: var(--primary);
-}
-
-.preference-label input:checked+.checkbox-custom::after {
-  content: '✓';
-  color: white;
-  font-size: 0.875rem;
-}
-
-.preference-text {
-  font-weight: 500;
-}
-
-.generated-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  max-height: 300px;
-  overflow-y: auto;
-  padding: 1rem;
-  background-color: rgba(168, 213, 186, 0.1);
-  border-radius: 1rem;
-}
-
-.generated-meal {
-  background-color: white;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  height: auto;
-}
-
-.generated-meal-header {
-  background-color: rgba(93, 162, 113, 0.1);
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.generated-meal-header h4 {
-  font-weight: 600;
-  color: var(--primary);
-}
-
-.generated-meal-content {
-  display: flex;
-  padding: 1rem;
-  gap: 1rem;
-  align-items: center;
-}
-
-.generated-meal-content img {
-  width: 80px;
-  height: 80px;
-  border-radius: 0.5rem;
-  object-fit: cover;
-}
-
-.generated-meal-info {
-  flex: 1;
-}
-
-.generated-meal-info h5 {
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}
-
-.generated-meal-details {
-  display: flex;
-  gap: 1rem;
-  font-size: 0.875rem;
-  color: var(--muted-foreground);
-}
-
-/* Add Ingredient Modal */
-.add-ingredient-modal {
-  max-width: 800px;
-  padding: 2rem;
-}
-
-.search-section {
-  margin-bottom: 1.5rem;
-}
-
-.search-input {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-input .iconify {
-  position: absolute;
-  left: 1rem;
-  width: 1.25rem;
-  height: 1.25rem;
-  color: var(--muted-foreground);
-}
-
-.search-input input {
-  width: 100%;
-  padding: 0.875rem 1rem 0.875rem 3rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  background-color: white;
-  font-size: 1rem;
-  transition: all 0.2s;
-}
-
-.search-input input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(93, 162, 113, 0.1);
-}
-
-.ingredients-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 1rem;
-}
-
-.ingredient-option {
-  background-color: white;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-}
-
-.ingredient-option:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border-color: var(--primary);
-}
-
-.ingredient-option-image {
-  width: 80px;
-  height: 80px;
-  border-radius: 0.5rem;
-  overflow: hidden;
-}
-
-.ingredient-option-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.ingredient-option-name {
-  font-weight: 500;
-  text-align: center;
-}
-
-.ingredient-add-btn {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.ingredient-add-btn:hover {
-  background-color: rgba(93, 162, 113, 0.9);
-  transform: scale(1.1);
-}
-
-/* Ingredient Details Modal */
-.ingredient-details-modal {
-  max-width: 500px;
-  padding: 2rem;
-}
-
-.ingredient-image-large {
-  width: 100%;
-  height: 200px;
-  border-radius: 0.75rem;
-  overflow: hidden;
-  margin-bottom: 1.5rem;
-}
-
-.ingredient-image-large img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.ingredient-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-group label {
-  font-weight: 500;
-  color: var(--foreground);
-}
-
-.form-select,
-.form-input,
-.form-textarea {
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  background-color: white;
-  font-size: 1rem;
-  transition: all 0.2s;
-}
-
-.form-select:focus,
-.form-input:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(93, 162, 113, 0.1);
-}
-
-.quantity-input-group {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.quantity-input-group .form-input {
-  flex: 1;
-}
-
-.quantity-input-group .form-select {
-  width: 120px;
-}
-
-.expiry-input {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.expiry-input .form-input {
-  flex: 1;
-  padding-right: 4rem;
-}
-
-.expiry-label {
-  position: absolute;
-  right: 0.75rem;
-  color: var(--muted-foreground);
-}
-
-.form-textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
-/* Weather Recipe Modal */
-.weather-recipe-modal {
-  max-width: 600px;
-  padding: 2rem;
-}
-
-.weather-recipe-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.weather-icon-container-large {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 1rem;
-  background: linear-gradient(135deg, #a8d5ba 0%, #8bb174 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.weather-icon-large {
-  width: 2.5rem;
-  height: 2.5rem;
-  color: white;
-}
-
-.weather-recipe-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-
-.weather-recipe-subtitle {
-  color: var(--muted-foreground);
-}
-
-.weather-recipe-content {
-  background-color: rgba(168, 213, 186, 0.1);
-  border-radius: 1rem;
-  overflow: hidden;
-  margin-bottom: 2rem;
-}
-
-.weather-recipe-image {
-  position: relative;
-  height: 200px;
-}
-
-.weather-recipe-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.weather-recipe-badge {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background-color: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  padding: 0.5rem 1rem;
-  border-radius: 9999px;
-  font-weight: 500;
-  color: var(--primary);
-}
-
-.weather-recipe-info {
-  padding: 1.5rem;
-}
-
-.weather-recipe-info h3 {
-  font-size: 1.25rem;
-  margin-bottom: 0.75rem;
-}
-
-.weather-recipe-desc {
-  color: var(--muted-foreground);
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
-}
-
-.weather-recipe-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  background-color: white;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-}
-
-.weather-recipe-stats .stat-box {
-  text-align: center;
-}
-
-.weather-recipe-stats .iconify {
-  width: 1.5rem;
-  height: 1.5rem;
-  color: var(--primary);
-  margin-bottom: 0.5rem;
-}
-
-.weather-recipe-stats .stat-value {
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.cook-btn {
-  background-color: var(--primary);
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.cook-btn:hover {
-  background-color: rgba(93, 162, 113, 0.9);
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-
-  /* Layout responsive */
-  .sidebar-fixed {
-    transform: translateX(-100%);
-    width: 280px;
-    transition: transform 0.3s ease;
-  }
-
-  .mobile-menu-open .sidebar-fixed {
-    transform: translateX(0);
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
-  }
-
-  .header-fixed {
-    left: 0;
-    right: 0;
-  }
-
-  .main-content-wrapper {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .content-container {
-    padding: 16px;
-  }
-
-  .section-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .meals-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .pantry-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .recipes-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .grid-layout {
-    grid-template-columns: 1fr;
-  }
-
-  /* Modal responsive */
-  .modal-content {
-    margin: 1rem;
-    max-height: 85vh;
-  }
-
-  .recipe-modal {
-    padding: 0;
-  }
-
-  .recipe-modal-image {
-    height: 200px;
-  }
-
-  .recipe-title-overlay h2 {
-    font-size: 1.5rem;
-  }
-
-  .recipe-stats {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
-
-  .recipe-actions {
-    grid-template-columns: 1fr;
-  }
-
-  .step-content {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .step-image {
-    height: 200px;
-  }
-
-  .meal-options-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .preferences-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .ingredients-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .modal-actions {
-    flex-direction: column;
-  }
-
-  .modal-btn {
-    width: 100%;
-  }
-}
-
-@media (min-width: 640px) {
-  .content-container {
-    padding: 1.5rem;
-  }
-
-  .section-header {
-    flex-direction: row;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .meals-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-  }
-
-  .pantry-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .recipes-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 768px) {
-  .content-container {
-    padding: 2rem;
-  }
-
-  .meals-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .grid-layout {
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-  }
-
-  .right-column {
-    gap: 2rem;
-  }
-}
-</style>
