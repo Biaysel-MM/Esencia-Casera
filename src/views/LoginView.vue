@@ -1,32 +1,32 @@
 <template>
-  <div v-if="!isLoading" class="login-container">
-    <div class="login-wrapper">
-      <!-- Logo and Welcome -->
-      <div class="logo-section">
-        <div class="logo-circle">
-          <span class="iconify" data-icon="mdi:chef-hat"></span>
+  <div v-if="!isLoading" class="min-h-screen bg-linear-to-br from-[rgba(93,162,113,0.15)] via-[rgba(139,177,116,0.15)] to-[rgba(168,213,186,0.15)] flex items-center justify-center p-5">
+    <div class="w-full max-w-md">
+      <!-- Logo and Welcome with Animation -->
+      <div class="mb-8 text-center animate-fade-in">
+        <div class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-linear-to-br from-[#5DA271] to-[#8BB174] shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
+          <span class="iconify text-5xl text-white" data-icon="mdi:chef-hat"></span>
         </div>
-        <h1 class="app-name">Esencia Casera</h1>
-        <p class="app-tagline">Tu cocina inteligente</p>
+        <h1 class="mb-2 text-4xl font-bold bg-linear-to-r from-[#5DA271] to-[#8BB174] bg-clip-text text-transparent">Esencia Casera</h1>
+        <p class="text-sm text-[#6C7A6C]">Tu cocina inteligente</p>
       </div>
 
       <!-- Login Card -->
-      <div class="login-card">
-        <h2 class="login-title">Iniciar Sesión</h2>
+      <div class="rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white p-6 shadow-xl transition-all duration-300 hover:shadow-2xl sm:p-8">
+        <h2 class="mb-6 text-center text-2xl font-semibold text-[#2C2C2C]">Iniciar Sesión</h2>
 
-        <form class="login-form" @submit.prevent="handleLogin">
-          <div v-if="error" class="error-message">
-            <span class="iconify" data-icon="mdi:alert-circle"></span>
-            <span class="error-text">{{ error }}</span>
+        <form class="flex flex-col gap-4" @submit.prevent="handleLogin">
+          <div v-if="error" class="flex items-center gap-2 rounded-xl border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.1)] p-3 text-sm font-medium text-[#ef4444]">
+            <span class="iconify shrink-0 text-xl" data-icon="mdi:alert-circle"></span>
+            <span class="flex-1">{{ error }}</span>
           </div>
 
-          <div class="input-group">
-            <label class="input-label">Email</label>
-            <div class="input-with-icon">
-              <span class="iconify input-left-icon" data-icon="mdi:email"></span>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-sm font-medium text-[#2C2C2C]">Email</label>
+            <div class="relative">
+              <span class="iconify absolute left-3 top-1/2 -translate-y-1/2 text-xl text-[#9ca3af]" data-icon="mdi:email"></span>
               <input 
                 type="email" 
-                class="text-input"
+                class="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-4 py-3 pl-10 text-[16px] text-[#2C2C2C] transition-all duration-200 placeholder:text-[#9ca3af] focus:border-[#5DA271] focus:outline-none focus:ring-3 focus:ring-[rgba(93,162,113,0.2)]"
                 placeholder="tu@email.com"
                 v-model="form.email"
                 required
@@ -35,13 +35,13 @@
             </div>
           </div>
 
-          <div class="input-group">
-            <label class="input-label">Contraseña</label>
-            <div class="input-with-icon">
-              <span class="iconify input-left-icon" data-icon="mdi:lock"></span>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-sm font-medium text-[#2C2C2C]">Contraseña</label>
+            <div class="relative">
+              <span class="iconify absolute left-3 top-1/2 -translate-y-1/2 text-xl text-[#9ca3af]" data-icon="mdi:lock"></span>
               <input 
                 type="password" 
-                class="text-input"
+                class="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-4 py-3 pl-10 text-[16px] text-[#2C2C2C] transition-all duration-200 placeholder:text-[#9ca3af] focus:border-[#5DA271] focus:outline-none focus:ring-3 focus:ring-[rgba(93,162,113,0.2)]"
                 placeholder="••••••••"
                 v-model="form.password"
                 required
@@ -52,31 +52,47 @@
 
           <button 
             type="submit" 
-            class="submit-button"
+            class="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-linear-to-r from-[#5DA271] to-[#8BB174] py-3.5 text-base font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70"
             :disabled="isLoading"
           >
-            <span v-if="isLoading" class="iconify spin-icon" data-icon="mdi:loading"></span>
+            <span v-if="isLoading" class="iconify animate-spin text-xl" data-icon="mdi:loading"></span>
             <span v-else>Iniciar Sesión</span>
           </button>
         </form>
 
-        <div class="register-link">
-          <p class="register-text">
+        <div class="mt-6 border-t border-[rgba(0,0,0,0.08)] pt-6 text-center">
+          <p class="text-sm text-[#6C7A6C]">
             ¿No tienes cuenta? 
-            <button type="button" class="link-button" @click="goToRegister">
+            <button type="button" class="cursor-pointer font-semibold text-[#5DA271] transition-colors hover:text-[#8BB174] hover:underline" @click="goToRegister">
               Regístrate aquí
             </button>
           </p>
         </div>
+
+        <!-- Demo Credentials Card -->
+        <div class="mt-6 rounded-xl bg-[rgba(93,162,113,0.05)] p-4 border border-[rgba(93,162,113,0.2)]">
+          <p class="mb-3 text-center text-xs font-semibold uppercase tracking-wide text-[#6C7A6C]">Cuentas de demostración</p>
+          <div class="grid gap-2 text-xs">
+            <div class="rounded-lg bg-[rgba(93,162,113,0.1)] p-2.5">
+              <p class="font-semibold text-[#5DA271]">Administrador</p>
+              <p class="text-[#2C2C2C]">jose@gmail.com</p>
+              <p class="text-[#6C7A6C]">12345678</p>
+            </div>
+            <div class="rounded-lg bg-[rgba(139,177,116,0.1)] p-2.5">
+              <p class="font-semibold text-[#8BB174]">Familiar</p>
+              <p class="text-[#2C2C2C]">maria@gmail.com</p>
+              <p class="text-[#6C7A6C]">12345678</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-  <div v-else class="loading-screen">
-    <div class="loading-spinner"></div>
-    <p>Cargando...</p>
+  <div v-else class="flex min-h-screen flex-col items-center justify-center bg-linear-to-br from-[rgba(93,162,113,0.15)] via-[rgba(139,177,116,0.15)] to-[rgba(168,213,186,0.15)]">
+    <div class="flex h-10 w-10 animate-spin rounded-full border-4 border-[#D8EBD0] border-t-[#5DA271]"></div>
+    <p class="mt-4 text-sm text-[#6C7A6C]">Cargando...</p>
   </div>
 </template>
-
 
 <script>
 import { useAuthStore } from '../stores/auth'
@@ -108,9 +124,7 @@ export default {
       if (success) {
         console.log('Login successful, redirecting based on role...')
         
-        // Esperar un momento para asegurar que el perfil se cargó
         setTimeout(() => {
-          // Redirigir según el rol (usar el valor actualizado del store)
           if (authStore.userRole === 'admin') {
             router.push('/home')
           } else {
@@ -137,302 +151,3 @@ export default {
   }
 }
 </script>
-
-
-<style scoped>
-  /* estilos de loading  */
-  .loading-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(245, 158, 11, 0.15) 50%, rgba(139, 92, 246, 0.15) 100%);
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #10b981;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-.login-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg,
-      rgba(16, 185, 129, 0.15) 0%,
-      rgba(245, 158, 11, 0.15) 50%,
-      rgba(139, 92, 246, 0.15) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.login-wrapper {
-  width: 100%;
-  max-width: 450px;
-}
-
-/* Logo Section */
-.logo-section {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.logo-circle {
-  width: 80px;
-  height: 80px;
-  background-color: #10b981;
-  border-radius: 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.logo-circle .iconify {
-  font-size: 48px;
-  color: white;
-}
-
-.app-name {
-  font-size: 36px;
-  color: #10b981;
-  margin: 0 0 8px 0;
-  font-weight: 600;
-}
-
-.app-tagline {
-  color: #6b7280;
-  margin: 0;
-  font-size: 14px;
-}
-
-/* Login Card */
-.login-card {
-  background-color: white;
-  border-radius: 16px;
-  border: 1px solid #e5e7eb;
-  padding: 24px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-@media (min-width: 640px) {
-  .login-card {
-    padding: 32px;
-  }
-}
-
-.login-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: #111827;
-  text-align: center;
-  margin: 0 0 24px 0;
-}
-
-/* Form */
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.error-message {
-  background-color: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 12px;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #ef4444;
-}
-
-.error-message .iconify {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.error-text {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* Input Groups */
-.input-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.input-label {
-  font-size: 14px;
-  color: #374151;
-  margin-bottom: 6px;
-  font-weight: 500;
-}
-
-.input-with-icon {
-  position: relative;
-}
-
-.input-left-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 20px;
-  color: #9ca3af;
-}
-
-.text-input {
-  width: 100%;
-  padding: 12px 12px 12px 40px;
-  border-radius: 12px;
-  border: 1px solid #d1d5db;
-  background-color: white;
-  color: #111827;
-  font-size: 16px;
-  transition: all 0.2s;
-  box-sizing: border-box;
-}
-
-.text-input:focus {
-  outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-}
-
-.text-input::placeholder {
-  color: #9ca3af;
-}
-
-/* Submit Button */
-.submit-button {
-  width: 100%;
-  background-color: #10b981;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 14px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.submit-button:hover:not(:disabled) {
-  background-color: #0da271;
-}
-
-.submit-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.spin-icon {
-  animation: spin 1s linear infinite;
-  font-size: 20px;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Register Link */
-.register-link {
-  margin-top: 24px;
-  text-align: center;
-  padding-top: 24px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.register-text {
-  color: #6b7280;
-  font-size: 14px;
-  margin: 0;
-}
-
-.link-button {
-  color: #10b981;
-  background: none;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 4px;
-}
-
-.link-button:hover {
-  text-decoration: underline;
-}
-
-/* Demo Credentials */
-.demo-credentials {
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.demo-title {
-  font-size: 12px;
-  color: #6b7280;
-  text-align: center;
-  margin: 0 0 12px 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.demo-accounts {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.demo-account {
-  background-color: rgba(245, 158, 11, 0.1);
-  border-radius: 8px;
-  padding: 12px;
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.demo-role {
-  font-weight: 600;
-  margin: 0 0 4px 0;
-  color: #111827;
-}
-
-.demo-email,
-.demo-password {
-  margin: 2px 0;
-  color: #374151;
-}
-
-.admin-account {
-  background-color: rgba(16, 185, 129, 0.1);
-}
-
-.familiar-account {
-  background-color: rgba(139, 92, 246, 0.1);
-}
-</style>
