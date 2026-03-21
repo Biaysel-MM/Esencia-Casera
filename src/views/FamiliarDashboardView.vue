@@ -1,202 +1,200 @@
-<!-- src/views/FamiliarDashboardView.vue -->
 <template>
-  <div class="familiar-dashboard-container" :class="{ 'mobile-menu-open': isMobileMenuOpen }">
+  <div class="min-h-screen bg-[#F6F9F6]" :class="{ 'max-md:overflow-hidden': isMobileMenuOpen }">
     <!-- Sidebar - Fixed position -->
-    <Sidebar :is-mobile-open="isMobileMenuOpen" @close="closeMobileMenu" class="sidebar-fixed" />
+    <Sidebar :is-mobile-open="isMobileMenuOpen" @close="closeMobileMenu" class="fixed left-0 top-0 z-1000 h-screen w-65 border-r border-[rgba(0,0,0,0.08)] bg-white transition-transform duration-300 ease-in-out max-md:w-70 max-md:-translate-x-full" :class="{ 'max-md:translate-x-0': isMobileMenuOpen }" />
 
     <!-- Main Content Area -->
-    <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': !isMobileMenuOpen }">
-      <Header @toggle-mobile-menu="toggleMobileMenu" @logout="handleLogout" class="header-fixed" />
+    <div class="min-h-screen bg-[#F6F9F6] transition-all duration-300 max-md:ml-0 md:ml-65">
+      <Header @toggle-mobile-menu="toggleMobileMenu" @logout="handleLogout" class="fixed left-65 right-0 top-0 z-900 h-17.5 border-b border-[rgba(0,0,0,0.08)] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.05)] transition-all duration-300 max-md:left-0 max-md:h-16" />
 
       <!-- Scrollable Content -->
-      <main class="content-main">
-        <div class="content-container">
-          <div class="familiar-dashboard-view">
+      <main class="min-h-[calc(100vh-70px)] overflow-y-auto bg-[#F6F9F6] pt-17.5 max-md:pt-16">
+        <div class="mx-auto w-full max-w-350 p-5 md:p-6">
+          <div class="flex flex-col gap-6">
             <!-- Welcome Section -->
-            <div class="welcome-section">
-              <div class="welcome-content">
-                <div class="welcome-avatar">
+            <div class="rounded-2xl border border-[rgba(0,0,0,0.08)] bg-linear-to-br from-[rgba(93,162,113,0.2)] to-[rgba(168,213,186,0.2)] p-8">
+              <div class="flex items-center gap-5 max-md:flex-col max-md:text-center">
+                <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#5DA271] text-xl font-semibold text-white">
                   {{ userInitials }}
                 </div>
                 <div>
-                  <h1 class="welcome-title">¡Hola {{ userName }}! 👋</h1>
-                  <p class="welcome-subtitle">Bienvenido a tu menú familiar</p>
+                  <h1 class="mb-1 text-[28px] font-semibold text-[#2C2C2C] max-md:text-2xl">¡Hola {{ userName }}! 👋</h1>
+                  <p class="text-base text-[#6C7A6C]">Bienvenido a tu menú familiar</p>
                 </div>
               </div>
             </div>
 
             <!-- Weekly Planner Preview -->
-            <section class="dashboard-card">
-              <div class="card-header">
-                <div class="header-icon">
-                  <span class="iconify" data-icon="mdi:calendar"></span>
+            <div class="rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+              <div class="mb-6 flex items-center gap-4">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[rgba(93,162,113,0.2)]">
+                  <span class="iconify h-5 w-5 text-[#5DA271]" data-icon="mdi:calendar"></span>
                 </div>
                 <div>
-                  <h2 class="card-title">Menú de la Semana</h2>
-                  <p class="card-subtitle">Planificado por tu familia</p>
+                  <h2 class="text-xl font-semibold text-[#2C2C2C]">Menú de la Semana</h2>
+                  <p class="text-sm text-[#6C7A6C]">Planificado por tu familia</p>
                 </div>
               </div>
 
               <!-- Compact Week View -->
-              <div class="week-view-container">
-                <div class="days-grid">
-                  <div v-for="day in days" :key="day" class="day-column">
-                    <div class="day-header">
-                      <p class="day-name">{{ day }}</p>
+              <div class="overflow-x-auto pb-2">
+                <div class="inline-flex min-w-full gap-4">
+                  <div v-for="day in days" :key="day" class="w-40 shrink-0">
+                    <div class="mb-4 text-center">
+                      <p class="text-base font-semibold text-[#2C2C2C]">{{ day }}</p>
                     </div>
-                    <div class="meals-container">
-                      <div v-for="mealType in mealTypes" :key="mealType.key" class="meal-slot">
-                        <p class="meal-label">
-                          {{ mealType.icon }} {{ mealType.label }}
-                        </p>
-                        <div v-if="getMealForSlot(day, mealType.key)" class="meal-card-small">
-                          <div class="meal-image-small">
+                    <div class="flex flex-col gap-3">
+                      <div v-for="mealType in mealTypes" :key="mealType.key" class="text-center">
+                        <p class="mb-2 text-xs text-[#6C7A6C]">{{ mealType.icon }} {{ mealType.label }}</p>
+                        <div v-if="getMealForSlot(day, mealType.key)" class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-2">
+                          <div class="mb-2 h-16 w-full overflow-hidden rounded-lg">
                             <img 
                               :src="getMealForSlot(day, mealType.key)?.image" 
                               :alt="getMealForSlot(day, mealType.key)?.name"
+                              class="h-full w-full object-cover"
                               @error="handleImageError"
                             />
                           </div>
-                          <p class="meal-name-small">
+                          <p class="truncate text-[11px] font-medium text-[#2C2C2C]">
                             {{ getMealForSlot(day, mealType.key)?.name }}
                           </p>
                         </div>
-                        <div v-else class="empty-meal-slot">
-                          <p class="empty-text">-</p>
+                        <div v-else class="flex h-22 items-center justify-center rounded-xl border border-[rgba(168,213,186,0.3)] bg-[rgba(168,213,186,0.2)]">
+                          <p class="text-sm text-[#6C7A6C]">-</p>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </section>
+            </div>
 
             <!-- Voting Section -->
-            <section class="dashboard-card">
-              <div class="card-header">
-                <div class="header-icon">
-                  <span class="iconify" data-icon="mdi:trending-up"></span>
+            <div class="rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+              <div class="mb-6 flex items-center gap-4">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[rgba(93,162,113,0.2)]">
+                  <span class="iconify h-5 w-5 text-[#5DA271]" data-icon="mdi:trending-up"></span>
                 </div>
                 <div>
-                  <h2 class="card-title">Vota por tus favoritas</h2>
-                  <p class="card-subtitle">Ayuda a planificar el próximo menú</p>
+                  <h2 class="text-xl font-semibold text-[#2C2C2C]">Vota por tus favoritas</h2>
+                  <p class="text-sm text-[#6C7A6C]">Ayuda a planificar el próximo menú</p>
                 </div>
               </div>
 
-              <div class="voting-grid">
+              <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
                 <div 
                   v-for="recipe in recipesForVoting" 
                   :key="recipe.id"
-                  class="voting-card"
+                  class="overflow-hidden rounded-xl border border-[rgba(168,213,186,0.3)] bg-[rgba(168,213,186,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(0,0,0,0.1)]"
                 >
-                  <div class="voting-image">
+                  <div class="relative h-32 overflow-hidden">
                     <img 
                       :src="recipe.image" 
                       :alt="recipe.name"
+                      class="h-full w-full object-cover"
                       @error="handleImageError"
                     />
-                    <div class="recipe-type-badge">
+                    <div class="absolute left-3 top-3 rounded-lg bg-[#5DA271] px-2.5 py-1 text-[11px] font-medium text-white">
                       {{ recipe.type }}
                     </div>
                   </div>
-                  <div class="voting-content">
-                    <h4 class="recipe-name">{{ recipe.name }}</h4>
-                    <div class="recipe-info">
-                      <div class="info-item">
-                        <span class="iconify" data-icon="mdi:clock-outline"></span>
+                  <div class="p-4">
+                    <h4 class="mb-3 text-base font-semibold text-[#2C2C2C] leading-tight">{{ recipe.name }}</h4>
+                    <div class="mb-4 flex items-center gap-2 text-xs text-[#6C7A6C]">
+                      <div class="flex items-center gap-1">
+                        <span class="iconify h-3 w-3" data-icon="mdi:clock-outline"></span>
                         <span>{{ recipe.time }}</span>
                       </div>
-                      <div class="info-divider">•</div>
-                      <div class="info-item">
-                        <span>👥 {{ getRecipeLikes(recipe.id) }} votos</span>
-                      </div>
+                      <div class="opacity-50">•</div>
+                      <div>👥 {{ getRecipeLikes(recipe.id) }} votos</div>
                     </div>
-                    <div class="voting-actions">
+                    <div class="flex gap-2">
                       <button
                         @click="handleVote(recipe.id)"
-                        class="vote-btn"
-                        :class="{ 'voted': hasVoted(recipe.id) }"
+                        class="flex-1 cursor-pointer rounded-xl border border-[rgba(0,0,0,0.08)] bg-transparent px-4 py-2.5 text-sm font-medium text-[#2C2C2C] transition-all duration-200 hover:bg-[#D8EBD0]"
+                        :class="{ 'border-[#5DA271] bg-[#5DA271] text-white hover:bg-[rgba(93,162,113,0.9)]': hasVoted(recipe.id) }"
                       >
                         {{ hasVoted(recipe.id) ? '✓ Votado' : '👍 Votar' }}
                       </button>
                       <button
                         @click="toggleFavorite(recipe)"
-                        class="favorite-btn"
+                        class="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border border-[rgba(0,0,0,0.08)] bg-transparent transition-all duration-200 hover:bg-[#D8EBD0]"
                       >
                         <span 
-                          class="iconify" 
+                          class="iconify h-5 w-5 transition-all"
+                          :class="isFavorite(recipe.id) ? 'text-red-500' : 'text-[#6C7A6C]'"
                           data-icon="mdi:heart"
-                          :class="{ 'favorited': isFavorite(recipe.id) }"
                         ></span>
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
-            </section>
+            </div>
 
             <!-- My Favorites -->
-            <section v-if="favorites.length > 0" class="dashboard-card">
-              <div class="card-header">
-                <div class="header-icon">
-                  <span class="iconify" data-icon="mdi:heart"></span>
+            <div v-if="favorites.length > 0" class="rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+              <div class="mb-6 flex items-center gap-4">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[rgba(93,162,113,0.2)]">
+                  <span class="iconify h-5 w-5 text-[#5DA271]" data-icon="mdi:heart"></span>
                 </div>
                 <div>
-                  <h2 class="card-title">Mis Favoritas</h2>
-                  <p class="card-subtitle">{{ favorites.length }} recetas guardadas</p>
+                  <h2 class="text-xl font-semibold text-[#2C2C2C]">Mis Favoritas</h2>
+                  <p class="text-sm text-[#6C7A6C]">{{ favorites.length }} recetas guardadas</p>
                 </div>
               </div>
 
-              <div class="favorites-grid">
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 <div 
                   v-for="recipe in favorites" 
                   :key="recipe.id"
-                  class="favorite-card"
+                  class="cursor-pointer overflow-hidden rounded-xl border border-[rgba(168,213,186,0.3)] bg-[rgba(168,213,186,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]"
                   @click="toggleFavorite(recipe)"
                 >
-                  <div class="favorite-image">
+                  <div class="relative h-24 overflow-hidden">
                     <img 
                       :src="recipe.image" 
                       :alt="recipe.name"
+                      class="h-full w-full object-cover"
                       @error="handleImageError"
                     />
-                    <div class="favorite-badge">
-                      <span class="iconify" data-icon="mdi:heart"></span>
+                    <div class="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90">
+                      <span class="iconify h-4 w-4 text-red-500" data-icon="mdi:heart"></span>
                     </div>
                   </div>
-                  <div class="favorite-content">
-                    <p class="favorite-name">{{ recipe.name }}</p>
-                    <p class="favorite-time">{{ recipe.time }}</p>
+                  <div class="p-3">
+                    <p class="mb-1 truncate text-sm font-medium text-[#2C2C2C]">{{ recipe.name }}</p>
+                    <p class="text-xs text-[#6C7A6C]">{{ recipe.time }}</p>
                   </div>
                 </div>
               </div>
-            </section>
+            </div>
 
             <!-- Family Members -->
-            <section class="dashboard-card">
-              <div class="card-header">
-                <div class="header-icon">
-                  <span class="iconify" data-icon="mdi:account-group"></span>
+            <div class="rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+              <div class="mb-6 flex items-center gap-4">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[rgba(93,162,113,0.2)]">
+                  <span class="iconify h-5 w-5 text-[#5DA271]" data-icon="mdi:account-group"></span>
                 </div>
                 <div>
-                  <h2 class="card-title">Miembros de la Familia</h2>
-                  <p class="card-subtitle">{{ familyMembers.length }} miembros</p>
+                  <h2 class="text-xl font-semibold text-[#2C2C2C]">Miembros de la Familia</h2>
+                  <p class="text-sm text-[#6C7A6C]">{{ familyMembers.length }} miembros</p>
                 </div>
               </div>
 
-              <div class="family-members-grid">
+              <div class="flex flex-wrap gap-4">
                 <div 
                   v-for="member in familyMembers" 
                   :key="member.id"
-                  class="family-member"
+                  class="flex items-center gap-3 rounded-xl border border-[rgba(168,213,186,0.3)] bg-[rgba(168,213,186,0.2)] px-4 py-3"
                 >
-                  <div class="member-avatar" :class="member.color">
+                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-semibold text-white" :class="member.color">
                     {{ member.initials }}
                   </div>
-                  <span class="member-name">{{ member.name }}</span>
+                  <span class="text-[15px] font-medium text-[#2C2C2C]">{{ member.name }}</span>
                 </div>
               </div>
-            </section>
+            </div>
           </div>
         </div>
       </main>
@@ -324,25 +322,25 @@ export default {
         id: '1',
         name: 'María',
         initials: 'MA',
-        color: 'avatar-primary'
+        color: 'bg-[#5DA271]'
       },
       {
         id: '2',
         name: 'Juan',
         initials: 'JU',
-        color: 'avatar-secondary'
+        color: 'bg-[#8BB174]'
       },
       {
         id: '3',
         name: 'Ana',
         initials: 'AN',
-        color: 'avatar-accent'
+        color: 'bg-[#A8D5BA] text-[#2C2C2C]'
       },
       {
         id: '4',
         name: 'Carlos',
         initials: 'CA',
-        color: 'avatar-muted'
+        color: 'bg-[#D8EBD0] text-[#2C2C2C]'
       }
     ])
     
@@ -359,7 +357,6 @@ export default {
     }
     
     const getRecipeLikes = (recipeId) => {
-      // Simular likes aleatorios
       return Math.floor(Math.random() * familyMembers.value.length) + 1
     }
     
@@ -382,11 +379,9 @@ export default {
       const isCurrentlyFavorite = isFavorite(recipe.id)
       
       if (isCurrentlyFavorite) {
-        // Remove from favorites
         favorites.value = favorites.value.filter(f => f.id !== recipe.id)
         alert('Removido de favoritos')
       } else {
-        // Add to favorites
         favorites.value.push(recipe)
         alert('Agregado a favoritos ❤️')
       }
@@ -406,7 +401,6 @@ export default {
     }
     
     const handleLogout = async () => {
-      // Aquí iría la lógica de logout
       console.log('Logout')
       router.push('/login')
     }
@@ -435,599 +429,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-/* Layout - Igual que las otras vistas */
-.familiar-dashboard-container {
-  min-height: 100vh;
-  background-color: var(--background);
-}
-
-.sidebar-fixed {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 260px;
-  height: 100vh;
-  z-index: 1000;
-  background-color: var(--card);
-  border-right: 1px solid var(--border);
-  transform: translateX(0);
-  transition: transform 0.3s ease-in-out;
-}
-
-.header-fixed {
-  position: fixed;
-  top: 0;
-  left: 260px;
-  right: 0;
-  height: 70px;
-  z-index: 900;
-  background-color: var(--card);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: left 0.3s ease-in-out;
-}
-
-.main-content-wrapper {
-  margin-left: 260px;
-  min-height: 100vh;
-  background-color: var(--background);
-  transition: margin-left 0.3s ease;
-}
-
-.content-main {
-  padding-top: 70px;
-  min-height: calc(100vh - 70px);
-  overflow-y: auto;
-  background-color: var(--background);
-}
-
-.content-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-  padding: 20px;
-}
-
-/* Familiar Dashboard View Styles */
-.familiar-dashboard-view {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* Welcome Section */
-.welcome-section {
-  background: linear-gradient(135deg, rgba(93, 162, 113, 0.2), rgba(168, 213, 186, 0.2));
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  padding: 32px;
-}
-
-.welcome-content {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.welcome-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.welcome-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-bottom: 4px;
-}
-
-.welcome-subtitle {
-  font-size: 16px;
-  color: var(--muted-foreground);
-}
-
-/* Dashboard Cards */
-.dashboard-card {
-  background-color: var(--card);
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.header-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background-color: rgba(93, 162, 113, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.header-icon .iconify {
-  width: 20px;
-  height: 20px;
-  color: var(--primary);
-}
-
-.card-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-bottom: 2px;
-}
-
-.card-subtitle {
-  font-size: 14px;
-  color: var(--muted-foreground);
-}
-
-/* Week View */
-.week-view-container {
-  overflow-x: auto;
-  padding-bottom: 8px;
-}
-
-.days-grid {
-  display: inline-flex;
-  gap: 16px;
-  min-width: 100%;
-}
-
-.day-column {
-  width: 160px;
-  flex-shrink: 0;
-}
-
-.day-header {
-  margin-bottom: 16px;
-}
-
-.day-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--foreground);
-  text-align: center;
-}
-
-.meals-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.meal-slot {
-  text-align: center;
-}
-
-.meal-label {
-  font-size: 12px;
-  color: var(--muted-foreground);
-  margin-bottom: 8px;
-}
-
-.meal-card-small {
-  background-color: var(--card);
-  border-radius: 12px;
-  padding: 8px;
-  border: 1px solid var(--border);
-}
-
-.meal-image-small {
-  width: 100%;
-  height: 64px;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-
-.meal-image-small img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.meal-name-small {
-  font-size: 11px;
-  color: var(--foreground);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.empty-meal-slot {
-  background-color: rgba(168, 213, 186, 0.2);
-  border-radius: 12px;
-  padding: 8px;
-  height: 88px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(168, 213, 186, 0.3);
-}
-
-.empty-text {
-  font-size: 14px;
-  color: var(--muted-foreground);
-}
-
-/* Voting Section */
-.voting-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.voting-card {
-  background-color: rgba(168, 213, 186, 0.2);
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(168, 213, 186, 0.3);
-  transition: all 0.3s ease;
-}
-
-.voting-card:hover {
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.voting-image {
-  position: relative;
-  height: 128px;
-  overflow: hidden;
-}
-
-.voting-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.recipe-type-badge {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 500;
-  border: none;
-}
-
-.voting-content {
-  padding: 16px;
-}
-
-.recipe-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-bottom: 12px;
-  line-height: 1.3;
-}
-
-.recipe-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  font-size: 12px;
-  color: var(--muted-foreground);
-}
-
-.info-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.info-item .iconify {
-  width: 12px;
-  height: 12px;
-}
-
-.info-divider {
-  opacity: 0.5;
-}
-
-.voting-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.vote-btn {
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background-color: transparent;
-  color: var(--foreground);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.vote-btn:hover {
-  background-color: var(--muted);
-}
-
-.vote-btn.voted {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  border-color: var(--primary);
-}
-
-.favorite-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background-color: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.favorite-btn:hover {
-  background-color: var(--muted);
-}
-
-.favorite-btn .iconify {
-  width: 20px;
-  height: 20px;
-  color: var(--muted-foreground);
-  transition: all 0.2s;
-}
-
-.favorite-btn .iconify.favorited {
-  color: #ef4444;
-  fill: #ef4444;
-}
-
-/* Favorites Section */
-.favorites-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
-}
-
-.favorite-card {
-  background-color: rgba(168, 213, 186, 0.2);
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(168, 213, 186, 0.3);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.favorite-card:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.favorite-image {
-  position: relative;
-  height: 96px;
-  overflow: hidden;
-}
-
-.favorite-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.favorite-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background-color: rgba(255, 255, 255, 0.9);
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.favorite-badge .iconify {
-  width: 16px;
-  height: 16px;
-  color: #ef4444;
-  fill: #ef4444;
-}
-
-.favorite-content {
-  padding: 12px;
-}
-
-.favorite-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--foreground);
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.favorite-time {
-  font-size: 12px;
-  color: var(--muted-foreground);
-}
-
-/* Family Members */
-.family-members-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.family-member {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background-color: rgba(168, 213, 186, 0.2);
-  border-radius: 12px;
-  padding: 12px 16px;
-  border: 1px solid rgba(168, 213, 186, 0.3);
-}
-
-.member-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 600;
-  color: white;
-  flex-shrink: 0;
-}
-
-.avatar-primary {
-  background-color: var(--primary);
-}
-
-.avatar-secondary {
-  background-color: var(--secondary);
-}
-
-.avatar-accent {
-  background-color: var(--accent);
-}
-
-.avatar-muted {
-  background-color: var(--muted);
-}
-
-.member-name {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--foreground);
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-  /* Layout responsive */
-  .sidebar-fixed {
-    transform: translateX(-100%);
-    width: 280px;
-    transition: transform 0.3s ease;
-  }
-  
-  .mobile-menu-open .sidebar-fixed {
-    transform: translateX(0);
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
-  }
-  
-  .header-fixed {
-    left: 0;
-    right: 0;
-  }
-  
-  .main-content-wrapper {
-    margin-left: 0;
-    width: 100%;
-  }
-  
-  .content-container {
-    padding: 16px;
-  }
-  
-  /* Responsive específico */
-  .welcome-content {
-    flex-direction: column;
-    text-align: center;
-    gap: 16px;
-  }
-  
-  .welcome-avatar {
-    width: 56px;
-    height: 56px;
-  }
-  
-  .welcome-title {
-    font-size: 24px;
-  }
-  
-  .voting-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .favorites-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .family-members-grid {
-    justify-content: center;
-  }
-  
-  .day-column {
-    width: 140px;
-  }
-}
-
-@media (max-width: 480px) {
-  .favorites-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .family-member {
-    flex: 1;
-    min-width: calc(50% - 8px);
-    flex-direction: column;
-    text-align: center;
-    padding: 16px;
-  }
-  
-  .member-avatar {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 8px;
-  }
-  
-  .days-grid {
-    gap: 12px;
-  }
-  
-  .day-column {
-    width: 120px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .voting-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
-  .favorites-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-</style>
