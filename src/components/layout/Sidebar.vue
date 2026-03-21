@@ -1,130 +1,135 @@
-
 <template>
-  <aside class="sidebar" :class="{ 'mobile-open': isMobileOpen }">
+  <aside 
+    class="fixed left-0 top-0 z-1000 flex h-screen w-65 flex-col border-r border-[rgba(0,0,0,0.08)] bg-white bg-linear-to-b from-white to-[rgba(255,255,255,0.95)] transition-transform duration-300 ease-in-out max-md:-translate-x-full max-md:w-70 max-md:shadow-[10px_0_30px_rgba(0,0,0,0.1)]" 
+    :class="{ 'max-md:translate-x-0': isMobileOpen }"
+  >
     <!-- Close button for mobile -->
-    <button v-if="isMobileOpen" class="sidebar-close" @click="closeSidebar">
-      <span class="iconify" data-icon="mdi:close"></span>
+    <button v-if="isMobileOpen" class="absolute right-4 top-4 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-[#2C2C2C] transition-colors hover:bg-[#D8EBD0] max-md:flex" @click="closeSidebar">
+      <span class="iconify text-2" data-icon="mdi:close"></span>
     </button>
 
     <!-- Logo -->
-    <div class="sidebar-logo">
-      <div class="logo-icon">
-        <span class="iconify" data-icon="mdi:chef-hat"></span>
+    <div class="flex items-center gap-3 border-b border-[rgba(0,0,0,0.08)] px-5 pb-5 pt-6">
+      <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-[#5DA271] to-[#8BB174]">
+        <span class="iconify text-2 text-white" data-icon="mdi:chef-hat"></span>
       </div>
-      <h2 class="logo-text">Esencia Casera</h2>
+      <h2 class="m-0 bg-linear-to-br from-[#5DA271] to-[#8BB174] bg-clip-text text-xl font-bold text-transparent">Esencia Casera</h2>
     </div>
 
     <!-- User Info -->
-    <div class="sidebar-user">
-      <div class="user-avatar">
-        <span class="iconify" data-icon="mdi:account-circle"></span>
+    <div class="flex items-center gap-3 border-b border-[rgba(0,0,0,0.08)] px-5 py-5">
+      <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#A8D5BA] to-[#5DA271]">
+        <span class="iconify text-2xl text-white" data-icon="mdi:account-circle"></span>
       </div>
-      <div class="user-info">
-        <p class="user-name">{{ userName || 'Usuario' }}</p>
-        <p class="user-role" :class="userRole">
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-[15px] font-semibold text-[#2C2C2C]">{{ userName || 'Usuario' }}</p>
+        <p 
+          class="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
+          :class="userRole === 'admin' ? 'bg-[rgba(93,162,113,0.15)] text-[#5DA271]' : 'bg-[rgba(139,177,116,0.15)] text-[#8BB174]'"
+        >
           {{ userRole === 'admin' ? 'Administrador' : 'Familiar' }}
         </p>
       </div>
     </div>
 
     <!-- Navigation -->
-    <nav class="sidebar-nav">
-      <ul class="nav-list">
+    <nav class="flex-1 overflow-y-auto py-4">
+      <ul class="m-0 list-none p-0">
         <!-- Inicio para ambos roles -->
-        <li class="nav-item">
+        <li class="mb-1">
           <router-link 
             :to="userRole === 'admin' ? '/home' : '/familiar-dashboard'" 
-            class="nav-link"
-            :class="{ 'active': $route.path === (userRole === 'admin' ? '/home' : '/familiar-dashboard') }"
+            class="relative flex items-center gap-3 px-5 py-3.5 text-[#2C2C2C] no-underline transition-all duration-200 hover:bg-[#D8EBD0]"
+            :class="{ 'bg-linear-to-r from-[rgba(93,162,113,0.1)] to-[rgba(93,162,113,0.05)] text-[#5DA271] border-r-3 border-r-[#5DA271]': $route.path === (userRole === 'admin' ? '/home' : '/familiar-dashboard') }"
             @click="closeSidebarOnMobile"
           >
-            <span class="iconify nav-icon" data-icon="mdi:home"></span>
-            <span class="nav-text">Inicio</span>
+            <span class="iconify w-6 text-center text-[22px] text-[#6C7A6C]" :class="{ 'text-[#5DA271]': $route.path === (userRole === 'admin' ? '/home' : '/familiar-dashboard') }" data-icon="mdi:home"></span>
+            <span class="flex-1 text-sm font-medium">Inicio</span>
           </router-link>
         </li>
 
         <!-- Solo para admin -->
-        <li v-if="userRole === 'admin'" class="nav-item">
+        <li v-if="userRole === 'admin'" class="mb-1">
           <router-link 
             to="/planificador" 
-            class="nav-link"
-            :class="{ 'active': $route.path === '/planificador' }"
+            class="relative flex items-center gap-3 px-5 py-3.5 text-[#2C2C2C] no-underline transition-all duration-200 hover:bg-[#D8EBD0]"
+            :class="{ 'bg-linear-to-r from-[rgba(93,162,113,0.1)] to-[rgba(93,162,113,0.05)] text-[#5DA271] border-r-3 border-r-[#5DA271]': $route.path === '/planificador' }"
             @click="closeSidebarOnMobile"
           >
-            <span class="iconify nav-icon" data-icon="mdi:calendar"></span>
-            <span class="nav-text">Planificador</span>
+            <span class="iconify w-6 text-center text-[22px] text-[#6C7A6C]" :class="{ 'text-[#5DA271]': $route.path === '/planificador' }" data-icon="mdi:calendar"></span>
+            <span class="flex-1 text-sm font-medium">Planificador</span>
           </router-link>
         </li>
 
-        <li v-if="userRole === 'admin'" class="nav-item">
+        <li v-if="userRole === 'admin'" class="mb-1">
           <router-link 
             to="/lista-compras" 
-            class="nav-link"
-            :class="{ 'active': $route.path === '/lista-compras' }"
+            class="relative flex items-center gap-3 px-5 py-3.5 text-[#2C2C2C] no-underline transition-all duration-200 hover:bg-[#D8EBD0]"
+            :class="{ 'bg-linear-to-r from-[rgba(93,162,113,0.1)] to-[rgba(93,162,113,0.05)] text-[#5DA271] border-r-3 border-r-[#5DA271]': $route.path === '/lista-compras' }"
             @click="closeSidebarOnMobile"
           >
-            <span class="iconify nav-icon" data-icon="mdi:cart"></span>
-            <span class="nav-text">Lista de Compras</span>
+            <span class="iconify w-6 text-center text-[22px] text-[#6C7A6C]" :class="{ 'text-[#5DA271]': $route.path === '/lista-compras' }" data-icon="mdi:cart"></span>
+            <span class="flex-1 text-sm font-medium">Lista de Compras</span>
           </router-link>
         </li>
 
-        <li v-if="userRole === 'admin'" class="nav-item">
+        <li v-if="userRole === 'admin'" class="mb-1">
           <router-link 
             to="/recetas" 
-            class="nav-link"
-            :class="{ 'active': $route.path === '/recetas' }"
+            class="relative flex items-center gap-3 px-5 py-3.5 text-[#2C2C2C] no-underline transition-all duration-200 hover:bg-[#D8EBD0]"
+            :class="{ 'bg-linear-to-r from-[rgba(93,162,113,0.1)] to-[rgba(93,162,113,0.05)] text-[#5DA271] border-r-3 border-r-[#5DA271]': $route.path === '/recetas' }"
             @click="closeSidebarOnMobile"
           >
-            <span class="iconify nav-icon" data-icon="mdi:book-open"></span>
-            <span class="nav-text">Recetas</span>
+            <span class="iconify w-6 text-center text-[22px] text-[#6C7A6C]" :class="{ 'text-[#5DA271]': $route.path === '/recetas' }" data-icon="mdi:book-open"></span>
+            <span class="flex-1 text-sm font-medium">Recetas</span>
           </router-link>
         </li>
 
         <!-- Para ambos roles -->
-        <li class="nav-item">
+        <li class="mb-1">
           <router-link 
             to="/favoritas" 
-            class="nav-link"
-            :class="{ 'active': $route.path === '/favoritas' }"
+            class="relative flex items-center gap-3 px-5 py-3.5 text-[#2C2C2C] no-underline transition-all duration-200 hover:bg-[#D8EBD0]"
+            :class="{ 'bg-linear-to-r from-[rgba(93,162,113,0.1)] to-[rgba(93,162,113,0.05)] text-[#5DA271] border-r-3 border-r-[#5DA271]': $route.path === '/favoritas' }"
             @click="closeSidebarOnMobile"
           >
-            <span class="iconify nav-icon" data-icon="mdi:heart"></span>
-            <span class="nav-text">Favoritas</span>
+            <span class="iconify w-6 text-center text-[22px] text-[#6C7A6C]" :class="{ 'text-[#5DA271]': $route.path === '/favoritas' }" data-icon="mdi:heart"></span>
+            <span class="flex-1 text-sm font-medium">Favoritas</span>
           </router-link>
         </li>
 
         <!-- Solo para admin -->
-        <li v-if="userRole === 'admin'" class="nav-item">
+        <li v-if="userRole === 'admin'" class="mb-1">
           <router-link 
             to="/familia" 
-            class="nav-link"
-            :class="{ 'active': $route.path === '/familia' }"
+            class="relative flex items-center gap-3 px-5 py-3.5 text-[#2C2C2C] no-underline transition-all duration-200 hover:bg-[#D8EBD0]"
+            :class="{ 'bg-linear-to-r from-[rgba(93,162,113,0.1)] to-[rgba(93,162,113,0.05)] text-[#5DA271] border-r-3 border-r-[#5DA271]': $route.path === '/familia' }"
             @click="closeSidebarOnMobile"
           >
-            <span class="iconify nav-icon" data-icon="mdi:account-group"></span>
-            <span class="nav-text">Familia</span>
+            <span class="iconify w-6 text-center text-[22px] text-[#6C7A6C]" :class="{ 'text-[#5DA271]': $route.path === '/familia' }" data-icon="mdi:account-group"></span>
+            <span class="flex-1 text-sm font-medium">Familia</span>
           </router-link>
         </li>
 
         <!-- Para ambos roles -->
-        <li class="nav-item">
+        <li class="mb-1">
           <router-link 
             to="/configuracion" 
-            class="nav-link"
-            :class="{ 'active': $route.path === '/configuracion' }"
+            class="relative flex items-center gap-3 px-5 py-3.5 text-[#2C2C2C] no-underline transition-all duration-200 hover:bg-[#D8EBD0]"
+            :class="{ 'bg-linear-to-r from-[rgba(93,162,113,0.1)] to-[rgba(93,162,113,0.05)] text-[#5DA271] border-r-3 border-r-[#5DA271]': $route.path === '/configuracion' }"
             @click="closeSidebarOnMobile"
           >
-            <span class="iconify nav-icon" data-icon="mdi:cog"></span>
-            <span class="nav-text">Configuración</span>
+            <span class="iconify w-6 text-center text-[22px] text-[#6C7A6C]" :class="{ 'text-[#5DA271]': $route.path === '/configuracion' }" data-icon="mdi:cog"></span>
+            <span class="flex-1 text-sm font-medium">Configuración</span>
           </router-link>
         </li>
       </ul>
     </nav>
 
     <!-- Logout Button -->
-    <div class="sidebar-footer">
-      <button class="logout-btn" @click="handleLogout">
-        <span class="iconify" data-icon="mdi:logout"></span>
+    <div class="border-t border-[rgba(0,0,0,0.08)] p-5">
+      <button class="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl bg-linear-to-br from-[#d4183d] to-[#dc2626] border-none px-3 py-3 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(239,68,68,0.3)]" @click="handleLogout">
+        <span class="iconify text-lg" data-icon="mdi:logout"></span>
         <span>Cerrar Sesión</span>
       </button>
     </div>
@@ -184,250 +189,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-/* Sidebar Base Styles */
-.sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 260px;
-  height: 100vh;
-  background: linear-gradient(180deg, var(--card) 0%, color-mix(in srgb, var(--card) 95%, black) 100%);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  z-index: 1000;
-  transform: translateX(0);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Logo */
-.sidebar-logo {
-  padding: 24px 20px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.logo-icon {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logo-icon .iconify {
-  font-size: 24px;
-  color: white;
-}
-
-.logo-text {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--foreground);
-  margin: 0;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* User Info */
-.sidebar-user {
-  padding: 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.user-avatar {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.user-avatar .iconify {
-  font-size: 28px;
-  color: white;
-}
-
-.user-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.user-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin: 0 0 4px 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-role {
-  font-size: 12px;
-  font-weight: 500;
-  padding: 2px 10px;
-  border-radius: 12px;
-  display: inline-block;
-}
-
-.user-role.admin {
-  background-color: rgba(93, 162, 113, 0.15);
-  color: var(--primary);
-}
-
-.user-role.familiar {
-  background-color: rgba(139, 177, 116, 0.15);
-  color: var(--secondary);
-}
-
-/* Navigation */
-.sidebar-nav {
-  flex: 1;
-  padding: 16px 0;
-  overflow-y: auto;
-}
-
-.nav-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.nav-item {
-  margin-bottom: 4px;
-}
-
-.nav-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-  color: var(--foreground);
-  text-decoration: none;
-  transition: all 0.2s;
-  position: relative;
-}
-
-.nav-link:hover {
-  background-color: var(--muted);
-}
-
-.nav-link.active {
-  background: linear-gradient(90deg, rgba(93, 162, 113, 0.1) 0%, rgba(93, 162, 113, 0.05) 100%);
-  color: var(--primary);
-  border-right: 3px solid var(--primary);
-}
-
-.nav-link.active .nav-icon {
-  color: var(--primary);
-}
-
-.nav-icon {
-  font-size: 22px;
-  color: var(--muted-foreground);
-  width: 24px;
-  text-align: center;
-}
-
-.nav-text {
-  font-size: 14px;
-  font-weight: 500;
-  flex: 1;
-}
-
-.nav-badge {
-  background-color: var(--destructive);
-  color: white;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
-  min-width: 20px;
-  text-align: center;
-}
-
-/* Logout Button */
-.sidebar-footer {
-  padding: 20px;
-  border-top: 1px solid var(--border);
-}
-
-.logout-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 12px;
-  background: linear-gradient(135deg, var(--destructive) 0%, #dc2626 100%);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.logout-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
-
-.logout-btn .iconify {
-  font-size: 18px;
-}
-
-/* Mobile Styles */
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-    width: 280px;
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
-  }
-
-  .sidebar.mobile-open {
-    transform: translateX(0);
-  }
-
-  .sidebar-close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: none;
-    border: none;
-    width: 40px;
-  height: 40px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--foreground);
-    z-index: 10;
-  }
-
-  .sidebar-close:hover {
-    background-color: var(--muted);
-  }
-
-  .sidebar-close .iconify {
-    font-size: 24px;
-  }
-}
-</style>

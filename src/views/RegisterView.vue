@@ -1,34 +1,37 @@
-
 <template>
-  <div class="register-container">
-    <div class="register-wrapper">
-      <!-- Logo and Welcome -->
-      <div class="logo-section">
-        <div class="logo-circle">
-          <span class="iconify" data-icon="mdi:chef-hat"></span>
+  <div class="min-h-screen bg-linear-to-br from-[rgba(93,162,113,0.15)] via-[rgba(139,177,116,0.15)] to-[rgba(168,213,186,0.15)] flex items-center justify-center p-5">
+    <div class="w-full max-w-md">
+      <!-- Logo and Welcome with Animation -->
+      <div class="mb-8 text-center animate-fade-in">
+        <div class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-linear-to-br from-[#5DA271] to-[#8BB174] shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
+          <span class="iconify text-5xl text-white" data-icon="mdi:chef-hat"></span>
         </div>
-        <h1 class="app-name">Esencia Casera</h1>
-        <p class="app-tagline">Únete a tu familia</p>
+        <h1 class="mb-2 text-4xl font-bold bg-linear-to-r from-[#5DA271] to-[#8BB174] bg-clip-text text-transparent">Esencia Casera</h1>
+        <p class="text-sm text-[#6C7A6C]">Únete a tu familia</p>
       </div>
 
       <!-- Register Card -->
-      <div class="register-card">
-        <h2 class="register-title">Crear Cuenta</h2>
+      <div class="rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white p-6 shadow-xl transition-all duration-300 hover:shadow-2xl sm:p-8">
+        <h2 class="mb-6 text-center text-2xl font-semibold text-[#2C2C2C]">Crear Cuenta</h2>
 
         <!-- Tabs -->
-        <div class="tabs-wrapper">
-          <div class="tabs">
+        <div class="mb-6">
+          <div class="grid grid-cols-2 gap-1 rounded-lg bg-[rgba(156,163,175,0.1)] p-1">
             <button 
-              class="tab-button" 
-              :class="{ 'active': role === 'admin' }"
+              class="cursor-pointer rounded-md px-4 py-2.5 text-sm font-medium transition-all duration-200"
+              :class="role === 'admin' 
+                ? 'bg-white text-[#2C2C2C] shadow-sm' 
+                : 'text-[#6C7A6C] hover:bg-white/50'"
               @click="role = 'admin'"
               type="button"
             >
               Crear Familia
             </button>
             <button 
-              class="tab-button" 
-              :class="{ 'active': role === 'familiar' }"
+              class="cursor-pointer rounded-md px-4 py-2.5 text-sm font-medium transition-all duration-200"
+              :class="role === 'familiar' 
+                ? 'bg-white text-[#2C2C2C] shadow-sm' 
+                : 'text-[#6C7A6C] hover:bg-white/50'"
               @click="role = 'familiar'"
               type="button"
             >
@@ -36,36 +39,36 @@
             </button>
           </div>
           
-          <div class="tab-content">
-            <p v-if="role === 'admin'" class="tab-description">
+          <div class="mt-4 text-center">
+            <p v-if="role === 'admin'" class="text-sm text-[#6C7A6C] leading-relaxed">
               Crea una nueva familia y obtén un código para invitar a tus familiares
             </p>
-            <p v-if="role === 'familiar'" class="tab-description">
+            <p v-if="role === 'familiar'" class="text-sm text-[#6C7A6C] leading-relaxed">
               Únete a una familia existente usando el código de invitación
             </p>
           </div>
         </div>
 
-        <form class="register-form" @submit.prevent="handleRegister">
+        <form class="flex flex-col gap-4" @submit.prevent="handleRegister">
           <!-- Mensaje de éxito -->
-          <div v-if="successMessage" class="success-message">
-            <span class="iconify" data-icon="mdi:check-circle"></span>
-            <span class="success-text">{{ successMessage }}</span>
+          <div v-if="successMessage" class="flex items-center gap-2 rounded-xl border border-[rgba(16,185,129,0.2)] bg-[rgba(16,185,129,0.1)] p-3 text-sm font-medium text-[#10b981]">
+            <span class="iconify shrink-0 text-xl" data-icon="mdi:check-circle"></span>
+            <span class="flex-1">{{ successMessage }}</span>
           </div>
 
           <!-- Mensaje de error -->
-          <div v-if="error" class="error-message">
-            <span class="iconify" data-icon="mdi:alert-circle"></span>
-            <span class="error-text">{{ error }}</span>
+          <div v-if="error" class="flex items-center gap-2 rounded-xl border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.1)] p-3 text-sm font-medium text-[#ef4444]">
+            <span class="iconify shrink-0 text-xl" data-icon="mdi:alert-circle"></span>
+            <span class="flex-1" v-html="error"></span>
           </div>
 
-          <div class="input-group">
-            <label class="input-label">Nombre completo</label>
-            <div class="input-with-icon">
-              <span class="iconify input-left-icon" data-icon="mdi:account"></span>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-sm font-medium text-[#2C2C2C]">Nombre completo</label>
+            <div class="relative">
+              <span class="iconify absolute left-3 top-1/2 -translate-y-1/2 text-xl text-[#9ca3af]" data-icon="mdi:account"></span>
               <input 
                 type="text" 
-                class="text-input"
+                class="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-4 py-3 pl-10 text-[16px] text-[#2C2C2C] transition-all duration-200 placeholder:text-[#9ca3af] focus:border-[#5DA271] focus:outline-none focus:ring-3 focus:ring-[rgba(93,162,113,0.2)] disabled:cursor-not-allowed disabled:bg-[#f9fafb]"
                 placeholder="María Contreras"
                 v-model="form.name"
                 required
@@ -75,13 +78,13 @@
             </div>
           </div>
 
-          <div class="input-group">
-            <label class="input-label">Email</label>
-            <div class="input-with-icon">
-              <span class="iconify input-left-icon" data-icon="mdi:email"></span>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-sm font-medium text-[#2C2C2C]">Email</label>
+            <div class="relative">
+              <span class="iconify absolute left-3 top-1/2 -translate-y-1/2 text-xl text-[#9ca3af]" data-icon="mdi:email"></span>
               <input 
                 type="email" 
-                class="text-input"
+                class="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-4 py-3 pl-10 text-[16px] text-[#2C2C2C] transition-all duration-200 placeholder:text-[#9ca3af] focus:border-[#5DA271] focus:outline-none focus:ring-3 focus:ring-[rgba(93,162,113,0.2)] disabled:cursor-not-allowed disabled:bg-[#f9fafb]"
                 placeholder="tu@email.com"
                 v-model="form.email"
                 required
@@ -91,13 +94,13 @@
             </div>
           </div>
 
-          <div class="input-group">
-            <label class="input-label">Contraseña</label>
-            <div class="input-with-icon">
-              <span class="iconify input-left-icon" data-icon="mdi:lock"></span>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-sm font-medium text-[#2C2C2C]">Contraseña</label>
+            <div class="relative">
+              <span class="iconify absolute left-3 top-1/2 -translate-y-1/2 text-xl text-[#9ca3af]" data-icon="mdi:lock"></span>
               <input 
                 type="password" 
-                class="text-input"
+                class="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-4 py-3 pl-10 text-[16px] text-[#2C2C2C] transition-all duration-200 placeholder:text-[#9ca3af] focus:border-[#5DA271] focus:outline-none focus:ring-3 focus:ring-[rgba(93,162,113,0.2)] disabled:cursor-not-allowed disabled:bg-[#f9fafb]"
                 placeholder="••••••••"
                 v-model="form.password"
                 required
@@ -106,17 +109,17 @@
                 :disabled="isLoading"
               />
             </div>
-            <p class="input-hint">Mínimo 6 caracteres</p>
+            <p class="mt-1 text-xs text-[#6C7A6C]">Mínimo 6 caracteres</p>
           </div>
 
           <!-- Family code solo para "Unirse" -->
-          <div v-if="role === 'familiar'" class="input-group">
-            <label class="input-label">Código de familia</label>
-            <div class="input-with-icon">
-              <span class="iconify input-left-icon" data-icon="mdi:pound"></span>
+          <div v-if="role === 'familiar'" class="flex flex-col gap-1.5">
+            <label class="text-sm font-medium text-[#2C2C2C]">Código de familia</label>
+            <div class="relative">
+              <span class="iconify absolute left-3 top-1/2 -translate-y-1/2 text-xl text-[#9ca3af]" data-icon="mdi:pound"></span>
               <input 
                 type="text" 
-                class="text-input"
+                class="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-4 py-3 pl-10 text-[16px] text-[#2C2C2C] uppercase transition-all duration-200 placeholder:text-[#9ca3af] focus:border-[#5DA271] focus:outline-none focus:ring-3 focus:ring-[rgba(93,162,113,0.2)] disabled:cursor-not-allowed disabled:bg-[#f9fafb]"
                 placeholder="FAM-2024-ABC"
                 v-model="form.familyCode"
                 @input="formatFamilyCode"
@@ -124,27 +127,36 @@
                 :disabled="isLoading"
               />
             </div>
-            <p class="input-hint">
+            <p class="mt-1 text-xs text-[#6C7A6C]">
               Pide el código al administrador de tu familia
             </p>
           </div>
 
           <button 
             type="submit" 
-            class="submit-button"
+            class="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-linear-to-r from-[#5DA271] to-[#8BB174] py-3.5 text-base font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70"
             :disabled="isLoading"
           >
-            <span v-if="isLoading" class="iconify spin-icon" data-icon="mdi:loading"></span>
-            <span v-else>{{ isLoading ? 'Procesando...' : 'Crear Cuenta' }}</span>
+            <span v-if="isLoading" class="iconify animate-spin text-xl" data-icon="mdi:loading"></span>
+            <span v-else>{{ role === 'admin' ? 'Crear Familia' : 'Unirse a Familia' }}</span>
           </button>
         </form>
 
-        <div class="login-link">
-          <p class="login-text">
+        <div class="mt-6 border-t border-[rgba(0,0,0,0.08)] pt-6 text-center">
+          <p class="text-sm text-[#6C7A6C]">
             ¿Ya tienes cuenta? 
-            <button type="button" class="link-button" @click="goToLogin" :disabled="isLoading">
+            <button type="button" class="cursor-pointer font-semibold text-[#5DA271] transition-colors hover:text-[#8BB174] hover:underline" @click="goToLogin" :disabled="isLoading">
               Inicia sesión
             </button>
+          </p>
+        </div>
+
+        <!-- Demo Info Card -->
+        <div class="mt-6 rounded-xl bg-[rgba(93,162,113,0.05)] p-4 border border-[rgba(93,162,113,0.2)]">
+          <p class="text-center text-xs font-semibold uppercase tracking-wide text-[#6C7A6C]">¿Cómo funciona?</p>
+          <p class="mt-2 text-center text-xs text-[#6C7A6C] leading-relaxed">
+            <span class="font-medium text-[#5DA271]">Crear Familia:</span> Serás administrador y podrás invitar a otros.<br>
+            <span class="font-medium text-[#5DA271]">Unirse:</span> Necesitas un código de invitación de un administrador.
           </p>
         </div>
       </div>
@@ -180,80 +192,80 @@ export default {
       form.value.familyCode = event.target.value.toUpperCase()
     }
     
-const handleRegister = async () => {
-  console.log('📝 Iniciando registro...')
-  
-  // Reset messages
-  error.value = ''
-  successMessage.value = ''
-  
-  // Validación básica
-  if (!form.value.email || !form.value.password || !form.value.name) {
-    error.value = 'Por favor completa todos los campos obligatorios'
-    return
-  }
-  
-  // Validar contraseña
-  if (form.value.password.length < 6) {
-    error.value = 'La contraseña debe tener al menos 6 caracteres'
-    return
-  }
-  
-  try {
-    // Registrar en Supabase
-    const result = await authStore.register(
-      form.value.email,
-      form.value.password,
-      form.value.name,
-      role.value,
-      role.value === 'familiar' ? form.value.familyCode : null
-    )
-    
-    console.log('📊 Resultado:', result)
-    
-    if (result.success) {
-      if (result.needsEmailConfirmation) {
-        // Email de confirmación enviado
-        successMessage.value = '✅ ¡Registro exitoso! Revisa tu email para confirmar tu cuenta.'
-        
-        // Limpiar formulario
-        form.value.email = ''
-        form.value.password = ''
-        form.value.name = ''
-        form.value.familyCode = ''
-        
-        // Redirigir a login después de 3 segundos
-        setTimeout(() => {
-          router.push('/login')
-        }, 3000)
-        
-      } else {
-        // Sesión automática
-        successMessage.value = `✅ ¡Bienvenido ${form.value.name}! Cuenta creada exitosamente.`
-        
-        // Redirigir según rol
-        setTimeout(() => {
-          if (result.role === 'admin') {
-            router.push('/home')
-          } else {
-            router.push('/familiar-dashboard')
-          }
-        }, 2000)
-      }
-    } else {
-      // Mostrar error
-      error.value = result.error || 'Error al crear la cuenta'
+    const handleRegister = async () => {
+      console.log('📝 Iniciando registro...')
       
-      // Sugerencias según error
-      if (result.error?.includes('already registered')) {
-        error.value += ' ¿Ya tienes cuenta? <a href="/login" class="text-primary">Inicia sesión aquí</a>'
+      // Reset messages
+      error.value = ''
+      successMessage.value = ''
+      
+      // Validación básica
+      if (!form.value.email || !form.value.password || !form.value.name) {
+        error.value = 'Por favor completa todos los campos obligatorios'
+        return
+      }
+      
+      // Validar contraseña
+      if (form.value.password.length < 6) {
+        error.value = 'La contraseña debe tener al menos 6 caracteres'
+        return
+      }
+      
+      try {
+        // Registrar en Supabase
+        const result = await authStore.register(
+          form.value.email,
+          form.value.password,
+          form.value.name,
+          role.value,
+          role.value === 'familiar' ? form.value.familyCode : null
+        )
+        
+        console.log('📊 Resultado:', result)
+        
+        if (result.success) {
+          if (result.needsEmailConfirmation) {
+            // Email de confirmación enviado
+            successMessage.value = '✅ ¡Registro exitoso! Revisa tu email para confirmar tu cuenta.'
+            
+            // Limpiar formulario
+            form.value.email = ''
+            form.value.password = ''
+            form.value.name = ''
+            form.value.familyCode = ''
+            
+            // Redirigir a login después de 3 segundos
+            setTimeout(() => {
+              router.push('/login')
+            }, 3000)
+            
+          } else {
+            // Sesión automática
+            successMessage.value = `✅ ¡Bienvenido ${form.value.name}! Cuenta creada exitosamente.`
+            
+            // Redirigir según rol
+            setTimeout(() => {
+              if (result.role === 'admin') {
+                router.push('/home')
+              } else {
+                router.push('/familiar-dashboard')
+              }
+            }, 2000)
+          }
+        } else {
+          // Mostrar error
+          error.value = result.error || 'Error al crear la cuenta'
+          
+          // Sugerencias según error
+          if (result.error?.includes('already registered')) {
+            error.value = 'Este email ya está registrado. <a href="/login" class="text-[#5DA271] hover:underline">Inicia sesión aquí</a>'
+          }
+        }
+      } catch (err) {
+        console.error('❌ Error:', err)
+        error.value = 'Error inesperado. Por favor, intenta nuevamente.'
       }
     }
-  } catch (err) {
-    console.error('❌ Error:', err)
-    error.value = 'Error inesperado. Por favor, intenta nuevamente.'
-  }
-}
     
     const goToLogin = () => {
       router.push('/login')
@@ -272,312 +284,3 @@ const handleRegister = async () => {
   }
 }
 </script>
-
-
-<style scoped>
-/* Estilos existentes... */
-.register-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, 
-    rgba(16, 185, 129, 0.15) 0%,
-    rgba(245, 158, 11, 0.15) 50%,
-    rgba(139, 92, 246, 0.15) 100%
-  );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.register-wrapper {
-  width: 100%;
-  max-width: 450px;
-}
-
-/* Logo Section (reutilizado de Login) */
-.logo-section {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.logo-circle {
-  width: 80px;
-  height: 80px;
-  background-color: #10b981;
-  border-radius: 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.logo-circle .iconify {
-  font-size: 48px;
-  color: white;
-}
-
-.app-name {
-  font-size: 36px;
-  color: #10b981;
-  margin: 0 0 8px 0;
-  font-weight: 600;
-}
-
-.app-tagline {
-  color: #6b7280;
-  margin: 0;
-  font-size: 14px;
-}
-
-/* Register Card */
-.register-card {
-  background-color: white;
-  border-radius: 16px;
-  border: 1px solid #e5e7eb;
-  padding: 24px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-@media (min-width: 640px) {
-  .register-card {
-    padding: 32px;
-  }
-}
-
-.register-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: #111827;
-  text-align: center;
-  margin: 0 0 24px 0;
-}
-
-/* Tabs */
-.tabs-wrapper {
-  margin-bottom: 24px;
-}
-
-.tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  background-color: rgba(156, 163, 175, 0.1);
-  padding: 4px;
-  border-radius: 8px;
-}
-
-.tab-button {
-  padding: 10px 16px;
-  border-radius: 6px;
-  border: none;
-  background: none;
-  font-size: 14px;
-  font-weight: 500;
-  color: #6b7280;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.tab-button.active {
-  background-color: white;
-  color: #111827;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.tab-button:hover:not(.active) {
-  background-color: rgba(255, 255, 255, 0.5);
-}
-
-.tab-content {
-  margin-top: 16px;
-}
-
-.tab-description {
-  font-size: 14px;
-  color: #6b7280;
-  text-align: center;
-  margin: 0;
-  line-height: 1.5;
-}
-
-/* Form (reutilizado de Login con modificaciones) */
-.register-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* Mensaje de éxito */
-.success-message {
-  background-color: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 12px;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #10b981;
-}
-
-.success-message .iconify {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.success-text {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* Mensaje de error */
-.error-message {
-  background-color: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 12px;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #ef4444;
-}
-
-.error-message .iconify {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.error-text {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* Input Groups */
-.input-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.input-label {
-  font-size: 14px;
-  color: #374151;
-  margin-bottom: 6px;
-  font-weight: 500;
-}
-
-.input-with-icon {
-  position: relative;
-}
-
-.input-left-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 20px;
-  color: #9ca3af;
-}
-
-.text-input {
-  width: 100%;
-  padding: 12px 12px 12px 40px;
-  border-radius: 12px;
-  border: 1px solid #d1d5db;
-  background-color: white;
-  color: #111827;
-  font-size: 16px;
-  transition: all 0.2s;
-  box-sizing: border-box;
-}
-
-.text-input:focus {
-  outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-}
-
-.text-input::placeholder {
-  color: #9ca3af;
-}
-
-.text-input:disabled {
-  background-color: #f9fafb;
-  cursor: not-allowed;
-}
-
-.input-hint {
-  font-size: 12px;
-  color: #6b7280;
-  margin: 4px 0 0 0;
-}
-
-/* Submit Button */
-.submit-button {
-  width: 100%;
-  background-color: #10b981;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 14px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.submit-button:hover:not(:disabled) {
-  background-color: #0da271;
-}
-
-.submit-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.spin-icon {
-  animation: spin 1s linear infinite;
-  font-size: 20px;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Login Link */
-.login-link {
-  margin-top: 24px;
-  text-align: center;
-  padding-top: 24px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.login-text {
-  color: #6b7280;
-  font-size: 14px;
-  margin: 0;
-}
-
-.link-button {
-  color: #10b981;
-  background: none;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 4px;
-}
-
-.link-button:hover {
-  text-decoration: underline;
-}
-
-.link-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-</style>

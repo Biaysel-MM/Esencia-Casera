@@ -1,99 +1,98 @@
-<!-- src/views/ListaComprasView.vue -->
 <template>
-  <div class="min-h-screen bg-gray-50" :class="{ 'overflow-hidden': isMobileMenuOpen }">
+  <div class="min-h-screen bg-[#F6F9F6]" :class="{ 'max-md:overflow-hidden': isMobileMenuOpen }">
     <!-- Sidebar - Fixed position -->
     <Sidebar 
       :is-mobile-open="isMobileMenuOpen" 
       @close="closeMobileMenu" 
-      class="fixed left-0 top-0 w-65 h-screen z-1000 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out md:translate-x-0"
-      :class="{ '-translate-x-full': !isMobileMenuOpen, 'translate-x-0': isMobileMenuOpen }"
+      class="fixed left-0 top-0 z-1000 h-screen w-65 border-r border-[rgba(0,0,0,0.08)] bg-white transition-transform duration-300 ease-in-out max-md:w-70 max-md:-translate-x-full"
+      :class="{ 'max-md:translate-x-0': isMobileMenuOpen }"
     />
 
     <!-- Main Content Area -->
-    <div class="min-h-screen bg-gray-50 transition-all duration-300 md:ml-65">
+    <div class="min-h-screen bg-[#F6F9F6] transition-all duration-300 max-md:ml-0 md:ml-65">
       <Header 
         @toggle-mobile-menu="toggleMobileMenu" 
         @logout="handleLogout" 
-        class="fixed top-0 right-0 left-0 md:left-65 h-17.5 z-900 bg-white border-b border-gray-200 shadow-sm"
+        class="fixed left-65 right-0 top-0 z-900 h-17.5 border-b border-[rgba(0,0,0,0.08)] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.05)] transition-all duration-300 max-md:left-0 max-md:h-16"
       />
 
       <!-- Scrollable Content -->
-      <main class="pt-17.5 min-h-[calc(100vh-70px)] overflow-y-auto bg-gray-50">
-        <div class="max-w-350 mx-auto w-full p-5 md:p-6">
+      <main class="min-h-[calc(100vh-70px)] overflow-y-auto bg-[#F6F9F6] pt-17.5 max-md:pt-16">
+        <div class="mx-auto w-full max-w-350 p-5 md:p-6">
           <!-- Contenido de la lista de compras -->
           <div>
             <!-- Header de la lista -->
             <div class="mb-6">
               <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
-                  <span class="iconify w-6 h-6 text-emerald-600" data-icon="mdi:cart"></span>
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[rgba(93,162,113,0.2)]">
+                  <span class="iconify h-6 w-6 text-[#5DA271]" data-icon="mdi:cart"></span>
                 </div>
                 <div>
-                  <h1 class="text-2xl font-semibold text-gray-900 mb-1">Lista de Compras</h1>
-                  <p class="text-sm text-gray-500">{{ checkedCount }} de {{ totalCount }} completados</p>
+                  <h1 class="mb-1 text-2xl font-semibold text-[#2C2C2C]">Lista de Compras</h1>
+                  <p class="text-sm text-[#6C7A6C]">{{ checkedCount }} de {{ totalCount }} completados</p>
                 </div>
               </div>
             </div>
 
             <!-- Barra de progreso -->
-            <div v-if="totalCount > 0" class="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm text-gray-900">Progreso</span>
-                <span class="text-sm font-semibold text-emerald-600">{{ Math.round(progress) }}%</span>
+            <div v-if="totalCount > 0" class="mb-6 rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-4 shadow-sm">
+              <div class="mb-2 flex items-center justify-between">
+                <span class="text-sm text-[#2C2C2C]">Progreso</span>
+                <span class="text-sm font-semibold text-[#5DA271]">{{ Math.round(progress) }}%</span>
               </div>
-              <div class="w-full h-2 bg-emerald-100 rounded-full overflow-hidden">
-                <div class="h-full bg-linear-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-300" :style="{ width: progress + '%' }"></div>
+              <div class="h-2 w-full overflow-hidden rounded-full bg-[rgba(93,162,113,0.2)]">
+                <div class="h-full rounded-full bg-linear-to-r from-[#5DA271] to-[#8BB174] transition-all duration-300" :style="{ width: progress + '%' }"></div>
               </div>
             </div>
 
             <!-- Grid principal -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <!-- Lista de compras - Ocupa 2 columnas en lg -->
               <div class="lg:col-span-2">
                 <div v-if="Object.keys(groupedItems).length > 0" class="space-y-4">
-                  <div v-for="(items, category) in groupedItems" :key="category" class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ category }}</h3>
+                  <div v-for="(items, category) in groupedItems" :key="category" class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-5 shadow-sm">
+                    <h3 class="mb-4 text-lg font-semibold text-[#2C2C2C]">{{ category }}</h3>
                     <div class="space-y-3">
                       <div v-for="item in items" :key="item.id" 
-                        class="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl transition-all duration-200 hover:bg-emerald-100 hover:border-emerald-500 hover:-translate-y-px hover:shadow-md border border-transparent">
-                        <label class="relative flex items-center cursor-pointer" @click.stop>
+                        class="flex items-center gap-3 rounded-xl border border-transparent bg-[rgba(93,162,113,0.05)] p-3 transition-all duration-200 hover:-translate-y-px hover:border-[#5DA271] hover:bg-[rgba(93,162,113,0.1)] hover:shadow-md">
+                        <label class="relative flex cursor-pointer items-center" @click.stop>
                           <input 
                             type="checkbox" 
                             :checked="item.checked"
                             @change="toggleShoppingItem(item.id)"
-                            class="absolute opacity-0 cursor-pointer h-0 w-0"
+                            class="absolute h-0 w-0 cursor-pointer opacity-0"
                           >
-                          <span v-if="item.checked" class="w-5 h-5 rounded-md transition-all duration-200 flex items-center justify-center bg-emerald-600 border-emerald-600">✓</span>
-                          <span v-else class="w-5 h-5 bg-white border-2 border-gray-300 rounded-md transition-all duration-200 flex items-center justify-center">
+                          <span v-if="item.checked" class="flex h-5 w-5 items-center justify-center rounded-md border-[#5DA271] bg-[#5DA271] transition-all duration-200">✓</span>
+                          <span v-else class="flex h-5 w-5 items-center justify-center rounded-md border-2 border-[rgba(0,0,0,0.2)] bg-white transition-all duration-200">
                           </span>
                         </label>
-                        <div class="flex-1 min-w-0" @click="toggleShoppingItem(item.id)">
-                          <p :class="['text-sm font-medium text-gray-900 mb-0.5 transition-all duration-200 cursor-pointer', { 'line-through text-gray-400': item.checked }]">
+                        <div class="min-w-0 flex-1" @click="toggleShoppingItem(item.id)">
+                          <p :class="['mb-0.5 cursor-pointer text-sm font-medium text-[#2C2C2C] transition-all duration-200', { 'text-[#6C7A6C] line-through': item.checked }]">
                             {{ item.name }}
                           </p>
-                          <p class="text-xs text-gray-500">{{ item.quantity }}</p>
+                          <p class="text-xs text-[#6C7A6C]">{{ item.quantity }}</p>
                         </div>
                         <button 
-                          class="w-8 h-8 rounded-lg border border-red-200 bg-white flex items-center justify-center cursor-pointer transition-all duration-200 text-gray-400 hover:bg-red-50 hover:border-red-500 hover:text-red-500"
+                          class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-[rgba(212,24,61,0.2)] bg-white text-[#6C7A6C] transition-all duration-200 hover:border-[#d4183d] hover:bg-[rgba(212,24,61,0.05)] hover:text-[#d4183d]"
                           @click="removeFromShoppingList(item.id)"
                         >
-                          <span class="iconify w-4 h-4" data-icon="mdi:trash-can-outline"></span>
+                          <span class="iconify h-4 w-4" data-icon="mdi:trash-can-outline"></span>
                         </button>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div v-else class="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
-                  <div class="w-16 h-16 mx-auto mb-4 text-gray-400">
-                    <span class="iconify w-16 h-16" data-icon="mdi:cart-outline"></span>
+                <div v-else class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-12 text-center shadow-sm">
+                  <div class="mx-auto mb-4 text-[#6C7A6C]">
+                    <span class="iconify h-16 w-16" data-icon="mdi:cart-outline"></span>
                   </div>
-                  <h3 class="text-lg font-semibold text-gray-900 mb-2">Tu lista está vacía</h3>
-                  <p class="text-sm text-gray-500 mb-6 max-w-md mx-auto">
+                  <h3 class="mb-2 text-lg font-semibold text-[#2C2C2C]">Tu lista está vacía</h3>
+                  <p class="mx-auto mb-6 max-w-md text-sm text-[#6C7A6C]">
                     Comienza agregando productos que necesitas comprar
                   </p>
                   <button 
-                    class="bg-emerald-600 text-white border-none px-6 py-3 rounded-xl text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-emerald-700 hover:-translate-y-px hover:shadow-lg"
+                    class="cursor-pointer rounded-xl border-none bg-[#5DA271] px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-px hover:bg-[rgba(93,162,113,0.9)] hover:shadow-lg"
                     @click="openAddItemModal"
                   >
                     Agregar productos
@@ -102,16 +101,16 @@
               </div>
 
               <!-- Panel lateral para agregar artículos -->
-              <div class="lg:sticky lg:top-22.5 h-fit">
-                <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                  <h3 class="text-lg font-semibold text-gray-900 mb-5">Agregar artículo</h3>
+              <div class="lg:sticky lg:top-22 h-fit">
+                <div class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-6 shadow-sm">
+                  <h3 class="mb-5 text-lg font-semibold text-[#2C2C2C]">Agregar artículo</h3>
                   <button 
-                    class="w-full bg-emerald-600 text-white border-none py-4 rounded-xl text-sm font-medium cursor-pointer transition-all duration-200 mb-4 hover:bg-emerald-700 hover:-translate-y-px hover:shadow-lg"
+                    class="mb-4 w-full cursor-pointer rounded-xl border-none bg-[#5DA271] py-4 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-px hover:bg-[rgba(93,162,113,0.9)] hover:shadow-lg"
                     @click="openAddItemModal"
                   >
                     Buscar productos
                   </button>
-                  <p class="text-xs text-gray-500 text-center leading-relaxed">
+                  <p class="text-center text-xs leading-relaxed text-[#6C7A6C]">
                     Usa el buscador visual para agregar productos a tu lista
                   </p>
                 </div>
@@ -119,37 +118,37 @@
             </div>
 
             <!-- Modal para agregar productos -->
-            <div v-if="showAddItemModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-5 backdrop-blur-sm" @click="closeAddItemModal">
-              <div class="bg-white rounded-xl w-full max-w-200 max-h-[80vh] flex flex-col overflow-hidden shadow-2xl border border-gray-200" @click.stop>
-                <div class="p-6 border-b border-gray-200 relative bg-white">
-                  <h3 class="text-lg font-semibold text-gray-900 mb-1">Buscar productos</h3>
-                  <p class="text-sm text-gray-500">Agrega productos a tu lista de compras</p>
-                  <button class="absolute top-5 right-5 w-8 h-8 rounded-lg border-none bg-transparent flex items-center justify-center cursor-pointer text-gray-400 transition-all duration-200 hover:bg-gray-100" @click="closeAddItemModal">
-                    <span class="iconify w-5 h-5" data-icon="mdi:close"></span>
+            <div v-if="showAddItemModal" class="fixed inset-0 z-2000 flex items-center justify-center bg-black/50 p-5 backdrop-blur-sm" @click="closeAddItemModal">
+              <div class="flex max-h-[80vh] w-full max-w-200 flex-col overflow-hidden rounded-xl border border-[rgba(0,0,0,0.08)] bg-white shadow-2xl" @click.stop>
+                <div class="relative border-b border-[rgba(0,0,0,0.08)] bg-white p-6">
+                  <h3 class="mb-1 text-lg font-semibold text-[#2C2C2C]">Buscar productos</h3>
+                  <p class="text-sm text-[#6C7A6C]">Agrega productos a tu lista de compras</p>
+                  <button class="absolute right-5 top-5 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border-none bg-transparent text-[#6C7A6C] transition-all duration-200 hover:bg-[#D8EBD0]" @click="closeAddItemModal">
+                    <span class="iconify h-5 w-5" data-icon="mdi:close"></span>
                   </button>
                 </div>
 
-                <div class="pt-5 px-6 pb-0">
+                <div class="px-6 pb-0 pt-5">
                   <div class="relative">
-                    <span class="iconify absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" data-icon="mdi:magnify"></span>
+                    <span class="iconify absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#6C7A6C]" data-icon="mdi:magnify"></span>
                     <input 
                       type="text" 
                       v-model="searchQuery"
                       placeholder="Buscar productos..."
-                      class="w-full py-3.5 pl-12 pr-5 rounded-xl border border-gray-200 bg-white text-gray-900 text-sm transition-all duration-200 focus:outline-none focus:border-emerald-600 focus:ring-3 focus:ring-emerald-100"
+                      class="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white py-3.5 pl-12 pr-5 text-sm text-[#2C2C2C] transition-all duration-200 focus:border-[#5DA271] focus:outline-none focus:ring-3 focus:ring-[rgba(93,162,113,0.2)]"
                       @input="filterProducts"
                     >
                   </div>
                 </div>
 
                 <div class="flex-1 overflow-y-auto p-6">
-                  <div class="flex gap-2 mb-5 flex-wrap">
+                  <div class="mb-5 flex flex-wrap gap-2">
                     <button 
                       v-for="category in productCategories" 
                       :key="category.key"
                       :class="[
-                        'px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-700 text-xs font-medium cursor-pointer transition-all duration-200 whitespace-nowrap hover:border-emerald-600 hover:text-emerald-600',
-                        { 'bg-emerald-600 text-white border-emerald-600': activeCategory === category.key }
+                        'cursor-pointer whitespace-nowrap rounded-full border border-[rgba(0,0,0,0.08)] bg-white px-4 py-2 text-xs font-medium text-[#2C2C2C] transition-all duration-200 hover:border-[#5DA271] hover:text-[#5DA271]',
+                        { 'border-[#5DA271] bg-[#5DA271] text-white hover:bg-[rgba(93,162,113,0.9)]': activeCategory === category.key }
                       ]"
                       @click="setActiveCategory(category.key)"
                     >
@@ -157,22 +156,22 @@
                     </button>
                   </div>
 
-                  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                     <div 
                       v-for="product in filteredProducts" 
                       :key="product.id"
-                      class="bg-white rounded-xl border border-gray-200 overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-emerald-600"
+                      class="cursor-pointer overflow-hidden rounded-xl border border-[rgba(0,0,0,0.08)] bg-white transition-all duration-200 hover:-translate-y-1 hover:border-[#5DA271] hover:shadow-lg"
                       @click="addProductToList(product)"
                     >
                       <div class="relative h-28 overflow-hidden">
-                        <img :src="product.image" :alt="product.name" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" @error="handleImageError">
-                        <div class="absolute top-2 left-2 bg-emerald-600 text-white px-2 py-1 rounded text-[10px] font-medium">
+                        <img :src="product.image" :alt="product.name" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" @error="handleImageError">
+                        <div class="absolute left-2 top-2 rounded bg-[#5DA271] px-2 py-1 text-[10px] font-medium text-white">
                           {{ product.category }}
                         </div>
                       </div>
                       <div class="p-3">
-                        <h4 class="text-sm font-medium text-gray-900 mb-1">{{ product.name }}</h4>
-                        <p class="text-xs text-emerald-600 font-semibold">{{ product.price }}</p>
+                        <h4 class="mb-1 text-sm font-medium text-[#2C2C2C]">{{ product.name }}</h4>
+                        <p class="text-xs font-semibold text-[#5DA271]">{{ product.price }}</p>
                       </div>
                     </div>
                   </div>
