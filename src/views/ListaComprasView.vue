@@ -1,87 +1,99 @@
 <!-- src/views/ListaComprasView.vue -->
 <template>
-  <div class="lista-compras-container" :class="{ 'mobile-menu-open': isMobileMenuOpen }">
+  <div class="min-h-screen bg-gray-50" :class="{ 'overflow-hidden': isMobileMenuOpen }">
     <!-- Sidebar - Fixed position -->
-    <Sidebar :is-mobile-open="isMobileMenuOpen" @close="closeMobileMenu" class="sidebar-fixed" />
+    <Sidebar 
+      :is-mobile-open="isMobileMenuOpen" 
+      @close="closeMobileMenu" 
+      class="fixed left-0 top-0 w-65 h-screen z-1000 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out md:translate-x-0"
+      :class="{ '-translate-x-full': !isMobileMenuOpen, 'translate-x-0': isMobileMenuOpen }"
+    />
 
     <!-- Main Content Area -->
-    <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': !isMobileMenuOpen }">
-      <Header @toggle-mobile-menu="toggleMobileMenu" @logout="handleLogout" class="header-fixed" />
+    <div class="min-h-screen bg-gray-50 transition-all duration-300 md:ml-65">
+      <Header 
+        @toggle-mobile-menu="toggleMobileMenu" 
+        @logout="handleLogout" 
+        class="fixed top-0 right-0 left-0 md:left-65 h-17.5 z-900 bg-white border-b border-gray-200 shadow-sm"
+      />
 
       <!-- Scrollable Content -->
-      <main class="content-main">
-        <div class="content-container">
+      <main class="pt-17.5 min-h-[calc(100vh-70px)] overflow-y-auto bg-gray-50">
+        <div class="max-w-350 mx-auto w-full p-5 md:p-6">
           <!-- Contenido de la lista de compras -->
-          <div class="lista-compras-view">
+          <div>
             <!-- Header de la lista -->
-            <div class="lista-header">
-              <div class="header-left">
-                <div class="header-icon-container">
-                  <span class="iconify" data-icon="mdi:cart"></span>
+            <div class="mb-6">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+                  <span class="iconify w-6 h-6 text-emerald-600" data-icon="mdi:cart"></span>
                 </div>
                 <div>
-                  <h1 class="lista-title">Lista de Compras</h1>
-                  <p class="lista-subtitle">{{ checkedCount }} de {{ totalCount }} completados</p>
+                  <h1 class="text-2xl font-semibold text-gray-900 mb-1">Lista de Compras</h1>
+                  <p class="text-sm text-gray-500">{{ checkedCount }} de {{ totalCount }} completados</p>
                 </div>
               </div>
             </div>
 
             <!-- Barra de progreso -->
-            <div v-if="totalCount > 0" class="progress-card">
-              <div class="progress-header">
-                <span class="progress-label">Progreso</span>
-                <span class="progress-percentage">{{ Math.round(progress) }}%</span>
+            <div v-if="totalCount > 0" class="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-gray-900">Progreso</span>
+                <span class="text-sm font-semibold text-emerald-600">{{ Math.round(progress) }}%</span>
               </div>
-              <div class="progress-bar">
-                <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+              <div class="w-full h-2 bg-emerald-100 rounded-full overflow-hidden">
+                <div class="h-full bg-linear-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-300" :style="{ width: progress + '%' }"></div>
               </div>
             </div>
 
             <!-- Grid principal -->
-            <div class="compras-grid">
-              <!-- Lista de compras -->
-              <div class="shopping-list-section">
-                <div v-if="Object.keys(groupedItems).length > 0" class="categories-container">
-                  <div v-for="(items, category) in groupedItems" :key="category" class="category-card">
-                    <h3 class="category-title">{{ category }}</h3>
-                    <div class="items-list">
-                      <div v-for="item in items" :key="item.id" class="item-card">
-                        <label class="item-checkbox">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <!-- Lista de compras - Ocupa 2 columnas en lg -->
+              <div class="lg:col-span-2">
+                <div v-if="Object.keys(groupedItems).length > 0" class="space-y-4">
+                  <div v-for="(items, category) in groupedItems" :key="category" class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ category }}</h3>
+                    <div class="space-y-3">
+                      <div v-for="item in items" :key="item.id" 
+                        class="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl transition-all duration-200 hover:bg-emerald-100 hover:border-emerald-500 hover:-translate-y-px hover:shadow-md border border-transparent">
+                        <label class="relative flex items-center cursor-pointer" @click.stop>
                           <input 
                             type="checkbox" 
                             :checked="item.checked"
                             @change="toggleShoppingItem(item.id)"
-                            class="checkbox-input"
+                            class="absolute opacity-0 cursor-pointer h-0 w-0"
                           >
-                          <span class="checkmark"></span>
+                          <span v-if="item.checked" class="w-5 h-5 rounded-md transition-all duration-200 flex items-center justify-center bg-emerald-600 border-emerald-600">✓</span>
+                          <span v-else class="w-5 h-5 bg-white border-2 border-gray-300 rounded-md transition-all duration-200 flex items-center justify-center">
+                          </span>
                         </label>
-                        <div class="item-info">
-                          <p :class="['item-name', { 'checked': item.checked }]">
+                        <div class="flex-1 min-w-0" @click="toggleShoppingItem(item.id)">
+                          <p :class="['text-sm font-medium text-gray-900 mb-0.5 transition-all duration-200 cursor-pointer', { 'line-through text-gray-400': item.checked }]">
                             {{ item.name }}
                           </p>
-                          <p class="item-quantity">{{ item.quantity }}</p>
+                          <p class="text-xs text-gray-500">{{ item.quantity }}</p>
                         </div>
                         <button 
-                          class="delete-btn"
+                          class="w-8 h-8 rounded-lg border border-red-200 bg-white flex items-center justify-center cursor-pointer transition-all duration-200 text-gray-400 hover:bg-red-50 hover:border-red-500 hover:text-red-500"
                           @click="removeFromShoppingList(item.id)"
                         >
-                          <span class="iconify" data-icon="mdi:trash-can-outline"></span>
+                          <span class="iconify w-4 h-4" data-icon="mdi:trash-can-outline"></span>
                         </button>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div v-else class="empty-state">
-                  <div class="empty-icon">
-                    <span class="iconify" data-icon="mdi:cart-outline"></span>
+                <div v-else class="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
+                  <div class="w-16 h-16 mx-auto mb-4 text-gray-400">
+                    <span class="iconify w-16 h-16" data-icon="mdi:cart-outline"></span>
                   </div>
-                  <h3 class="empty-title">Tu lista está vacía</h3>
-                  <p class="empty-description">
+                  <h3 class="text-lg font-semibold text-gray-900 mb-2">Tu lista está vacía</h3>
+                  <p class="text-sm text-gray-500 mb-6 max-w-md mx-auto">
                     Comienza agregando productos que necesitas comprar
                   </p>
                   <button 
-                    class="empty-action-btn"
+                    class="bg-emerald-600 text-white border-none px-6 py-3 rounded-xl text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-emerald-700 hover:-translate-y-px hover:shadow-lg"
                     @click="openAddItemModal"
                   >
                     Agregar productos
@@ -90,16 +102,16 @@
               </div>
 
               <!-- Panel lateral para agregar artículos -->
-              <div class="add-item-section">
-                <div class="add-item-card">
-                  <h3 class="add-item-title">Agregar artículo</h3>
+              <div class="lg:sticky lg:top-22.5 h-fit">
+                <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                  <h3 class="text-lg font-semibold text-gray-900 mb-5">Agregar artículo</h3>
                   <button 
-                    class="search-btn"
+                    class="w-full bg-emerald-600 text-white border-none py-4 rounded-xl text-sm font-medium cursor-pointer transition-all duration-200 mb-4 hover:bg-emerald-700 hover:-translate-y-px hover:shadow-lg"
                     @click="openAddItemModal"
                   >
                     Buscar productos
                   </button>
-                  <p class="add-item-hint">
+                  <p class="text-xs text-gray-500 text-center leading-relaxed">
                     Usa el buscador visual para agregar productos a tu lista
                   </p>
                 </div>
@@ -107,55 +119,60 @@
             </div>
 
             <!-- Modal para agregar productos -->
-            <div v-if="showAddItemModal" class="add-item-modal-overlay" @click="closeAddItemModal">
-              <div class="add-item-modal" @click.stop>
-                <div class="modal-header">
-                  <h3 class="modal-title">Buscar productos</h3>
-                  <p class="modal-description">Agrega productos a tu lista de compras</p>
-                  <button class="modal-close" @click="closeAddItemModal">
-                    <span class="iconify" data-icon="mdi:close"></span>
+            <div v-if="showAddItemModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-5 backdrop-blur-sm" @click="closeAddItemModal">
+              <div class="bg-white rounded-xl w-full max-w-200 max-h-[80vh] flex flex-col overflow-hidden shadow-2xl border border-gray-200" @click.stop>
+                <div class="p-6 border-b border-gray-200 relative bg-white">
+                  <h3 class="text-lg font-semibold text-gray-900 mb-1">Buscar productos</h3>
+                  <p class="text-sm text-gray-500">Agrega productos a tu lista de compras</p>
+                  <button class="absolute top-5 right-5 w-8 h-8 rounded-lg border-none bg-transparent flex items-center justify-center cursor-pointer text-gray-400 transition-all duration-200 hover:bg-gray-100" @click="closeAddItemModal">
+                    <span class="iconify w-5 h-5" data-icon="mdi:close"></span>
                   </button>
                 </div>
 
-                <div class="search-container">
-                  <div class="search-input-wrapper">
-                    <span class="iconify search-icon" data-icon="mdi:magnify"></span>
+                <div class="pt-5 px-6 pb-0">
+                  <div class="relative">
+                    <span class="iconify absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" data-icon="mdi:magnify"></span>
                     <input 
                       type="text" 
                       v-model="searchQuery"
                       placeholder="Buscar productos..."
-                      class="search-input"
+                      class="w-full py-3.5 pl-12 pr-5 rounded-xl border border-gray-200 bg-white text-gray-900 text-sm transition-all duration-200 focus:outline-none focus:border-emerald-600 focus:ring-3 focus:ring-emerald-100"
                       @input="filterProducts"
                     >
                   </div>
                 </div>
 
-                <div class="products-scroll-container">
-                  <div class="categories-tabs">
+                <div class="flex-1 overflow-y-auto p-6">
+                  <div class="flex gap-2 mb-5 flex-wrap">
                     <button 
                       v-for="category in productCategories" 
                       :key="category.key"
-                      :class="['category-tab', { 'active': activeCategory === category.key }]"
+                      :class="[
+                        'px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-700 text-xs font-medium cursor-pointer transition-all duration-200 whitespace-nowrap hover:border-emerald-600 hover:text-emerald-600',
+                        { 'bg-emerald-600 text-white border-emerald-600': activeCategory === category.key }
+                      ]"
                       @click="setActiveCategory(category.key)"
                     >
                       {{ category.name }}
                     </button>
                   </div>
 
-                  <div class="products-grid">
+                  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     <div 
                       v-for="product in filteredProducts" 
                       :key="product.id"
-                      class="product-card"
+                      class="bg-white rounded-xl border border-gray-200 overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-emerald-600"
                       @click="addProductToList(product)"
                     >
-                      <div class="product-image">
-                        <img :src="product.image" :alt="product.name" @error="handleImageError">
-                        <div class="product-category">{{ product.category }}</div>
+                      <div class="relative h-28 overflow-hidden">
+                        <img :src="product.image" :alt="product.name" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" @error="handleImageError">
+                        <div class="absolute top-2 left-2 bg-emerald-600 text-white px-2 py-1 rounded text-[10px] font-medium">
+                          {{ product.category }}
+                        </div>
                       </div>
-                      <div class="product-info">
-                        <h4>{{ product.name }}</h4>
-                        <p class="product-price">{{ product.price }}</p>
+                      <div class="p-3">
+                        <h4 class="text-sm font-medium text-gray-900 mb-1">{{ product.name }}</h4>
+                        <p class="text-xs text-emerald-600 font-semibold">{{ product.price }}</p>
                       </div>
                     </div>
                   </div>
@@ -310,12 +327,10 @@ export default {
     const filterProducts = () => {
       let filtered = [...allProducts.value]
 
-      // Filtrar por categoría
       if (activeCategory.value !== 'all') {
         filtered = filtered.filter(product => product.category === activeCategory.value)
       }
 
-      // Filtrar por búsqueda
       if (searchQuery.value.trim() !== '') {
         const query = searchQuery.value.toLowerCase()
         filtered = filtered.filter(product => 
@@ -328,7 +343,6 @@ export default {
     }
 
     const addProductToList = (product) => {
-      // Verificar si el producto ya está en la lista
       const exists = shoppingList.value.some(item => 
         item.name.toLowerCase() === product.name.toLowerCase()
       )
@@ -341,10 +355,8 @@ export default {
           checked: false
         })
         
-        // Mostrar feedback visual (aquí podrías usar un toast)
         closeAddItemModal()
       } else {
-        // Producto ya existe en la lista
         alert(`${product.name} ya está en tu lista de compras`)
       }
     }
@@ -381,688 +393,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-/* Layout - Igual que HomeView y PlanificadorView */
-.lista-compras-container {
-  min-height: 100vh;
-  background-color: var(--background);
-}
-
-.sidebar-fixed {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 260px;
-  height: 100vh;
-  z-index: 1000;
-  background-color: var(--card);
-  border-right: 1px solid var(--border);
-  transform: translateX(0);
-  transition: transform 0.3s ease-in-out;
-}
-
-.header-fixed {
-  position: fixed;
-  top: 0;
-  left: 260px;
-  right: 0;
-  height: 70px;
-  z-index: 900;
-  background-color: var(--card);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: left 0.3s ease-in-out;
-}
-
-.main-content-wrapper {
-  margin-left: 260px;
-  min-height: 100vh;
-  background-color: var(--background);
-  transition: margin-left 0.3s ease;
-}
-
-.content-main {
-  padding-top: 70px;
-  min-height: calc(100vh - 70px);
-  overflow-y: auto;
-  background-color: var(--background);
-}
-
-.content-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-  padding: 20px;
-}
-
-/* Header de la lista */
-.lista-header {
-  margin-bottom: 24px;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.header-icon-container {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background-color: rgba(93, 162, 113, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.header-icon-container .iconify {
-  width: 24px;
-  height: 24px;
-  color: var(--primary);
-}
-
-.lista-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-bottom: 4px;
-}
-
-.lista-subtitle {
-  font-size: 14px;
-  color: var(--muted-foreground);
-}
-
-/* Barra de progreso */
-.progress-card {
-  background-color: var(--card);
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  padding: 16px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.progress-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.progress-label {
-  font-size: 14px;
-  color: var(--foreground);
-}
-
-.progress-percentage {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--primary);
-}
-
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background-color: rgba(168, 213, 186, 0.3);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-/* Grid principal */
-.compras-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 24px;
-}
-
-/* Lista de compras */
-.categories-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.category-card {
-  background-color: var(--card);
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.category-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-bottom: 16px;
-}
-
-.items-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.item-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background-color: rgba(168, 213, 186, 0.2);
-  border-radius: 12px;
-  transition: all 0.2s;
-  border: 1px solid transparent;
-}
-
-.item-card:hover {
-  background-color: rgba(168, 213, 186, 0.3);
-  border-color: var(--primary);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* Checkbox personalizado */
-.item-checkbox {
-  position: relative;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.checkbox-input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
-}
-
-.checkmark {
-  width: 20px;
-  height: 20px;
-  background-color: white;
-  border: 2px solid var(--border);
-  border-radius: 6px;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.checkbox-input:checked ~ .checkmark {
-  background-color: var(--primary);
-  border-color: var(--primary);
-}
-
-.checkbox-input:checked ~ .checkmark::after {
-  content: '✓';
-  color: white;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.item-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.item-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--foreground);
-  margin-bottom: 2px;
-  transition: all 0.2s;
-}
-
-.item-name.checked {
-  text-decoration: line-through;
-  color: var(--muted-foreground);
-}
-
-.item-quantity {
-  font-size: 12px;
-  color: var(--muted-foreground);
-}
-
-.delete-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid rgba(212, 24, 61, 0.2);
-  background-color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: var(--muted-foreground);
-}
-
-.delete-btn:hover {
-  background-color: rgba(212, 24, 61, 0.1);
-  border-color: var(--destructive);
-  color: var(--destructive);
-}
-
-.delete-btn .iconify {
-  width: 16px;
-  height: 16px;
-}
-
-/* Estado vacío */
-.empty-state {
-  background-color: var(--card);
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  padding: 48px 20px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.empty-icon {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 16px;
-  color: var(--muted-foreground);
-}
-
-.empty-icon .iconify {
-  width: 64px;
-  height: 64px;
-}
-
-.empty-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-bottom: 8px;
-}
-
-.empty-description {
-  font-size: 14px;
-  color: var(--muted-foreground);
-  margin-bottom: 24px;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.empty-action-btn {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  border: none;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.empty-action-btn:hover {
-  background-color: rgba(93, 162, 113, 0.9);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(93, 162, 113, 0.2);
-}
-
-/* Panel lateral para agregar artículos */
-.add-item-section {
-  position: sticky;
-  top: 90px;
-  height: fit-content;
-}
-
-.add-item-card {
-  background-color: var(--card);
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.add-item-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-bottom: 20px;
-}
-
-.search-btn {
-  width: 100%;
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  border: none;
-  padding: 16px;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 16px;
-}
-
-.search-btn:hover {
-  background-color: rgba(93, 162, 113, 0.9);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(93, 162, 113, 0.2);
-}
-
-.add-item-hint {
-  font-size: 13px;
-  color: var(--muted-foreground);
-  text-align: center;
-  line-height: 1.5;
-}
-
-/* Modal para agregar productos */
-.add-item-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  padding: 20px;
-  backdrop-filter: blur(4px);
-}
-
-.add-item-modal {
-  background-color: var(--card);
-  border-radius: 16px;
-  width: 100%;
-  max-width: 800px;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  border: 1px solid var(--border);
-}
-
-.modal-header {
-  padding: 24px;
-  border-bottom: 1px solid var(--border);
-  position: relative;
-  background-color: var(--card);
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-bottom: 4px;
-}
-
-.modal-description {
-  font-size: 14px;
-  color: var(--muted-foreground);
-}
-
-.modal-close {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: none;
-  background: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--muted-foreground);
-  transition: all 0.2s;
-}
-
-.modal-close:hover {
-  background-color: var(--muted);
-}
-
-.modal-close .iconify {
-  width: 20px;
-  height: 20px;
-}
-
-/* Buscador del modal */
-.search-container {
-  padding: 20px 24px 0;
-}
-
-.search-input-wrapper {
-  position: relative;
-}
-
-.search-icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  color: var(--muted-foreground);
-}
-
-.search-input {
-  width: 100%;
-  padding: 14px 20px 14px 48px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background-color: var(--input-background);
-  color: var(--foreground);
-  font-size: 15px;
-  transition: all 0.2s;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(93, 162, 113, 0.1);
-}
-
-/* Lista de productos */
-.products-scroll-container {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px 24px 24px;
-}
-
-.categories-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.category-tab {
-  padding: 8px 16px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background-color: var(--input-background);
-  color: var(--foreground);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.category-tab:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.category-tab.active {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  border-color: var(--primary);
-}
-
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
-}
-
-.product-card {
-  background-color: var(--card);
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.product-card:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-  border-color: var(--primary);
-}
-
-.product-image {
-  position: relative;
-  height: 120px;
-  overflow: hidden;
-}
-
-.product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s;
-}
-
-.product-card:hover .product-image img {
-  transform: scale(1.05);
-}
-
-.product-category {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 500;
-}
-
-.product-info {
-  padding: 12px;
-}
-
-.product-info h4 {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--foreground);
-  margin-bottom: 4px;
-}
-
-.product-price {
-  font-size: 12px;
-  color: var(--primary);
-  font-weight: 600;
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-  .compras-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  
-  .add-item-section {
-    position: static;
-  }
-}
-
-@media (max-width: 768px) {
-  /* Layout responsive igual que otras vistas */
-  .sidebar-fixed {
-    transform: translateX(-100%);
-    width: 280px;
-    transition: transform 0.3s ease;
-  }
-  
-  .mobile-menu-open .sidebar-fixed {
-    transform: translateX(0);
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
-  }
-  
-  .header-fixed {
-    left: 0;
-    right: 0;
-  }
-  
-  .main-content-wrapper {
-    margin-left: 0;
-    width: 100%;
-  }
-  
-  .content-container {
-    padding: 16px;
-  }
-  
-  /* Responsive específico */
-  .lista-title {
-    font-size: 20px;
-  }
-  
-  .header-icon-container {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .header-icon-container .iconify {
-    width: 20px;
-    height: 20px;
-  }
-  
-  .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  }
-  
-  .category-card {
-    padding: 16px;
-  }
-  
-  .add-item-card {
-    padding: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .categories-tabs {
-    justify-content: center;
-  }
-  
-  .category-tab {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-  
-  .item-card {
-    padding: 10px;
-    gap: 10px;
-  }
-}
-</style>
