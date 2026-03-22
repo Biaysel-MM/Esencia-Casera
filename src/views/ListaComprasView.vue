@@ -19,102 +19,171 @@
       <!-- Scrollable Content -->
       <main class="min-h-[calc(100vh-70px)] overflow-y-auto bg-[#F6F9F6] pt-17.5 max-md:pt-16">
         <div class="mx-auto w-full max-w-350 p-5 md:p-6">
-          <!-- Contenido de la lista de compras -->
           <div>
             <!-- Header de la lista -->
             <div class="mb-6">
-              <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[rgba(93,162,113,0.2)]">
-                  <span class="iconify h-6 w-6 text-[#5DA271]" data-icon="mdi:cart"></span>
+              <div class="flex items-center justify-between flex-wrap gap-4">
+                <div class="flex items-center gap-4">
+                  <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[rgba(93,162,113,0.2)]">
+                    <span class="iconify h-6 w-6 text-[#5DA271]" data-icon="mdi:cart"></span>
+                  </div>
+                  <div>
+                    <h1 class="mb-1 text-2xl font-semibold text-[#2C2C2C]">Lista de Compras</h1>
+                    <p class="text-sm text-[#6C7A6C]">{{ checkedCount }} de {{ totalCount }} completados</p>
+                  </div>
                 </div>
-                <div>
-                  <h1 class="mb-1 text-2xl font-semibold text-[#2C2C2C]">Lista de Compras</h1>
-                  <p class="text-sm text-[#6C7A6C]">{{ checkedCount }} de {{ totalCount }} completados</p>
+                <div class="flex gap-3">
+                  <button 
+                    @click="createNewList"
+                    class="cursor-pointer rounded-xl border border-[#5DA271] bg-transparent px-4 py-2.5 text-sm font-medium text-[#5DA271] transition-all duration-200 hover:bg-[#5DA271] hover:text-white"
+                  >
+                    <span class="iconify h-4 w-4" data-icon="mdi:plus"></span>
+                    Nueva lista
+                  </button>
+                  <select 
+                    v-model="currentListId"
+                    @change="loadShoppingList"
+                    class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-4 py-2.5 text-sm text-[#2C2C2C] focus:border-[#5DA271] focus:outline-none"
+                  >
+                    <option value="">Seleccionar lista</option>
+                    <option v-for="list in shoppingLists" :key="list.id" :value="list.id">
+                      {{ list.name }} ({{ list.status === 'active' ? 'Activa' : 'Completada' }})
+                    </option>
+                  </select>
                 </div>
               </div>
             </div>
 
-            <!-- Barra de progreso -->
-            <div v-if="totalCount > 0" class="mb-6 rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-4 shadow-sm">
-              <div class="mb-2 flex items-center justify-between">
-                <span class="text-sm text-[#2C2C2C]">Progreso</span>
-                <span class="text-sm font-semibold text-[#5DA271]">{{ Math.round(progress) }}%</span>
-              </div>
-              <div class="h-2 w-full overflow-hidden rounded-full bg-[rgba(93,162,113,0.2)]">
-                <div class="h-full rounded-full bg-linear-to-r from-[#5DA271] to-[#8BB174] transition-all duration-300" :style="{ width: progress + '%' }"></div>
-              </div>
+            <!-- Loading State -->
+            <div v-if="loading" class="flex justify-center py-12">
+              <div class="h-10 w-10 animate-spin rounded-full border-4 border-[rgba(93,162,113,0.2)] border-t-[#5DA271]"></div>
             </div>
 
-            <!-- Grid principal -->
-            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              <!-- Lista de compras - Ocupa 2 columnas en lg -->
-              <div class="lg:col-span-2">
-                <div v-if="Object.keys(groupedItems).length > 0" class="space-y-4">
-                  <div v-for="(items, category) in groupedItems" :key="category" class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-5 shadow-sm">
-                    <h3 class="mb-4 text-lg font-semibold text-[#2C2C2C]">{{ category }}</h3>
-                    <div class="space-y-3">
-                      <div v-for="item in items" :key="item.id" 
-                        class="flex items-center gap-3 rounded-xl border border-transparent bg-[rgba(93,162,113,0.05)] p-3 transition-all duration-200 hover:-translate-y-px hover:border-[#5DA271] hover:bg-[rgba(93,162,113,0.1)] hover:shadow-md">
-                        <label class="relative flex cursor-pointer items-center" @click.stop>
-                          <input 
-                            type="checkbox" 
-                            :checked="item.checked"
-                            @change="toggleShoppingItem(item.id)"
-                            class="absolute h-0 w-0 cursor-pointer opacity-0"
+            <!-- Contenido de la lista -->
+            <div v-else-if="currentListId && shoppingItems.length > 0">
+              <!-- Barra de progreso -->
+              <div class="mb-6 rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-4 shadow-sm">
+                <div class="mb-2 flex items-center justify-between">
+                  <span class="text-sm text-[#2C2C2C]">Progreso</span>
+                  <span class="text-sm font-semibold text-[#5DA271]">{{ Math.round(progress) }}%</span>
+                </div>
+                <div class="h-2 w-full overflow-hidden rounded-full bg-[rgba(93,162,113,0.2)]">
+                  <div class="h-full rounded-full bg-linear-to-r from-[#5DA271] to-[#8BB174] transition-all duration-300" :style="{ width: progress + '%' }"></div>
+                </div>
+              </div>
+
+              <!-- Grid principal -->
+              <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <!-- Lista de compras - Ocupa 2 columnas en lg -->
+                <div class="lg:col-span-2">
+                  <div class="space-y-4">
+                    <div v-for="(items, category) in groupedItems" :key="category" class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-5 shadow-sm">
+                      <h3 class="mb-4 text-lg font-semibold text-[#2C2C2C]">{{ category }}</h3>
+                      <div class="space-y-3">
+                        <div v-for="item in items" :key="item.id" 
+                          class="flex items-center gap-3 rounded-xl border border-transparent bg-[rgba(93,162,113,0.05)] p-3 transition-all duration-200 hover:-translate-y-px hover:border-[#5DA271] hover:bg-[rgba(93,162,113,0.1)] hover:shadow-md">
+                          <label class="relative flex cursor-pointer items-center" @click.stop>
+                            <input 
+                              type="checkbox" 
+                              :checked="item.is_purchased"
+                              @change="togglePurchased(item.id)"
+                              class="absolute h-0 w-0 cursor-pointer opacity-0"
+                            >
+                            <span v-if="item.is_purchased" class="flex h-5 w-5 items-center justify-center rounded-md border-[#5DA271] bg-[#5DA271] text-white text-xs transition-all duration-200">✓</span>
+                            <span v-else class="flex h-5 w-5 items-center justify-center rounded-md border-2 border-[rgba(0,0,0,0.2)] bg-white transition-all duration-200"></span>
+                          </label>
+                          <div class="min-w-0 flex-1" @click="togglePurchased(item.id)">
+                            <p :class="['mb-0.5 cursor-pointer text-sm font-medium text-[#2C2C2C] transition-all duration-200', { 'text-[#6C7A6C] line-through': item.is_purchased }]">
+                              {{ item.ingredient_name || 'Ingrediente' }}
+                            </p>
+                            <p class="text-xs text-[#6C7A6C]">{{ item.quantity }} {{ item.unit }}</p>
+                          </div>
+                          <button 
+                            class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-[rgba(212,24,61,0.2)] bg-white text-[#6C7A6C] transition-all duration-200 hover:border-[#d4183d] hover:bg-[rgba(212,24,61,0.05)] hover:text-[#d4183d]"
+                            @click="removeFromShoppingList(item.id)"
                           >
-                          <span v-if="item.checked" class="flex h-5 w-5 items-center justify-center rounded-md border-[#5DA271] bg-[#5DA271] transition-all duration-200">✓</span>
-                          <span v-else class="flex h-5 w-5 items-center justify-center rounded-md border-2 border-[rgba(0,0,0,0.2)] bg-white transition-all duration-200">
-                          </span>
-                        </label>
-                        <div class="min-w-0 flex-1" @click="toggleShoppingItem(item.id)">
-                          <p :class="['mb-0.5 cursor-pointer text-sm font-medium text-[#2C2C2C] transition-all duration-200', { 'text-[#6C7A6C] line-through': item.checked }]">
-                            {{ item.name }}
-                          </p>
-                          <p class="text-xs text-[#6C7A6C]">{{ item.quantity }}</p>
+                            <span class="iconify h-4 w-4" data-icon="mdi:trash-can-outline"></span>
+                          </button>
                         </div>
-                        <button 
-                          class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-[rgba(212,24,61,0.2)] bg-white text-[#6C7A6C] transition-all duration-200 hover:border-[#d4183d] hover:bg-[rgba(212,24,61,0.05)] hover:text-[#d4183d]"
-                          @click="removeFromShoppingList(item.id)"
-                        >
-                          <span class="iconify h-4 w-4" data-icon="mdi:trash-can-outline"></span>
-                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div v-else class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-12 text-center shadow-sm">
-                  <div class="mx-auto mb-4 text-[#6C7A6C]">
-                    <span class="iconify h-16 w-16" data-icon="mdi:cart-outline"></span>
+                <!-- Panel lateral para agregar artículos -->
+                <div class="lg:sticky lg:top-22 h-fit">
+                  <div class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-6 shadow-sm">
+                    <h3 class="mb-5 text-lg font-semibold text-[#2C2C2C]">Agregar artículo</h3>
+                    <button 
+                      class="mb-4 w-full cursor-pointer rounded-xl border-none bg-[#5DA271] py-4 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-px hover:bg-[rgba(93,162,113,0.9)] hover:shadow-lg"
+                      @click="openAddItemModal"
+                    >
+                      Buscar productos
+                    </button>
+                    <button 
+                      v-if="currentListId && shoppingItems.length > 0"
+                      @click="completeList"
+                      class="w-full cursor-pointer rounded-xl border border-[#5DA271] bg-transparent py-4 text-sm font-medium text-[#5DA271] transition-all duration-200 hover:bg-[#5DA271] hover:text-white"
+                    >
+                      Marcar lista como completada
+                    </button>
+                    <p class="mt-4 text-center text-xs leading-relaxed text-[#6C7A6C]">
+                      Usa el buscador visual para agregar productos a tu lista
+                    </p>
                   </div>
-                  <h3 class="mb-2 text-lg font-semibold text-[#2C2C2C]">Tu lista está vacía</h3>
-                  <p class="mx-auto mb-6 max-w-md text-sm text-[#6C7A6C]">
-                    Comienza agregando productos que necesitas comprar
-                  </p>
-                  <button 
-                    class="cursor-pointer rounded-xl border-none bg-[#5DA271] px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-px hover:bg-[rgba(93,162,113,0.9)] hover:shadow-lg"
-                    @click="openAddItemModal"
-                  >
-                    Agregar productos
-                  </button>
                 </div>
               </div>
+            </div>
 
-              <!-- Panel lateral para agregar artículos -->
-              <div class="lg:sticky lg:top-22 h-fit">
-                <div class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-6 shadow-sm">
-                  <h3 class="mb-5 text-lg font-semibold text-[#2C2C2C]">Agregar artículo</h3>
-                  <button 
-                    class="mb-4 w-full cursor-pointer rounded-xl border-none bg-[#5DA271] py-4 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-px hover:bg-[rgba(93,162,113,0.9)] hover:shadow-lg"
-                    @click="openAddItemModal"
-                  >
-                    Buscar productos
-                  </button>
-                  <p class="text-center text-xs leading-relaxed text-[#6C7A6C]">
-                    Usa el buscador visual para agregar productos a tu lista
-                  </p>
-                </div>
+            <!-- Estado vacío -->
+            <div v-else-if="currentListId && shoppingItems.length === 0" class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-12 text-center shadow-sm">
+              <div class="mx-auto mb-4 text-[#6C7A6C]">
+                <span class="iconify h-16 w-16" data-icon="mdi:cart-outline"></span>
               </div>
+              <h3 class="mb-2 text-lg font-semibold text-[#2C2C2C]">Tu lista está vacía</h3>
+              <p class="mx-auto mb-6 max-w-md text-sm text-[#6C7A6C]">
+                Comienza agregando productos que necesitas comprar
+              </p>
+              <button 
+                class="cursor-pointer rounded-xl border-none bg-[#5DA271] px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-px hover:bg-[rgba(93,162,113,0.9)] hover:shadow-lg"
+                @click="openAddItemModal"
+              >
+                Agregar productos
+              </button>
+            </div>
+
+            <!-- Selección de lista inicial -->
+            <div v-else-if="!currentListId && shoppingLists.length > 0" class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-12 text-center shadow-sm">
+              <div class="mx-auto mb-4 text-[#6C7A6C]">
+                <span class="iconify h-16 w-16" data-icon="mdi:cart-outline"></span>
+              </div>
+              <h3 class="mb-2 text-lg font-semibold text-[#2C2C2C]">Selecciona una lista</h3>
+              <p class="mx-auto mb-6 max-w-md text-sm text-[#6C7A6C]">
+                Elige una lista existente o crea una nueva para comenzar
+              </p>
+              <button 
+                @click="createNewList"
+                class="cursor-pointer rounded-xl border-none bg-[#5DA271] px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-px hover:bg-[rgba(93,162,113,0.9)] hover:shadow-lg"
+              >
+                Crear nueva lista
+              </button>
+            </div>
+
+            <!-- Sin listas -->
+            <div v-else-if="shoppingLists.length === 0" class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-12 text-center shadow-sm">
+              <div class="mx-auto mb-4 text-[#6C7A6C]">
+                <span class="iconify h-16 w-16" data-icon="mdi:cart-outline"></span>
+              </div>
+              <h3 class="mb-2 text-lg font-semibold text-[#2C2C2C]">No tienes listas de compras</h3>
+              <p class="mx-auto mb-6 max-w-md text-sm text-[#6C7A6C]">
+                Crea tu primera lista de compras para comenzar
+              </p>
+              <button 
+                @click="createNewList"
+                class="cursor-pointer rounded-xl border-none bg-[#5DA271] px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-px hover:bg-[rgba(93,162,113,0.9)] hover:shadow-lg"
+              >
+                Crear primera lista
+              </button>
             </div>
 
             <!-- Modal para agregar productos -->
@@ -136,7 +205,7 @@
                       v-model="searchQuery"
                       placeholder="Buscar productos..."
                       class="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white py-3.5 pl-12 pr-5 text-sm text-[#2C2C2C] transition-all duration-200 focus:border-[#5DA271] focus:outline-none focus:ring-3 focus:ring-[rgba(93,162,113,0.2)]"
-                      @input="filterProducts"
+                      @input="filterIngredients"
                     >
                   </div>
                 </div>
@@ -144,7 +213,7 @@
                 <div class="flex-1 overflow-y-auto p-6">
                   <div class="mb-5 flex flex-wrap gap-2">
                     <button 
-                      v-for="category in productCategories" 
+                      v-for="category in ingredientCategories" 
                       :key="category.key"
                       :class="[
                         'cursor-pointer whitespace-nowrap rounded-full border border-[rgba(0,0,0,0.08)] bg-white px-4 py-2 text-xs font-medium text-[#2C2C2C] transition-all duration-200 hover:border-[#5DA271] hover:text-[#5DA271]',
@@ -158,22 +227,71 @@
 
                   <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                     <div 
-                      v-for="product in filteredProducts" 
-                      :key="product.id"
+                      v-for="ingredient in filteredIngredients" 
+                      :key="ingredient.id"
                       class="cursor-pointer overflow-hidden rounded-xl border border-[rgba(0,0,0,0.08)] bg-white transition-all duration-200 hover:-translate-y-1 hover:border-[#5DA271] hover:shadow-lg"
-                      @click="addProductToList(product)"
+                      @click="openQuantityModal(ingredient)"
                     >
                       <div class="relative h-28 overflow-hidden">
-                        <img :src="product.image" :alt="product.name" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" @error="handleImageError">
+                        <img :src="ingredient.image_url || defaultImage" :alt="ingredient.name" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" @error="handleImageError">
                         <div class="absolute left-2 top-2 rounded bg-[#5DA271] px-2 py-1 text-[10px] font-medium text-white">
-                          {{ product.category }}
+                          {{ getCategoryName(ingredient.category) }}
                         </div>
                       </div>
                       <div class="p-3">
-                        <h4 class="mb-1 text-sm font-medium text-[#2C2C2C]">{{ product.name }}</h4>
-                        <p class="text-xs font-semibold text-[#5DA271]">{{ product.price }}</p>
+                        <h4 class="mb-1 text-sm font-medium text-[#2C2C2C]">{{ ingredient.name }}</h4>
+                        <p class="text-xs font-semibold text-[#5DA271]">{{ ingredient.default_unit }}</p>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal para cantidad -->
+            <div v-if="showQuantityModal" class="fixed inset-0 z-2000 flex items-center justify-center bg-black/50 p-5 backdrop-blur-sm" @click="closeQuantityModal">
+              <div class="w-full max-w-md rounded-xl border border-[rgba(0,0,0,0.08)] bg-white shadow-2xl" @click.stop>
+                <div class="relative border-b border-[rgba(0,0,0,0.08)] bg-white p-6">
+                  <h3 class="mb-1 text-lg font-semibold text-[#2C2C2C]">Agregar {{ selectedIngredient?.name }}</h3>
+                  <p class="text-sm text-[#6C7A6C]">Especifica la cantidad que necesitas</p>
+                  <button class="absolute right-5 top-5 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border-none bg-transparent text-[#6C7A6C] transition-all duration-200 hover:bg-[#D8EBD0]" @click="closeQuantityModal">
+                    <span class="iconify h-5 w-5" data-icon="mdi:close"></span>
+                  </button>
+                </div>
+
+                <div class="p-6">
+                  <div class="mb-6">
+                    <label class="mb-2 block text-sm font-medium text-[#2C2C2C]">Cantidad</label>
+                    <div class="flex gap-3">
+                      <input 
+                        type="number" 
+                        v-model="itemQuantity"
+                        step="0.5"
+                        min="0.5"
+                        class="flex-1 rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-4 py-3 text-sm text-[#2C2C2C] focus:border-[#5DA271] focus:outline-none"
+                      >
+                      <select 
+                        v-model="itemUnit"
+                        class="w-28 rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-4 py-3 text-sm text-[#2C2C2C] focus:border-[#5DA271] focus:outline-none"
+                      >
+                        <option value="unidades">unidades</option>
+                        <option value="gramos">gramos</option>
+                        <option value="kg">kg</option>
+                        <option value="ml">ml</option>
+                        <option value="litros">litros</option>
+                        <option value="tazas">tazas</option>
+                        <option value="cucharadas">cucharadas</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="flex gap-3">
+                    <button @click="closeQuantityModal" class="flex-1 cursor-pointer rounded-xl border border-[rgba(0,0,0,0.08)] bg-transparent px-4 py-3 text-sm font-medium text-[#2C2C2C] transition-all duration-200 hover:bg-[#D8EBD0]">
+                      Cancelar
+                    </button>
+                    <button @click="addToList" class="flex-1 cursor-pointer rounded-xl bg-[#5DA271] px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:bg-[rgba(93,162,113,0.9)]">
+                      Agregar a la lista
+                    </button>
                   </div>
                 </div>
               </div>
@@ -181,6 +299,22 @@
           </div>
         </div>
       </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div v-if="showToast" 
+      class="fixed top-5 right-5 z-9999 max-w-100 min-w-75 animate-slide-in-right text-white"
+      :style="{ background: toastType === 'success' ? 'linear-gradient(135deg, #5DA271 0%, #8BB174 100%)' : toastType === 'error' ? 'linear-gradient(135deg, #d4183d 0%, #b31534 100%)' : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }">
+      <div class="flex items-start gap-3 p-4">
+        <span class="iconify w-6 h-6 shrink-0" :data-icon="toastIcon"></span>
+        <div>
+          <p class="font-semibold text-sm mb-1">{{ toastTitle }}</p>
+          <p class="text-xs opacity-90 leading-relaxed">{{ toastMessage }}</p>
+        </div>
+        <button @click="showToast = false" class="w-6 h-6 rounded-lg bg-white/20 hover:bg-white/30 transition-colors duration-200 flex items-center justify-center shrink-0 ml-auto">
+          <span class="iconify w-4 h-4 text-white" data-icon="mdi:close"></span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -191,6 +325,7 @@ import { useRouter } from 'vue-router'
 import Sidebar from '../components/layout/Sidebar.vue'
 import Header from '../components/layout/Header.vue'
 import { useAuthStore } from '../stores/auth'
+import { supabase } from '../supabase'
 
 export default {
   name: 'ListaComprasView',
@@ -203,52 +338,362 @@ export default {
     const authStore = useAuthStore()
 
     const isMobileMenuOpen = ref(false)
-
-    // Datos de ejemplo para la lista de compras
-    const shoppingList = ref([
-      { id: '1', name: 'Tomate', category: 'Verduras', quantity: '5 unidades', checked: false },
-      { id: '2', name: 'Cebolla', category: 'Verduras', quantity: '3 unidades', checked: true },
-      { id: '3', name: 'Pollo', category: 'Carnes', quantity: '500 g', checked: false },
-      { id: '4', name: 'Arroz', category: 'Granos', quantity: '1 kg', checked: false },
-      { id: '5', name: 'Leche', category: 'Lácteos', quantity: '1 litro', checked: true },
-      { id: '6', name: 'Huevos', category: 'Lácteos', quantity: '12 unidades', checked: false },
-      { id: '7', name: 'Manzanas', category: 'Frutas', quantity: '6 unidades', checked: false },
-      { id: '8', name: 'Pan integral', category: 'Panadería', quantity: '1 unidad', checked: true }
-    ])
-
-    // Datos de ejemplo para productos
-    const allProducts = ref([
-      { id: 'p1', name: 'Tomate', category: 'Verduras', price: '$2.99/kg', image: 'https://images.unsplash.com/photo-1683008952375-410ae668e6b9?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200' },
-      { id: 'p2', name: 'Cebolla', category: 'Verduras', price: '$1.49/kg', image: 'https://images.unsplash.com/photo-1597937081593-0ddc5f66deb0?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200' },
-      { id: 'p3', name: 'Pollo', category: 'Carnes', price: '$6.99/kg', image: 'https://images.unsplash.com/photo-1759082495730-2a5090278e7e?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200' },
-      { id: 'p4', name: 'Arroz', category: 'Granos', price: '$3.49/kg', image: 'https://images.unsplash.com/photo-1651793371427-ad065df0d208?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200' },
-      { id: 'p5', name: 'Leche', category: 'Lácteos', price: '$1.29/litro', image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200' },
-      { id: 'p6', name: 'Huevos', category: 'Lácteos', price: '$3.99/docena', image: 'https://images.unsplash.com/photo-1566489564591-4d4c09ea90b7?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200' },
-      { id: 'p7', name: 'Manzanas', category: 'Frutas', price: '$4.99/kg', image: 'https://images.unsplash.com/photo-1570913199992-91d07c140e7a?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200' },
-      { id: 'p8', name: 'Plátanos', category: 'Frutas', price: '$2.49/kg', image: 'https://images.unsplash.com/photo-1603833665858-e61d17a86224?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200' },
-      { id: 'p9', name: 'Pan integral', category: 'Panadería', price: '$2.99/unidad', image: 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200' },
-      { id: 'p10', name: 'Aceite de oliva', category: 'Aceites', price: '$8.99/litro', image: 'https://images.unsplash.com/photo-1536935338788-846bb9981813?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200' },
-      { id: 'p11', name: 'Pasta', category: 'Granos', price: '$2.29/500g', image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200' },
-      { id: 'p12', name: 'Queso', category: 'Lácteos', price: '$5.99/250g', image: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200' }
-    ])
-
-    const productCategories = [
+    const loading = ref(true)
+    const defaultImage = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200'
+    
+    // Listas de compras
+    const shoppingLists = ref([])
+    const currentListId = ref('')
+    const shoppingItems = ref([])
+    
+    // Ingredientes disponibles
+    const allIngredients = ref([])
+    const ingredientCategories = [
       { key: 'all', name: 'Todos' },
-      { key: 'Verduras', name: 'Verduras' },
-      { key: 'Frutas', name: 'Frutas' },
-      { key: 'Carnes', name: 'Carnes' },
-      { key: 'Lácteos', name: 'Lácteos' },
-      { key: 'Granos', name: 'Granos' },
-      { key: 'Panadería', name: 'Panadería' },
-      { key: 'Aceites', name: 'Aceites' }
+      { key: 'verduras', name: 'Verduras' },
+      { key: 'frutas', name: 'Frutas' },
+      { key: 'proteínas', name: 'Proteínas' },
+      { key: 'granos', name: 'Granos' },
+      { key: 'lácteos', name: 'Lácteos' },
+      { key: 'condimentos', name: 'Condimentos' },
+      { key: 'bebidas', name: 'Bebidas' },
+      { key: 'otros', name: 'Otros' }
     ]
-
+    
+    // Modal de agregar producto
     const showAddItemModal = ref(false)
     const searchQuery = ref('')
     const activeCategory = ref('all')
-    const filteredProducts = ref([...allProducts.value])
+    const filteredIngredients = ref([])
+    
+    // Modal de cantidad
+    const showQuantityModal = ref(false)
+    const selectedIngredient = ref(null)
+    const itemQuantity = ref(1)
+    const itemUnit = ref('unidades')
+    
+    // Toast
+    const showToast = ref(false)
+    const toastType = ref('success')
+    const toastTitle = ref('')
+    const toastMessage = ref('')
+    const toastIcon = ref('mdi:check-circle')
 
-    // Layout functions
+    const showNotification = (type, title, message, icon = null) => {
+      toastType.value = type
+      toastTitle.value = title
+      toastMessage.value = message
+      toastIcon.value = icon || (type === 'success' ? 'mdi:check-circle' : type === 'error' ? 'mdi:alert-circle' : 'mdi:alert')
+      showToast.value = true
+      setTimeout(() => { showToast.value = false }, 3000)
+    }
+
+    const getCategoryName = (category) => {
+      const cat = ingredientCategories.find(c => c.key === category)
+      return cat ? cat.name : category
+    }
+
+    const loadShoppingLists = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('shopping_lists')
+          .select('*')
+          .eq('user_id', authStore.user?.id)
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        
+        shoppingLists.value = data || []
+        
+        // Si hay una lista activa, seleccionarla automáticamente
+        const activeList = shoppingLists.value.find(list => list.status === 'active')
+        if (activeList && !currentListId.value) {
+          currentListId.value = activeList.id
+          await loadShoppingList()
+        }
+        
+      } catch (error) {
+        console.error('Error cargando listas:', error)
+        showNotification('error', 'Error', 'No se pudieron cargar tus listas')
+      }
+    }
+
+    const loadShoppingList = async () => {
+      if (!currentListId.value) return
+      
+      try {
+        loading.value = true
+        
+        // CORREGIDO: Usar 'added_at' en lugar de 'created_at'
+        const { data, error } = await supabase
+          .from('shopping_list_items')
+          .select(`
+            id,
+            quantity,
+            unit,
+            is_purchased,
+            notes,
+            ingredient:ingredients (
+              id,
+              name,
+              category,
+              image_url
+            )
+          `)
+          .eq('list_id', currentListId.value)
+          .order('added_at', { ascending: true })
+
+        if (error) throw error
+        
+        // Transformar datos para manejar caso donde ingredient es null
+        shoppingItems.value = (data || []).map(item => ({
+          id: item.id,
+          quantity: item.quantity,
+          unit: item.unit,
+          is_purchased: item.is_purchased,
+          notes: item.notes,
+          ingredient_id: item.ingredient?.id || null,
+          ingredient_name: item.ingredient?.name || 'Ingrediente',
+          ingredient_category: item.ingredient?.category || 'otros',
+          ingredient_image: item.ingredient?.image_url || defaultImage
+        }))
+        
+      } catch (error) {
+        console.error('Error cargando lista:', error)
+        showNotification('error', 'Error', 'No se pudo cargar la lista de compras')
+        shoppingItems.value = []
+      } finally {
+        loading.value = false
+      }
+    }
+
+    const loadIngredients = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('ingredients')
+          .select('*')
+          .order('name')
+
+        if (error) throw error
+        
+        allIngredients.value = data || []
+        filteredIngredients.value = [...allIngredients.value]
+        
+      } catch (error) {
+        console.error('Error cargando ingredientes:', error)
+        showNotification('error', 'Error', 'No se pudieron cargar los productos')
+      }
+    }
+
+    const createNewList = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('shopping_lists')
+          .insert({
+            user_id: authStore.user?.id,
+            name: `Lista ${new Date().toLocaleDateString()}`,
+            status: 'active'
+          })
+          .select()
+          .single()
+
+        if (error) throw error
+        
+        shoppingLists.value.unshift(data)
+        currentListId.value = data.id
+        await loadShoppingList()
+        showNotification('success', 'Éxito', 'Nueva lista creada')
+        
+      } catch (error) {
+        console.error('Error creando lista:', error)
+        showNotification('error', 'Error', 'No se pudo crear la lista')
+      }
+    }
+
+    const completeList = async () => {
+      try {
+        const { error } = await supabase
+          .from('shopping_lists')
+          .update({ status: 'completed', updated_at: new Date().toISOString() })
+          .eq('id', currentListId.value)
+
+        if (error) throw error
+        
+        // Actualizar estado local
+        const listIndex = shoppingLists.value.findIndex(l => l.id === currentListId.value)
+        if (listIndex !== -1) {
+          shoppingLists.value[listIndex].status = 'completed'
+        }
+        
+        currentListId.value = ''
+        shoppingItems.value = []
+        
+        showNotification('success', 'Éxito', 'Lista marcada como completada')
+        
+      } catch (error) {
+        console.error('Error completando lista:', error)
+        showNotification('error', 'Error', 'No se pudo completar la lista')
+      }
+    }
+
+    const togglePurchased = async (itemId) => {
+      try {
+        const item = shoppingItems.value.find(i => i.id === itemId)
+        if (!item) return
+        
+        const newStatus = !item.is_purchased
+        
+        const { error } = await supabase
+          .from('shopping_list_items')
+          .update({ 
+            is_purchased: newStatus,
+            purchased_at: newStatus ? new Date().toISOString() : null
+          })
+          .eq('id', itemId)
+
+        if (error) throw error
+        
+        item.is_purchased = newStatus
+        
+      } catch (error) {
+        console.error('Error actualizando estado:', error)
+        showNotification('error', 'Error', 'No se pudo actualizar el estado')
+      }
+    }
+
+    const removeFromShoppingList = async (itemId) => {
+      try {
+        const { error } = await supabase
+          .from('shopping_list_items')
+          .delete()
+          .eq('id', itemId)
+
+        if (error) throw error
+        
+        shoppingItems.value = shoppingItems.value.filter(item => item.id !== itemId)
+        showNotification('success', 'Eliminado', 'Producto eliminado de la lista')
+        
+      } catch (error) {
+        console.error('Error eliminando producto:', error)
+        showNotification('error', 'Error', 'No se pudo eliminar el producto')
+      }
+    }
+
+    const addToList = async () => {
+      // CORREGIDO: Verificar que selectedIngredient existe y tiene id
+      if (!selectedIngredient.value || !selectedIngredient.value.id) {
+        showNotification('error', 'Error', 'No se pudo identificar el producto')
+        return
+      }
+      
+      if (!currentListId.value) {
+        showNotification('warning', 'Advertencia', 'Primero selecciona o crea una lista')
+        return
+      }
+      
+      try {
+        const { error } = await supabase
+          .from('shopping_list_items')
+          .insert({
+            list_id: currentListId.value,
+            ingredient_id: selectedIngredient.value.id,
+            quantity: parseFloat(itemQuantity.value),
+            unit: itemUnit.value,
+            is_purchased: false
+          })
+
+        if (error) throw error
+        
+        await loadShoppingList()
+        closeQuantityModal()
+        showNotification('success', 'Agregado', `${selectedIngredient.value.name} agregado a la lista`)
+        
+      } catch (error) {
+        console.error('Error agregando a la lista:', error)
+        showNotification('error', 'Error', 'No se pudo agregar el producto')
+      }
+    }
+
+    const openAddItemModal = () => {
+      if (!currentListId.value) {
+        showNotification('warning', 'Advertencia', 'Primero selecciona o crea una lista')
+        return
+      }
+      showAddItemModal.value = true
+      searchQuery.value = ''
+      activeCategory.value = 'all'
+      filteredIngredients.value = [...allIngredients.value]
+    }
+
+    const closeAddItemModal = () => {
+      showAddItemModal.value = false
+    }
+
+    const openQuantityModal = (ingredient) => {
+      selectedIngredient.value = ingredient
+      itemQuantity.value = 1
+      itemUnit.value = ingredient.default_unit || 'unidades'
+      closeAddItemModal()
+      showQuantityModal.value = true
+    }
+
+    const closeQuantityModal = () => {
+      showQuantityModal.value = false
+      selectedIngredient.value = null
+    }
+
+    const setActiveCategory = (category) => {
+      activeCategory.value = category
+      filterIngredients()
+    }
+
+    const filterIngredients = () => {
+      let filtered = [...allIngredients.value]
+
+      if (activeCategory.value !== 'all') {
+        filtered = filtered.filter(ing => ing.category === activeCategory.value)
+      }
+
+      if (searchQuery.value.trim() !== '') {
+        const query = searchQuery.value.toLowerCase()
+        filtered = filtered.filter(ing => 
+          ing.name.toLowerCase().includes(query)
+        )
+      }
+
+      filteredIngredients.value = filtered
+    }
+
+    // Computed properties
+    const checkedCount = computed(() => {
+      return shoppingItems.value.filter(item => item.is_purchased).length
+    })
+
+    const totalCount = computed(() => {
+      return shoppingItems.value.length
+    })
+
+    const progress = computed(() => {
+      return totalCount.value > 0 ? (checkedCount.value / totalCount.value) * 100 : 0
+    })
+
+    const groupedItems = computed(() => {
+      const groups = {}
+      shoppingItems.value.forEach(item => {
+        const category = item.ingredient_category || 'otros'
+        const categoryName = getCategoryName(category)
+        if (!groups[categoryName]) {
+          groups[categoryName] = []
+        }
+        groups[categoryName].push(item)
+      })
+      return groups
+    })
+
+    const handleImageError = (event) => {
+      event.target.src = defaultImage
+    }
+
     const toggleMobileMenu = () => {
       isMobileMenuOpen.value = !isMobileMenuOpen.value
     }
@@ -262,133 +707,70 @@ export default {
       router.push('/login')
     }
 
-    // Shopping list functions
-    const addToShoppingList = (item) => {
-      shoppingList.value.push({
-        ...item,
-        id: `${Date.now()}`,
-        checked: false
-      })
-    }
-
-    const removeFromShoppingList = (id) => {
-      shoppingList.value = shoppingList.value.filter(item => item.id !== id)
-    }
-
-    const toggleShoppingItem = (id) => {
-      const item = shoppingList.value.find(item => item.id === id)
-      if (item) {
-        item.checked = !item.checked
+    onMounted(async () => {
+      if (authStore.isAuthenticated) {
+        await Promise.all([
+          loadShoppingLists(),
+          loadIngredients()
+        ])
+        loading.value = false
       }
-    }
-
-    // Computed properties
-    const checkedCount = computed(() => {
-      return shoppingList.value.filter(item => item.checked).length
     })
-
-    const totalCount = computed(() => {
-      return shoppingList.value.length
-    })
-
-    const progress = computed(() => {
-      return totalCount.value > 0 ? (checkedCount.value / totalCount.value) * 100 : 0
-    })
-
-    const groupedItems = computed(() => {
-      const groups = {}
-      shoppingList.value.forEach(item => {
-        if (!groups[item.category]) {
-          groups[item.category] = []
-        }
-        groups[item.category].push(item)
-      })
-      return groups
-    })
-
-    // Modal functions
-    const openAddItemModal = () => {
-      showAddItemModal.value = true
-      searchQuery.value = ''
-      activeCategory.value = 'all'
-      filteredProducts.value = [...allProducts.value]
-    }
-
-    const closeAddItemModal = () => {
-      showAddItemModal.value = false
-    }
-
-    const setActiveCategory = (category) => {
-      activeCategory.value = category
-      filterProducts()
-    }
-
-    const filterProducts = () => {
-      let filtered = [...allProducts.value]
-
-      if (activeCategory.value !== 'all') {
-        filtered = filtered.filter(product => product.category === activeCategory.value)
-      }
-
-      if (searchQuery.value.trim() !== '') {
-        const query = searchQuery.value.toLowerCase()
-        filtered = filtered.filter(product => 
-          product.name.toLowerCase().includes(query) ||
-          product.category.toLowerCase().includes(query)
-        )
-      }
-
-      filteredProducts.value = filtered
-    }
-
-    const addProductToList = (product) => {
-      const exists = shoppingList.value.some(item => 
-        item.name.toLowerCase() === product.name.toLowerCase()
-      )
-
-      if (!exists) {
-        addToShoppingList({
-          name: product.name,
-          category: product.category,
-          quantity: '1 unidad',
-          checked: false
-        })
-        
-        closeAddItemModal()
-      } else {
-        alert(`${product.name} ya está en tu lista de compras`)
-      }
-    }
-
-    const handleImageError = (event) => {
-      event.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjFmNWYxIi8+CjxwYXRoIGQ9Ik01MCA1MEgxNTBWMTUwSDUwVjUwWiIgZmlsbD0iI2UxZThlMCIvPgo8L3N2Zz4='
-    }
 
     return {
       isMobileMenuOpen,
-      toggleMobileMenu,
-      closeMobileMenu,
-      handleLogout,
-      shoppingList,
+      loading,
+      shoppingLists,
+      currentListId,
+      shoppingItems,
+      allIngredients,
+      ingredientCategories,
+      showAddItemModal,
+      searchQuery,
+      activeCategory,
+      filteredIngredients,
+      showQuantityModal,
+      selectedIngredient,
+      itemQuantity,
+      itemUnit,
+      defaultImage,
+      showToast,
+      toastType,
+      toastTitle,
+      toastMessage,
+      toastIcon,
       checkedCount,
       totalCount,
       progress,
       groupedItems,
-      showAddItemModal,
-      searchQuery,
-      activeCategory,
-      filteredProducts,
-      productCategories,
-      addToShoppingList,
+      getCategoryName,
+      loadShoppingList,
+      createNewList,
+      completeList,
+      togglePurchased,
       removeFromShoppingList,
-      toggleShoppingItem,
+      addToList,
       openAddItemModal,
       closeAddItemModal,
+      openQuantityModal,
+      closeQuantityModal,
       setActiveCategory,
-      filterProducts,
-      addProductToList,
-      handleImageError
+      filterIngredients,
+      handleImageError,
+      toggleMobileMenu,
+      closeMobileMenu,
+      handleLogout
     }
   }
 }
 </script>
+
+<style scoped>
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease;
+}
+</style>

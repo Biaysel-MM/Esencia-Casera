@@ -10,7 +10,6 @@
       <!-- Scrollable Content -->
       <main class="min-h-[calc(100vh-70px)] overflow-y-auto bg-[#F6F9F6] pt-17.5 max-md:pt-16">
         <div class="mx-auto w-full max-w-350 p-5">
-          <!-- Contenido del planificador -->
           <div>
             <!-- Header del planificador -->
             <div class="mb-6 flex flex-col gap-5">
@@ -25,7 +24,7 @@
               </div>
 
               <div class="flex flex-wrap items-center gap-3 max-md:flex-col max-md:items-stretch">
-                <button class="flex cursor-pointer items-center gap-2 rounded-xl bg-[#5DA271] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[rgba(93,162,113,0.9)]" @click="generateWeeklyMenu">
+                <button class="flex cursor-pointer items-center gap-2 rounded-xl bg-[#5DA271] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[rgba(93,162,113,0.9)]" @click="openGenerateWeeklyModal">
                   <span class="iconify" data-icon="mdi:sparkles"></span>
                   Generar semana
                 </button>
@@ -46,9 +45,14 @@
               </div>
             </div>
 
-            <!-- Grid del planificador responsive -->
-            <div class="mb-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              <div v-for="(day, index) in weekDays" :key="day.date" class="rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)]">
+            <!-- Loading State -->
+            <div v-if="loading.initial" class="flex justify-center py-12">
+              <div class="h-10 w-10 animate-spin rounded-full border-4 border-[rgba(93,162,113,0.2)] border-t-[#5DA271]"></div>
+            </div>
+
+            <!-- Grid del planificador -->
+            <div v-else class="mb-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              <div v-for="day in weekDays" :key="day.date" class="rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)]">
                 <div class="mb-4 flex items-center justify-between border-b border-[rgba(0,0,0,0.08)] pb-3">
                   <div class="flex flex-col">
                     <span class="text-base font-semibold text-[#2C2C2C]">{{ day.name }}</span>
@@ -78,19 +82,13 @@
                       </button>
 
                       <div class="flex items-center gap-3">
-                        <div v-if="getMealForSlot(day.name, mealType.key)?.isOutside" class="flex w-full flex-col items-center justify-center gap-2 py-4">
-                          <span class="iconify h-6 w-6 text-[#8BB174]" data-icon="mdi:map-marker"></span>
-                          <p class="text-center text-xs font-medium text-[#8BB174]">Salida / Fuera de casa</p>
+                        <div class="h-12.5 w-12.5 shrink-0 overflow-hidden rounded-lg border border-[rgba(0,0,0,0.08)]">
+                          <img :src="getMealForSlot(day.name, mealType.key)?.image_url || defaultImage" :alt="getMealForSlot(day.name, mealType.key)?.title" class="h-full w-full object-cover" @error="handleImageError">
                         </div>
-                        <div v-else-if="getMealForSlot(day.name, mealType.key)?.recipe" class="flex w-full items-center gap-3">
-                          <div class="h-12.5 w-12.5 shrink-0 overflow-hidden rounded-lg border border-[rgba(0,0,0,0.08)]">
-                            <img :src="getMealForSlot(day.name, mealType.key)?.recipe?.image" :alt="getMealForSlot(day.name, mealType.key)?.recipe?.name" class="h-full w-full object-cover" @error="handleImageError">
-                          </div>
-                          <div class="min-w-0 flex-1">
-                            <p class="truncate text-[13px] font-medium text-[#2C2C2C]">{{ getMealForSlot(day.name, mealType.key)?.recipe?.name || 'Comida rápida' }}</p>
-                            <div v-if="getMealForSlot(day.name, mealType.key)?.recipe" class="mt-1 text-[11px] text-[#6C7A6C]">
-                              <span>⏱️ {{ getMealForSlot(day.name, mealType.key)?.recipe?.time || '--' }}</span>
-                            </div>
+                        <div class="min-w-0 flex-1">
+                          <p class="truncate text-[13px] font-medium text-[#2C2C2C]">{{ getMealForSlot(day.name, mealType.key)?.title || 'Sin asignar' }}</p>
+                          <div class="mt-1 text-[11px] text-[#6C7A6C]">
+                            <span>⏱️ {{ getMealForSlot(day.name, mealType.key)?.total_time || '--' }} min</span>
                           </div>
                         </div>
                       </div>
@@ -110,37 +108,42 @@
               <div class="flex max-h-[80vh] w-full max-w-200 flex-col overflow-hidden rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white shadow-2xl" @click.stop>
                 <div class="relative border-b border-[rgba(0,0,0,0.08)] bg-white p-6">
                   <h3 class="mb-1 text-lg font-semibold text-[#2C2C2C]">Seleccionar opción para {{ selectedDay }}</h3>
-                  <p class="text-sm text-[#6C7A6C]">Elige una receta o marca como salida</p>
+                  <p class="text-sm text-[#6C7A6C]">Elige una receta para {{ getMealTypeLabel(selectedMeal) }}</p>
                   <button class="absolute right-5 top-5 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-[#6C7A6C] transition-all hover:bg-[#D8EBD0]" @click="closeRecipeSelection">
                     <span class="iconify h-5 w-5" data-icon="mdi:close"></span>
                   </button>
                 </div>
 
-                <!-- Opción de salida -->
-                <button class="mx-6 mb-4 flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-[#8BB174] bg-[rgba(139,177,116,0.2)] p-4 transition-all hover:-translate-y-px hover:bg-[rgba(139,177,116,0.3)]" @click="setOutsideMeal">
-                  <span class="iconify h-6 w-6 text-[#8BB174]" data-icon="mdi:map-marker"></span>
-                  <div class="text-left">
-                    <p class="mb-0.5 text-sm font-medium text-[#8BB174]">Marcar como salida</p>
-                    <p class="text-xs text-[#6C7A6C]">No comeré en casa</p>
-                  </div>
-                </button>
-
                 <!-- Lista de recetas -->
-                <div class="flex-1 overflow-y-auto px-6 pb-6">
+                <div class="flex-1 overflow-y-auto p-6">
+                  <div class="mb-4">
+                    <div class="relative">
+                      <span class="iconify absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#6C7A6C]" data-icon="mdi:magnify"></span>
+                      <input 
+                        type="text" 
+                        v-model="recipeSearchQuery"
+                        placeholder="Buscar recetas..."
+                        class="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white py-3 pl-12 pr-5 text-sm text-[#2C2C2C] focus:border-[#5DA271] focus:outline-none"
+                      >
+                    </div>
+                  </div>
                   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div v-for="recipe in allRecipes" :key="recipe.id" class="cursor-pointer overflow-hidden rounded-xl border border-[rgba(0,0,0,0.08)] bg-white transition-all hover:-translate-y-0.5 hover:border-[#5DA271] hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]" @click="selectRecipe(recipe)">
+                    <div v-for="recipe in filteredRecipesForModal" :key="recipe.id" class="cursor-pointer overflow-hidden rounded-xl border border-[rgba(0,0,0,0.08)] bg-white transition-all hover:-translate-y-0.5 hover:border-[#5DA271] hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]" @click="selectRecipe(recipe)">
                       <div class="relative h-30 overflow-hidden">
-                        <img :src="recipe.image" :alt="recipe.name" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" @error="handleImageError">
-                        <div class="absolute left-2 top-2 rounded bg-[#5DA271] px-2 py-0.5 text-[10px] font-medium text-white">{{ recipe.type }}</div>
+                        <img :src="recipe.image_url || defaultImage" :alt="recipe.title" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" @error="handleImageError">
+                        <div class="absolute left-2 top-2 rounded bg-[#5DA271] px-2 py-0.5 text-[10px] font-medium text-white">{{ getCategoryLabel(recipe.category) }}</div>
                       </div>
                       <div class="p-3">
-                        <h4 class="mb-2 text-sm font-medium text-[#2C2C2C]">{{ recipe.name }}</h4>
+                        <h4 class="mb-2 text-sm font-medium text-[#2C2C2C]">{{ recipe.title }}</h4>
                         <div class="flex gap-3 text-[11px] text-[#6C7A6C]">
-                          <span>⏱️ {{ recipe.time }}</span>
+                          <span>⏱️ {{ recipe.total_time }} min</span>
                           <span>👥 {{ recipe.servings }} porciones</span>
                         </div>
                       </div>
                     </div>
+                  </div>
+                  <div v-if="filteredRecipesForModal.length === 0" class="py-12 text-center text-[#6C7A6C]">
+                    No se encontraron recetas
                   </div>
                 </div>
               </div>
@@ -158,33 +161,20 @@
                 <div class="mb-8">
                   <h3 class="mb-4 text-lg font-semibold text-[#2C2C2C]">Preferencias de generación</h3>
                   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div class="flex items-center">
-                      <label class="flex w-full cursor-pointer items-center gap-2 rounded-xl border border-[rgba(0,0,0,0.08)] p-3 transition-all hover:bg-[rgba(168,213,186,0.1)]">
-                        <input type="checkbox" v-model="generationPreferences.variety" class="hidden">
-                        <span class="flex h-5 w-5 items-center justify-center rounded-md border-2 border-[rgba(0,0,0,0.08)] transition-all" :class="{ 'border-[#5DA271] bg-[#5DA271]': generationPreferences.variety }"></span>
-                        <span class="ml-2 font-medium">Maximizar variedad</span>
-                      </label>
-                    </div>
-                    <div class="flex items-center">
-                      <label class="flex w-full cursor-pointer items-center gap-2 rounded-xl border border-[rgba(0,0,0,0.08)] p-3 transition-all hover:bg-[rgba(168,213,186,0.1)]">
-                        <input type="checkbox" v-model="generationPreferences.quick" class="hidden">
-                        <span class="flex h-5 w-5 items-center justify-center rounded-md border-2 border-[rgba(0,0,0,0.08)] transition-all" :class="{ 'border-[#5DA271] bg-[#5DA271]': generationPreferences.quick }"></span>
-                        <span class="ml-2 font-medium">Incluir comidas rápidas</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="mb-8">
-                  <h3 class="mb-4 text-lg font-semibold text-[#2C2C2C]">Días a planificar</h3>
-                  <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    <div v-for="day in weekDays" :key="day.date" class="flex items-center">
-                      <label class="flex w-full cursor-pointer items-center gap-2 rounded-xl border border-[rgba(0,0,0,0.08)] p-2 transition-all hover:bg-[rgba(168,213,186,0.1)]">
-                        <input type="checkbox" v-model="generationPreferences.selectedDays[day.name.toLowerCase()]" class="hidden">
-                        <span class="flex h-5 w-5 items-center justify-center rounded-md border-2 border-[rgba(0,0,0,0.08)] transition-all" :class="{ 'border-[#5DA271] bg-[#5DA271]': generationPreferences.selectedDays[day.name.toLowerCase()] }"></span>
-                        <span class="font-medium">{{ day.name }}</span>
-                      </label>
-                    </div>
+                    <label class="flex cursor-pointer items-center gap-2 rounded-xl border border-[rgba(0,0,0,0.08)] p-3 transition-all hover:bg-[rgba(168,213,186,0.1)]">
+                      <input type="checkbox" v-model="generationPreferences.quick" class="hidden">
+                      <span class="flex h-5 w-5 items-center justify-center rounded-md border-2 border-[rgba(0,0,0,0.08)] transition-all" :class="{ 'border-[#5DA271] bg-[#5DA271]': generationPreferences.quick }">
+                        <span v-if="generationPreferences.quick" class="text-white text-xs">✓</span>
+                      </span>
+                      <span class="font-medium">Comidas rápidas (menos de 30 min)</span>
+                    </label>
+                    <label class="flex cursor-pointer items-center gap-2 rounded-xl border border-[rgba(0,0,0,0.08)] p-3 transition-all hover:bg-[rgba(168,213,186,0.1)]">
+                      <input type="checkbox" v-model="generationPreferences.healthy" class="hidden">
+                      <span class="flex h-5 w-5 items-center justify-center rounded-md border-2 border-[rgba(0,0,0,0.08)] transition-all" :class="{ 'border-[#5DA271] bg-[#5DA271]': generationPreferences.healthy }">
+                        <span v-if="generationPreferences.healthy" class="text-white text-xs">✓</span>
+                      </span>
+                      <span class="font-medium">Saludable (bajas calorías)</span>
+                    </label>
                   </div>
                 </div>
 
@@ -193,23 +183,19 @@
                   <div v-if="generatedWeeklyMenu.length === 0" class="flex flex-col items-center justify-center rounded-xl bg-[rgba(168,213,186,0.1)] p-12 text-center text-[#6C7A6C]">
                     <p>Selecciona preferencias y genera el menú</p>
                   </div>
-                  <div v-else class="grid max-h-75 grid-cols-1 gap-4 overflow-y-auto rounded-xl bg-[rgba(168,213,186,0.1)] p-4 sm:grid-cols-2">
-                    <div v-for="meal in generatedWeeklyMenu" :key="`${meal.day}-${meal.meal}`" class="overflow-hidden rounded-xl border border-[rgba(0,0,0,0.08)] bg-white">
+                  <div v-else class="grid max-h-75 grid-cols-1 gap-4 overflow-y-auto rounded-xl bg-[rgba(168,213,186,0.1)] p-4">
+                    <div v-for="meal in generatedWeeklyMenu" :key="`${meal.day}-${meal.mealType}`" class="overflow-hidden rounded-xl border border-[rgba(0,0,0,0.08)] bg-white">
                       <div class="flex items-center justify-between border-b border-[rgba(0,0,0,0.08)] bg-[rgba(93,162,113,0.1)] px-4 py-3">
                         <h4 class="text-sm font-semibold text-[#5DA271]">{{ meal.day }}</h4>
-                        <span class="rounded-full bg-[#5DA271] px-2 py-0.5 text-xs font-medium text-white">{{ getMealTypeLabel(meal.meal) }}</span>
+                        <span class="rounded-full bg-[#5DA271] px-2 py-0.5 text-xs font-medium text-white">{{ getMealTypeLabel(meal.mealType) }}</span>
                       </div>
                       <div class="flex items-center gap-3 p-4">
-                        <img :src="meal.recipe?.image || 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=200'" :alt="meal.recipe?.name || 'Comida rápida'" class="h-15 w-15 rounded-lg object-cover" @error="handleImageError">
+                        <img :src="meal.recipe?.image_url || defaultImage" :alt="meal.recipe?.title" class="h-15 w-15 rounded-lg object-cover" @error="handleImageError">
                         <div class="flex-1">
-                          <h5 class="mb-1 text-sm font-medium">{{ meal.recipe?.name || 'Sin asignar' }}</h5>
-                          <div v-if="meal.recipe" class="flex gap-3 text-xs text-[#6C7A6C]">
-                            <span>⏱️ {{ meal.recipe.time }}</span>
-                            <span>👥 {{ meal.recipe.servings }} porciones</span>
-                          </div>
-                          <div v-if="meal.isOutside" class="mt-1 inline-flex items-center gap-1 rounded bg-[rgba(139,177,116,0.2)] px-1.5 py-0.5 text-[10px] text-[#8BB174]">
-                            <span class="iconify h-2 w-2" data-icon="mdi:map-marker"></span>
-                            Fuera
+                          <h5 class="mb-1 text-sm font-medium">{{ meal.recipe?.title || 'Sin asignar' }}</h5>
+                          <div class="flex gap-3 text-xs text-[#6C7A6C]">
+                            <span>⏱️ {{ meal.recipe?.total_time || '--' }} min</span>
+                            <span>👥 {{ meal.recipe?.servings || '--' }} porciones</span>
                           </div>
                         </div>
                       </div>
@@ -262,7 +248,9 @@
                         <div v-for="item in category.items" :key="item.id" class="flex items-center justify-between rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-3">
                           <label class="flex flex-1 cursor-pointer items-center gap-3">
                             <input type="checkbox" v-model="item.purchased" class="hidden">
-                            <span class="flex h-5 w-5 items-center justify-center rounded-md border-2 border-[rgba(0,0,0,0.08)] transition-all" :class="{ 'border-[#5DA271] bg-[#5DA271]': item.purchased }"></span>
+                            <span class="flex h-5 w-5 items-center justify-center rounded-md border-2 border-[rgba(0,0,0,0.08)] transition-all" :class="{ 'border-[#5DA271] bg-[#5DA271]': item.purchased }">
+                              <span v-if="item.purchased" class="text-white text-xs">✓</span>
+                            </span>
                             <span class="font-medium text-[#2C2C2C]" :class="{ 'line-through text-[#6C7A6C]': item.purchased }">{{ item.name }}</span>
                           </label>
                           <div class="flex items-center gap-2">
@@ -288,6 +276,22 @@
         </div>
       </main>
     </div>
+
+    <!-- Toast Notification -->
+    <div v-if="showToast" 
+      class="fixed top-5 right-5 z-9999 max-w-100 min-w-75 animate-slide-in-right text-white"
+      :style="{ background: toastType === 'success' ? 'linear-gradient(135deg, #5DA271 0%, #8BB174 100%)' : toastType === 'error' ? 'linear-gradient(135deg, #d4183d 0%, #b31534 100%)' : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }">
+      <div class="flex items-start gap-3 p-4">
+        <span class="iconify w-6 h-6 shrink-0" :data-icon="toastIcon"></span>
+        <div>
+          <p class="font-semibold text-sm mb-1">{{ toastTitle }}</p>
+          <p class="text-xs opacity-90 leading-relaxed">{{ toastMessage }}</p>
+        </div>
+        <button @click="showToast = false" class="w-6 h-6 rounded-lg bg-white/20 hover:bg-white/30 transition-colors duration-200 flex items-center justify-center shrink-0 ml-auto">
+          <span class="iconify w-4 h-4 text-white" data-icon="mdi:close"></span>
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -297,7 +301,7 @@ import { useRouter } from 'vue-router'
 import Sidebar from '../components/layout/Sidebar.vue'
 import Header from '../components/layout/Header.vue'
 import { useAuthStore } from '../stores/auth'
-import { supabase } from '@/supabase'
+import { supabase } from '../supabase'
 
 export default {
   name: 'PlanificadorView',
@@ -310,64 +314,68 @@ export default {
     const authStore = useAuthStore()
 
     const isMobileMenuOpen = ref(false)
+    const defaultImage = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=120'
     
-    // Tipos de comidas con correspondencia a base de datos
+    // Tipos de comidas
     const mealTypes = [
       { key: 'breakfast', label: 'Desayuno', time: '8:00 AM', icon: 'mdi:sun-wireless', dbType: 'desayuno' },
       { key: 'lunch', label: 'Almuerzo', time: '1:00 PM', icon: 'mdi:food', dbType: 'almuerzo' },
-      { key: 'snack', label: 'Merienda', time: '4:00 PM', icon: 'mdi:coffee', dbType: 'merienda' },
       { key: 'dinner', label: 'Cena', time: '7:00 PM', icon: 'mdi:moon-waning-crescent', dbType: 'cena' }
     ]
 
-    // Estados del componente
+    // Estados
+    const loading = reactive({ initial: true, recipes: false, shoppingList: false })
     const weekMeals = ref([])
+    const allRecipes = ref([])
+    const weekDays = ref([])
+    const currentWeekStart = ref(null)
+    
+    // Modal de selección
     const isSelectingRecipe = ref(false)
     const selectedDay = ref('')
     const selectedMeal = ref('')
+    const recipeSearchQuery = ref('')
+    
+    // Modal de generación
     const showGenerateWeeklyModal = ref(false)
-    const showShoppingListModal = ref(false)
     const generatedWeeklyMenu = ref([])
+    const generationPreferences = reactive({ quick: false, healthy: false })
+    
+    // Modal de lista de compras
+    const showShoppingListModal = ref(false)
     const shoppingList = ref([])
-    const allRecipes = ref([])
-    const loading = reactive({
-      initial: true,
-      recipes: false,
-      shoppingList: false
-    })
-
-    // Navegación semanal
-    const currentWeekStart = ref(null)
-    const weekDays = ref([])
-
-    // Preferencias de generación
-    const generationPreferences = reactive({
-      variety: true,
-      quick: true,
-      selectedDays: {
-        lunes: true,
-        martes: true,
-        miércoles: true,
-        jueves: true,
-        viernes: true,
-        sábado: true,
-        domingo: true
-      }
-    })
-
-    // Sistema de notificaciones
+    
+    // Toast
     const showToast = ref(false)
-    const toastConfig = reactive({
-      type: 'info',
-      title: '',
-      message: '',
-      icon: 'mdi:information'
-    })
+    const toastType = ref('success')
+    const toastTitle = ref('')
+    const toastMessage = ref('')
+    const toastIcon = ref('mdi:check-circle')
 
-    // ============================================
-    // FUNCIONES AUXILIARES
-    // ============================================
+    const showNotification = (type, title, message, icon = null) => {
+      toastType.value = type
+      toastTitle.value = title
+      toastMessage.value = message
+      toastIcon.value = icon || (type === 'success' ? 'mdi:check-circle' : type === 'error' ? 'mdi:alert-circle' : 'mdi:alert')
+      showToast.value = true
+      setTimeout(() => { showToast.value = false }, 3000)
+    }
 
-    // Obtener lunes de una semana
+    const getCategoryLabel = (category) => {
+      const labels = { 'desayuno': 'Desayuno', 'almuerzo': 'Almuerzo', 'cena': 'Cena', 'postre': 'Postre', 'snack': 'Snack' }
+      return labels[category] || category || 'Receta'
+    }
+
+    const getMealTypeLabel = (mealKey) => {
+      const meal = mealTypes.find(m => m.key === mealKey)
+      return meal ? meal.label : mealKey
+    }
+
+    const formatDate = (dateString) => {
+      const date = new Date(dateString)
+      return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+    }
+
     const getWeekStart = (date = new Date()) => {
       const day = date.getDay()
       const diff = date.getDate() - day + (day === 0 ? -6 : 1)
@@ -376,176 +384,79 @@ export default {
       return weekStart
     }
 
-    // Obtener domingo de una semana
-    const getWeekEnd = (weekStart) => {
-      const weekEnd = new Date(weekStart)
-      weekEnd.setDate(weekStart.getDate() + 6)
-      weekEnd.setHours(23, 59, 59, 999)
-      return weekEnd
-    }
-
-    // Formatear fecha en español
-    const formatDate = (dateString) => {
-      const date = new Date(dateString)
-      return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-    }
-
-    // Formatear rango semanal
-    const formatWeekRange = () => {
-      if (weekDays.value.length === 0) return 'Cargando...'
-      
-      const firstDay = weekDays.value[0]
-      const lastDay = weekDays.value[6]
-      
-      const firstFormatted = formatDate(firstDay.date)
-      const lastFormatted = formatDate(lastDay.date)
-      
-      return `Semana del ${firstFormatted} al ${lastFormatted}`
-    }
-
-    // Obtener etiqueta del tipo de comida
-    const getMealTypeLabel = (mealKey) => {
-      const meal = mealTypes.find(m => m.key === mealKey)
-      return meal ? meal.label : mealKey
-    }
-
-    // Mostrar notificación
-    const showNotification = (type, title, message, icon = null) => {
-      toastConfig.type = type
-      toastConfig.title = title
-      toastConfig.message = message
-      
-      if (icon) {
-        toastConfig.icon = icon
-      } else {
-        switch (type) {
-          case 'success':
-            toastConfig.icon = 'mdi:check-circle'
-            break
-          case 'error':
-            toastConfig.icon = 'mdi:alert-circle'
-            break
-          case 'warning':
-            toastConfig.icon = 'mdi:alert'
-            break
-          default:
-            toastConfig.icon = 'mdi:information'
-        }
-      }
-      
-      showToast.value = true
-      setTimeout(() => {
-        showToast.value = false
-      }, 3000)
-    }
-
-    // Manejador de errores de imágenes
-    const handleImageError = (event) => {
-      event.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDQwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjFmNWYxIi8+CjxwYXRoIGQ9Ik0xMDAgN0g1MFY1MEgxMDBWN0oiIGZpbGw9IiNlMWU4ZTAiLz4KPHBhdGggZD0iTTM1MCAxNTBIMzAwVjEwMEgzNTBWMTUwWiIgZmlsbD0iI2UxZThlMCIvPgo8cGF0aCBkPSJNMTUwIDEwMEgxMDBWNTBIMTUwVjEwMFoiIGZpbGw9IiNlMWU4ZTAiLz4KPHBhdGggZD0iTTIwMCAxNTBIMTUwVjEwMEgyMDBWMTUwWiIgZmlsbD0iI2UxZThlMCIvPgo8L3N2Zz4='
-    }
-
-    // ============================================
-    // GESTIÓN DE SEMANAS
-    // ============================================
-
-    // Generar array de días de la semana
     const generateWeekDays = (weekStart) => {
       const daysArray = []
       const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-      
       for (let i = 0; i < 7; i++) {
         const date = new Date(weekStart)
         date.setDate(weekStart.getDate() + i)
-        
-        daysArray.push({
-          name: dayNames[i],
-          date: date.toISOString().split('T')[0],
-          dayOfWeek: i // 0=lunes, 6=domingo
-        })
+        daysArray.push({ name: dayNames[i], date: date.toISOString().split('T')[0], dayOfWeek: i })
       }
-      
       return daysArray
     }
 
-    // Navegar a semana anterior
-    const previousWeek = () => {
-      const newWeekStart = new Date(currentWeekStart.value)
-      newWeekStart.setDate(newWeekStart.getDate() - 7)
-      currentWeekStart.value = newWeekStart
-      weekDays.value = generateWeekDays(newWeekStart)
-      loadWeekData()
+    const formatWeekRange = () => {
+      if (weekDays.value.length === 0) return 'Cargando...'
+      const firstDay = weekDays.value[0]
+      const lastDay = weekDays.value[6]
+      return `Semana del ${formatDate(firstDay.date)} al ${formatDate(lastDay.date)}`
     }
 
-    // Navegar a semana siguiente
-    const nextWeek = () => {
-      const newWeekStart = new Date(currentWeekStart.value)
-      newWeekStart.setDate(newWeekStart.getDate() + 7)
-      currentWeekStart.value = newWeekStart
-      weekDays.value = generateWeekDays(newWeekStart)
-      loadWeekData()
+    const getMealForSlot = (day, mealKey) => {
+      return weekMeals.value.find(m => m.day === day && m.mealType === mealKey)
     }
 
-    // Ir a semana actual
-    const goToCurrentWeek = () => {
-      const today = new Date()
-      currentWeekStart.value = getWeekStart(today)
-      weekDays.value = generateWeekDays(currentWeekStart.value)
-      loadWeekData()
+    const getCurrentPlannerId = async () => {
+      const weekStartStr = currentWeekStart.value.toISOString().split('T')[0]
+      const { data, error } = await supabase
+        .from('weekly_planner')
+        .select('id')
+        .eq('user_id', authStore.user?.id)
+        .eq('week_start', weekStartStr)
+        .single()
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error obteniendo planificador:', error)
+        return null
+      }
+      return data?.id || null
     }
 
-    // ============================================
-    // CARGA DE DATOS
-    // ============================================
-
-    // Cargar datos de la semana actual
     const loadWeekData = async () => {
       try {
         loading.initial = true
         
-        if (!authStore.user?.id) {
-          showNotification('error', 'Error', 'Usuario no autenticado')
-          return
-        }
-
         const weekStartStr = currentWeekStart.value.toISOString().split('T')[0]
+        const weekEnd = new Date(currentWeekStart.value)
+        weekEnd.setDate(weekEnd.getDate() + 6)
         
-        // 1. Buscar o crear planificador semanal
-        const { data: plannerData, error: plannerError } = await supabase
+        // Buscar o crear planificador
+        let { data: planner, error: plannerError } = await supabase
           .from('weekly_planner')
-          .select('id, week_start, preferences')
-          .eq('user_id', authStore.user.id)
+          .select('id')
+          .eq('user_id', authStore.user?.id)
           .eq('week_start', weekStartStr)
           .single()
-
-        let plannerId = null
         
-        if (plannerError || !plannerData) {
-          // Crear nuevo planificador
-          const weekEnd = getWeekEnd(new Date(currentWeekStart.value))
-          
+        if (plannerError && plannerError.code === 'PGRST116') {
           const { data: newPlanner, error: createError } = await supabase
             .from('weekly_planner')
             .insert({
-              user_id: authStore.user.id,
+              user_id: authStore.user?.id,
               week_start: weekStartStr,
               week_end: weekEnd.toISOString().split('T')[0],
-              preferences: { dietary: [], variety: true }
+              preferences: {}
             })
             .select()
             .single()
-
-          if (createError) {
-            console.error('Error creando planificador:', createError)
-            showNotification('error', 'Error', 'No se pudo crear el planificador semanal')
-            return
-          }
           
-          plannerId = newPlanner.id
-        } else {
-          plannerId = plannerData.id
+          if (createError) throw createError
+          planner = newPlanner
+        } else if (plannerError) {
+          throw plannerError
         }
-
-        // 2. Cargar comidas planificadas
+        
+        // Cargar comidas planificadas
         const { data: plannedMeals, error: mealsError } = await supabase
           .from('planned_meals')
           .select(`
@@ -557,133 +468,56 @@ export default {
               title,
               total_time,
               servings,
-              image_url
+              image_url,
+              category
             )
           `)
-          .eq('planner_id', plannerId)
-
-        if (mealsError) {
-          console.error('Error cargando comidas:', mealsError)
-          showNotification('error', 'Error', 'No se pudieron cargar las comidas planificadas')
-        } else {
-          // Transformar datos para la vista
-          weekMeals.value = plannedMeals.map(meal => {
-            const dayName = weekDays.value.find(d => d.dayOfWeek === meal.day_of_week)?.name || ''
-            const mealType = mealTypes.find(m => m.dbType === meal.meal_type)?.key || ''
-            
-            return {
-              id: meal.id,
-              day: dayName,
-              dayOfWeek: meal.day_of_week,
-              meal: mealType,
-              mealDbType: meal.meal_type,
-              recipe: meal.recipe ? {
-                id: meal.recipe.id,
-                name: meal.recipe.title,
-                time: `${meal.recipe.total_time} min`,
-                servings: meal.recipe.servings,
-                image: meal.recipe.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=120'
-              } : null,
-              isOutside: !meal.recipe
-            }
-          })
-        }
-
-        // 3. Cargar recetas para el modal
-        await loadAllRecipes()
-
+          .eq('planner_id', planner.id)
+        
+        if (mealsError) throw mealsError
+        
+        // Transformar datos
+        weekMeals.value = (plannedMeals || []).map(meal => ({
+          id: meal.id,
+          day: weekDays.value.find(d => d.dayOfWeek === meal.day_of_week)?.name || '',
+          dayOfWeek: meal.day_of_week,
+          mealType: mealTypes.find(m => m.dbType === meal.meal_type)?.key || '',
+          mealDbType: meal.meal_type,
+          title: meal.recipe?.title,
+          total_time: meal.recipe?.total_time,
+          servings: meal.recipe?.servings,
+          image_url: meal.recipe?.image_url,
+          recipe_id: meal.recipe?.id,
+          category: meal.recipe?.category
+        }))
+        
       } catch (error) {
         console.error('Error cargando datos:', error)
-        showNotification('error', 'Error', 'Error al cargar los datos del planificador')
+        showNotification('error', 'Error', 'No se pudo cargar el planificador')
       } finally {
         loading.initial = false
       }
     }
 
-    // Cargar todas las recetas
     const loadAllRecipes = async () => {
       try {
         loading.recipes = true
-        
         const { data, error } = await supabase
           .from('recipes')
-          .select('id, title, total_time, servings, image_url, tags')
+          .select('id, title, total_time, servings, image_url, category, tags')
           .eq('is_public', true)
           .order('title')
-
+        
         if (error) throw error
-
-        allRecipes.value = data.map(recipe => {
-          // Determinar tipo basado en tags
-          let type = 'General'
-          if (recipe.tags?.includes('desayuno')) type = 'Desayuno'
-          else if (recipe.tags?.includes('almuerzo')) type = 'Almuerzo'
-          else if (recipe.tags?.includes('cena')) type = 'Cena'
-          else if (recipe.tags?.includes('merienda')) type = 'Merienda'
-
-          return {
-            id: recipe.id,
-            name: recipe.title,
-            time: `${recipe.total_time} min`,
-            servings: recipe.servings,
-            type: type,
-            image: recipe.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=120',
-            tags: recipe.tags || []
-          }
-        })
-
+        allRecipes.value = data || []
       } catch (error) {
         console.error('Error cargando recetas:', error)
         showNotification('error', 'Error', 'No se pudieron cargar las recetas')
-        allRecipes.value = []
       } finally {
         loading.recipes = false
       }
     }
 
-    // ============================================
-    // GESTIÓN DE COMIDAS POR SLOT
-    // ============================================
-
-    // Obtener comida para un slot específico
-    const getMealForSlot = (day, mealKey) => {
-      return weekMeals.value.find(m => m.day === day && m.meal === mealKey)
-    }
-
-    // Abrir modal de selección
-    const openRecipeSelection = (day, mealKey) => {
-      selectedDay.value = day
-      selectedMeal.value = mealKey
-      isSelectingRecipe.value = true
-    }
-
-    // Cerrar modal
-    const closeRecipeSelection = () => {
-      isSelectingRecipe.value = false
-      selectedDay.value = ''
-      selectedMeal.value = ''
-    }
-
-    // Obtener planificador ID para la semana actual
-    const getCurrentPlannerId = async () => {
-      const weekStartStr = currentWeekStart.value.toISOString().split('T')[0]
-      
-      const { data, error } = await supabase
-        .from('weekly_planner')
-        .select('id')
-        .eq('user_id', authStore.user.id)
-        .eq('week_start', weekStartStr)
-        .single()
-
-      if (error) {
-        console.error('Error obteniendo planificador:', error)
-        return null
-      }
-      
-      return data.id
-    }
-
-    // Seleccionar receta
     const selectRecipe = async (recipe) => {
       try {
         const plannerId = await getCurrentPlannerId()
@@ -691,300 +525,182 @@ export default {
           showNotification('error', 'Error', 'No se encontró el planificador')
           return
         }
-
-        const dayOfWeek = weekDays.value.find(d => d.name === selectedDay.value)?.dayOfWeek
-        const mealDbType = mealTypes.find(m => m.key === selectedMeal.value)?.dbType
-
-        if (dayOfWeek === undefined || !mealDbType) {
+        
+        const dayData = weekDays.value.find(d => d.name === selectedDay.value)
+        const mealTypeData = mealTypes.find(m => m.key === selectedMeal.value)
+        
+        if (!dayData || !mealTypeData) {
           showNotification('error', 'Error', 'Datos inválidos')
           return
         }
-
-        // Primero eliminar si existe (usando UPSERT con DELETE + INSERT)
-        const { error: deleteError } = await supabase
+        
+        // Eliminar si existe
+        await supabase
           .from('planned_meals')
           .delete()
           .eq('planner_id', plannerId)
-          .eq('day_of_week', dayOfWeek)
-          .eq('meal_type', mealDbType)
-
-        if (deleteError) throw deleteError
-
-        // Insertar nueva comida
+          .eq('day_of_week', dayData.dayOfWeek)
+          .eq('meal_type', mealTypeData.dbType)
+        
+        // Insertar nueva
         const { error: insertError } = await supabase
           .from('planned_meals')
           .insert({
             planner_id: plannerId,
-            day_of_week: dayOfWeek,
-            meal_type: mealDbType,
+            day_of_week: dayData.dayOfWeek,
+            meal_type: mealTypeData.dbType,
             recipe_id: recipe.id
           })
-
+        
         if (insertError) throw insertError
-
+        
         // Actualizar estado local
         weekMeals.value = weekMeals.value.filter(
-          m => !(m.day === selectedDay.value && m.meal === selectedMeal.value)
+          m => !(m.day === selectedDay.value && m.mealType === selectedMeal.value)
         )
-        
         weekMeals.value.push({
-          id: Date.now(), // ID temporal, se refrescará al recargar
+          id: Date.now(),
           day: selectedDay.value,
-          dayOfWeek: dayOfWeek,
-          meal: selectedMeal.value,
-          mealDbType: mealDbType,
-          recipe: recipe,
-          isOutside: false
+          dayOfWeek: dayData.dayOfWeek,
+          mealType: selectedMeal.value,
+          mealDbType: mealTypeData.dbType,
+          title: recipe.title,
+          total_time: recipe.total_time,
+          servings: recipe.servings,
+          image_url: recipe.image_url,
+          recipe_id: recipe.id,
+          category: recipe.category
         })
-
-        showNotification('success', 'Éxito', `${recipe.name} agregado al planificador`)
+        
+        showNotification('success', 'Éxito', `${recipe.title} agregado al planificador`)
         closeRecipeSelection()
-
+        
       } catch (error) {
         console.error('Error seleccionando receta:', error)
         showNotification('error', 'Error', 'No se pudo agregar la receta')
       }
     }
 
-    // Marcar como salida/fuera
-    const setOutsideMeal = async () => {
-      try {
-        const plannerId = await getCurrentPlannerId()
-        if (!plannerId) {
-          showNotification('error', 'Error', 'No se encontró el planificador')
-          return
-        }
-
-        const dayOfWeek = weekDays.value.find(d => d.name === selectedDay.value)?.dayOfWeek
-        const mealDbType = mealTypes.find(m => m.key === selectedMeal.value)?.dbType
-
-        if (dayOfWeek === undefined || !mealDbType) {
-          showNotification('error', 'Error', 'Datos inválidos')
-          return
-        }
-
-        // Primero eliminar si existe
-        const { error: deleteError } = await supabase
-          .from('planned_meals')
-          .delete()
-          .eq('planner_id', plannerId)
-          .eq('day_of_week', dayOfWeek)
-          .eq('meal_type', mealDbType)
-
-        if (deleteError) throw deleteError
-
-        // Insertar marcador de "fuera" - USAR UN RECETA ESPECIAL O UN CAMPO is_outside
-        // Como la tabla requiere recipe_id, necesitamos crear una receta especial "Fuera de casa"
-        // Por ahora, mostramos notificación y no guardamos
-        showNotification('warning', 'Próximamente', 'Funcionalidad de "fuera" en desarrollo')
-        closeRecipeSelection()
-        
-        // Actualizar estado local con marcador visual
-        weekMeals.value = weekMeals.value.filter(
-          m => !(m.day === selectedDay.value && m.meal === selectedMeal.value)
-        )
-        
-        weekMeals.value.push({
-          id: Date.now(),
-          day: selectedDay.value,
-          dayOfWeek: dayOfWeek,
-          meal: selectedMeal.value,
-          mealDbType: mealDbType,
-          recipe: null,
-          isOutside: true
-        })
-
-      } catch (error) {
-        console.error('Error marcando como fuera:', error)
-        showNotification('error', 'Error', 'No se pudo actualizar')
-      }
-    }
-
-    // Eliminar comida
     const removeMeal = async (day, mealKey) => {
       try {
-        const meal = weekMeals.value.find(m => m.day === day && m.meal === mealKey)
+        const meal = weekMeals.value.find(m => m.day === day && m.mealType === mealKey)
+        if (!meal) return
         
-        if (!meal?.id) {
-          showNotification('warning', 'Advertencia', 'No hay comida para eliminar')
-          return
-        }
-
         const plannerId = await getCurrentPlannerId()
         if (plannerId && meal.dayOfWeek !== undefined && meal.mealDbType) {
-          const { error } = await supabase
+          await supabase
             .from('planned_meals')
             .delete()
             .eq('planner_id', plannerId)
             .eq('day_of_week', meal.dayOfWeek)
             .eq('meal_type', meal.mealDbType)
-
-          if (error) throw error
         }
-
-        // Actualizar estado local
-        weekMeals.value = weekMeals.value.filter(
-          m => !(m.day === day && m.meal === mealKey)
-        )
-
-        showNotification('success', 'Éxito', 'Comida eliminada del planificador')
-
+        
+        weekMeals.value = weekMeals.value.filter(m => !(m.day === day && m.mealType === mealKey))
+        showNotification('success', 'Eliminado', 'Comida eliminada del planificador')
+        
       } catch (error) {
         console.error('Error eliminando comida:', error)
         showNotification('error', 'Error', 'No se pudo eliminar la comida')
       }
     }
 
-    // ============================================
-    // GENERACIÓN DE MENÚ SEMANAL
-    // ============================================
-
-    // Abrir modal de generación
-    const generateWeeklyMenu = () => {
-      showGenerateWeeklyModal.value = true
-      generatedWeeklyMenu.value = []
-    }
-
-    // Cerrar modal
-    const closeGenerateWeeklyModal = () => {
-      showGenerateWeeklyModal.value = false
-      generationPreferences.selectedDays = {
-        lunes: true,
-        martes: true,
-        miércoles: true,
-        jueves: true,
-        viernes: true,
-        sábado: true,
-        domingo: true
-      }
-    }
-
-    // Generar menú para un día
     const generateDayMenu = async (date) => {
       try {
         const dayName = weekDays.value.find(d => d.date === date)?.name
         if (!dayName) return
         
-        const dayOfWeek = weekDays.value.find(d => d.name === dayName)?.dayOfWeek
+        const dayData = weekDays.value.find(d => d.name === dayName)
         const plannerId = await getCurrentPlannerId()
         
         if (!plannerId) {
           showNotification('error', 'Error', 'No se encontró el planificador')
           return
         }
-
+        
         // Eliminar comidas existentes para este día
-        for (const meal of mealTypes) {
+        for (const mealType of mealTypes) {
           await supabase
             .from('planned_meals')
             .delete()
             .eq('planner_id', plannerId)
-            .eq('day_of_week', dayOfWeek)
-            .eq('meal_type', meal.dbType)
+            .eq('day_of_week', dayData.dayOfWeek)
+            .eq('meal_type', mealType.dbType)
         }
-
+        
         // Generar nuevas comidas
         const newMeals = []
-        
         for (const mealType of mealTypes) {
-          const suitableRecipes = allRecipes.value.filter(recipe => 
-            recipe.tags?.includes(mealType.dbType) || recipe.type === mealType.label
-          )
-          
+          const suitableRecipes = allRecipes.value.filter(r => r.category === mealType.dbType)
           if (suitableRecipes.length > 0) {
             const randomRecipe = suitableRecipes[Math.floor(Math.random() * suitableRecipes.length)]
-            
             const { error } = await supabase
               .from('planned_meals')
               .insert({
                 planner_id: plannerId,
-                day_of_week: dayOfWeek,
+                day_of_week: dayData.dayOfWeek,
                 meal_type: mealType.dbType,
                 recipe_id: randomRecipe.id
               })
-
+            
             if (!error) {
               newMeals.push({
                 id: Date.now() + Math.random(),
                 day: dayName,
-                dayOfWeek: dayOfWeek,
-                meal: mealType.key,
+                dayOfWeek: dayData.dayOfWeek,
+                mealType: mealType.key,
                 mealDbType: mealType.dbType,
-                recipe: randomRecipe,
-                isOutside: false
+                title: randomRecipe.title,
+                total_time: randomRecipe.total_time,
+                servings: randomRecipe.servings,
+                image_url: randomRecipe.image_url,
+                recipe_id: randomRecipe.id,
+                category: randomRecipe.category
               })
             }
           }
         }
-
-        // Actualizar estado local
+        
         weekMeals.value = weekMeals.value.filter(m => m.day !== dayName)
         weekMeals.value.push(...newMeals)
-
         showNotification('success', 'Éxito', `Menú generado para ${dayName}`)
-
+        
       } catch (error) {
         console.error('Error generando menú diario:', error)
         showNotification('error', 'Error', 'No se pudo generar el menú')
       }
     }
 
-    // Generar vista previa del menú semanal
     const generateWeekPreview = async () => {
       try {
         let filteredRecipes = [...allRecipes.value]
-        
         if (generationPreferences.quick) {
-          filteredRecipes = filteredRecipes.filter(r => 
-            parseInt(r.time) <= 30
-          )
+          filteredRecipes = filteredRecipes.filter(r => r.total_time <= 30)
         }
-
-        const preview = []
         
+        const preview = []
         for (const day of weekDays.value) {
-          const dayLower = day.name.toLowerCase()
-          
-          if (generationPreferences.selectedDays[dayLower]) {
-            for (const mealType of mealTypes) {
-              const existing = weekMeals.value.find(
-                m => m.day === day.name && m.meal === mealType.key
-              )
-              
-              if (existing) {
-                preview.push(existing)
-              } else {
-                const suitableRecipes = filteredRecipes.filter(recipe => 
-                  recipe.tags?.includes(mealType.dbType) || recipe.type === mealType.label
-                )
-                
-                if (suitableRecipes.length > 0) {
-                  const randomRecipe = suitableRecipes[Math.floor(Math.random() * suitableRecipes.length)]
-                  
-                  preview.push({
-                    day: day.name,
-                    dayOfWeek: day.dayOfWeek,
-                    meal: mealType.key,
-                    mealDbType: mealType.dbType,
-                    recipe: randomRecipe,
-                    isOutside: false
-                  })
-                }
+          for (const mealType of mealTypes) {
+            const existing = weekMeals.value.find(m => m.day === day.name && m.mealType === mealType.key)
+            if (existing) {
+              preview.push({ day: day.name, mealType: mealType.key, recipe: existing })
+            } else {
+              const suitableRecipes = filteredRecipes.filter(r => r.category === mealType.dbType)
+              if (suitableRecipes.length > 0) {
+                const randomRecipe = suitableRecipes[Math.floor(Math.random() * suitableRecipes.length)]
+                preview.push({ day: day.name, mealType: mealType.key, recipe: randomRecipe })
               }
             }
           }
         }
-
         generatedWeeklyMenu.value = preview
         showNotification('success', 'Éxito', 'Vista previa generada')
-
       } catch (error) {
         console.error('Error generando vista previa:', error)
         showNotification('error', 'Error', 'No se pudo generar la vista previa')
       }
     }
 
-    // Aplicar menú generado
     const applyGeneratedWeeklyMenu = async () => {
       try {
         const plannerId = await getCurrentPlannerId()
@@ -992,101 +708,68 @@ export default {
           showNotification('error', 'Error', 'No se encontró el planificador')
           return
         }
-
-        // Eliminar todas las comidas de la semana actual
-        const { error: deleteError } = await supabase
-          .from('planned_meals')
-          .delete()
-          .eq('planner_id', plannerId)
-
-        if (deleteError) throw deleteError
-
-        // Insertar nuevas comidas
+        
+        // Eliminar todas las comidas
+        await supabase.from('planned_meals').delete().eq('planner_id', plannerId)
+        
+        // Insertar nuevas
         const mealsToInsert = generatedWeeklyMenu.value
           .filter(meal => meal.recipe)
-          .map(meal => ({
-            planner_id: plannerId,
-            day_of_week: meal.dayOfWeek,
-            meal_type: meal.mealDbType,
-            recipe_id: meal.recipe.id
-          }))
-
+          .map(meal => {
+            const dayData = weekDays.value.find(d => d.name === meal.day)
+            const mealTypeData = mealTypes.find(m => m.key === meal.mealType)
+            return {
+              planner_id: plannerId,
+              day_of_week: dayData?.dayOfWeek,
+              meal_type: mealTypeData?.dbType,
+              recipe_id: meal.recipe.id
+            }
+          })
+          .filter(meal => meal.day_of_week !== undefined && meal.meal_type)
+        
         if (mealsToInsert.length > 0) {
-          const { error: insertError } = await supabase
-            .from('planned_meals')
-            .insert(mealsToInsert)
-
-          if (insertError) throw insertError
+          const { error } = await supabase.from('planned_meals').insert(mealsToInsert)
+          if (error) throw error
         }
-
-        // Actualizar estado local
-        weekMeals.value = generatedWeeklyMenu.value
-
-        showNotification('success', 'Éxito', 'Menú semanal aplicado exitosamente')
+        
+        await loadWeekData()
+        showNotification('success', 'Éxito', 'Menú semanal aplicado')
         closeGenerateWeeklyModal()
-
+        
       } catch (error) {
         console.error('Error aplicando menú:', error)
         showNotification('error', 'Error', 'No se pudo aplicar el menú')
       }
     }
 
-    // ============================================
-    // LISTA DE COMPRAS
-    // ============================================
-
     const generateShoppingList = async () => {
       try {
         loading.shoppingList = true
-        await generateShoppingListData()
-        showShoppingListModal.value = true
-      } catch (error) {
-        console.error('Error generando lista:', error)
-        showNotification('error', 'Error', 'No se pudo generar la lista')
-      } finally {
-        loading.shoppingList = false
-      }
-    }
-
-    const closeShoppingListModal = () => {
-      showShoppingListModal.value = false
-    }
-
-    const generateShoppingListData = async () => {
-      try {
-        const recipeIds = weekMeals.value
-          .filter(meal => !meal.isOutside && meal.recipe?.id)
-          .map(meal => meal.recipe.id)
+        const recipeIds = weekMeals.value.filter(m => m.recipe_id).map(m => m.recipe_id)
         
         if (recipeIds.length === 0) {
-          shoppingList.value = []
           showNotification('info', 'Información', 'No hay recetas planificadas')
+          shoppingList.value = []
+          showShoppingListModal.value = true
           return
         }
-
-        const { data: ingredientsData, error } = await supabase
+        
+        const { data, error } = await supabase
           .from('recipe_ingredients')
           .select(`
             quantity,
             unit,
-            ingredient:ingredients (
-              id,
-              name,
-              category
-            )
+            ingredient:ingredients (id, name, category)
           `)
           .in('recipe_id', recipeIds)
-
-        if (error) throw error
-
-        const consolidated = {}
         
-        ingredientsData.forEach(item => {
+        if (error) throw error
+        
+        const consolidated = {}
+        data.forEach(item => {
           const ingredient = item.ingredient
           if (!ingredient) return
-          
           const key = `${ingredient.id}-${item.unit}`
-          
           if (!consolidated[key]) {
             consolidated[key] = {
               id: ingredient.id,
@@ -1097,104 +780,121 @@ export default {
               purchased: false
             }
           }
-          
           consolidated[key].quantity += parseFloat(item.quantity)
         })
-
+        
         shoppingList.value = Object.values(consolidated).map(item => ({
           ...item,
-          quantity: `${Math.ceil(item.quantity * 100) / 100}`,
+          quantity: Math.ceil(item.quantity * 100) / 100,
           purchased: false
         }))
-
+        
+        showShoppingListModal.value = true
+        
       } catch (error) {
-        console.error('Error generando lista de compras:', error)
-        throw error
+        console.error('Error generando lista:', error)
+        showNotification('error', 'Error', 'No se pudo generar la lista')
+      } finally {
+        loading.shoppingList = false
       }
     }
 
     const groupedShoppingList = computed(() => {
       const groups = {}
-      
       shoppingList.value.forEach(item => {
         const category = item.category || 'otros'
-        
-        if (!groups[category]) {
-          groups[category] = {
-            name: formatCategory(category),
-            items: []
-          }
-        }
-        groups[category].items.push(item)
+        const categoryNames = { 'verduras': 'Verduras', 'frutas': 'Frutas', 'proteínas': 'Proteínas', 'granos': 'Granos', 'lácteos': 'Lácteos', 'condimentos': 'Condimentos', 'bebidas': 'Bebidas', 'otros': 'Otros' }
+        const name = categoryNames[category] || category
+        if (!groups[name]) groups[name] = { name, items: [] }
+        groups[name].items.push(item)
       })
-      
       return Object.values(groups)
     })
 
-    const formatCategory = (category) => {
-      const categories = {
-        'verduras': 'Verduras',
-        'frutas': 'Frutas',
-        'proteínas': 'Proteínas',
-        'granos': 'Granos',
-        'lácteos': 'Lácteos',
-        'condimentos': 'Condimentos',
-        'aceites': 'Aceites',
-        'otros': 'Otros'
-      }
-      return categories[category] || category
-    }
-
-    const shoppingListStats = computed(() => {
-      const recipes = new Set(
-        weekMeals.value
-          .filter(meal => !meal.isOutside && meal.recipe)
-          .map(meal => meal.recipe.id)
-      )
-      
-      return {
-        recipes: recipes.size,
-        total: shoppingList.value.length,
-        purchased: shoppingList.value.filter(item => item.purchased).length
-      }
-    })
+    const shoppingListStats = computed(() => ({
+      recipes: new Set(weekMeals.value.filter(m => m.recipe_id).map(m => m.recipe_id)).size,
+      total: shoppingList.value.length
+    }))
 
     const exportShoppingList = () => {
-      try {
-        let listText = `LISTA DE COMPRAS - ${formatWeekRange()}\n\n`
-        
-        groupedShoppingList.value.forEach(category => {
-          listText += `=== ${category.name.toUpperCase()} ===\n`
-          
-          category.items.forEach(item => {
-            const purchased = item.purchased ? '[✓]' : '[ ]'
-            listText += `${purchased} ${item.name} - ${item.quantity} ${item.unit}\n`
-          })
-          
-          listText += '\n'
+      let text = `LISTA DE COMPRAS - ${formatWeekRange()}\n\n`
+      groupedShoppingList.value.forEach(cat => {
+        text += `=== ${cat.name.toUpperCase()} ===\n`
+        cat.items.forEach(item => {
+          text += `[ ] ${item.name} - ${item.quantity} ${item.unit}\n`
         })
-        
-        const blob = new Blob([listText], { type: 'text/plain;charset=utf-8' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `lista-compras-${new Date().toISOString().split('T')[0]}.txt`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
-        
-        showNotification('success', 'Éxito', 'Lista exportada')
-
-      } catch (error) {
-        console.error('Error exportando lista:', error)
-        showNotification('error', 'Error', 'No se pudo exportar la lista')
-      }
+        text += '\n'
+      })
+      const blob = new Blob([text], { type: 'text/plain' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `lista-compras-${new Date().toISOString().split('T')[0]}.txt`
+      a.click()
+      URL.revokeObjectURL(url)
+      showNotification('success', 'Éxito', 'Lista exportada')
     }
 
-    // ============================================
-    // FUNCIONES DEL LAYOUT
-    // ============================================
+    const filteredRecipesForModal = computed(() => {
+      let filtered = [...allRecipes.value]
+      if (recipeSearchQuery.value.trim()) {
+        const query = recipeSearchQuery.value.toLowerCase()
+        filtered = filtered.filter(r => r.title.toLowerCase().includes(query))
+      }
+      return filtered
+    })
+
+    const openRecipeSelection = (day, mealKey) => {
+      selectedDay.value = day
+      selectedMeal.value = mealKey
+      recipeSearchQuery.value = ''
+      isSelectingRecipe.value = true
+    }
+
+    const closeRecipeSelection = () => {
+      isSelectingRecipe.value = false
+      selectedDay.value = ''
+      selectedMeal.value = ''
+    }
+
+    const openGenerateWeeklyModal = () => {
+      showGenerateWeeklyModal.value = true
+      generatedWeeklyMenu.value = []
+    }
+
+    const closeGenerateWeeklyModal = () => {
+      showGenerateWeeklyModal.value = false
+    }
+
+    const closeShoppingListModal = () => {
+      showShoppingListModal.value = false
+    }
+
+    const previousWeek = () => {
+      const newWeekStart = new Date(currentWeekStart.value)
+      newWeekStart.setDate(newWeekStart.getDate() - 7)
+      currentWeekStart.value = newWeekStart
+      weekDays.value = generateWeekDays(newWeekStart)
+      loadWeekData()
+    }
+
+    const nextWeek = () => {
+      const newWeekStart = new Date(currentWeekStart.value)
+      newWeekStart.setDate(newWeekStart.getDate() + 7)
+      currentWeekStart.value = newWeekStart
+      weekDays.value = generateWeekDays(newWeekStart)
+      loadWeekData()
+    }
+
+    const goToCurrentWeek = () => {
+      currentWeekStart.value = getWeekStart(new Date())
+      weekDays.value = generateWeekDays(currentWeekStart.value)
+      loadWeekData()
+    }
+
+    const handleImageError = (event) => {
+      event.target.src = defaultImage
+    }
 
     const toggleMobileMenu = () => {
       isMobileMenuOpen.value = !isMobileMenuOpen.value
@@ -1205,93 +905,77 @@ export default {
     }
 
     const handleLogout = async () => {
-      try {
-        await authStore.logout()
-        router.push('/login')
-      } catch (error) {
-        console.error('Error cerrando sesión:', error)
-        showNotification('error', 'Error', 'No se pudo cerrar sesión')
-      }
+      await authStore.logout()
+      router.push('/login')
     }
 
-    // ============================================
-    // INICIALIZACIÓN
-    // ============================================
-
     onMounted(async () => {
-      if (!authStore.isAuthenticated) {
-        router.push('/login')
-        return
+      if (authStore.isAuthenticated) {
+        currentWeekStart.value = getWeekStart(new Date())
+        weekDays.value = generateWeekDays(currentWeekStart.value)
+        await Promise.all([loadAllRecipes(), loadWeekData()])
       }
-
-      const today = new Date()
-      currentWeekStart.value = getWeekStart(today)
-      weekDays.value = generateWeekDays(currentWeekStart.value)
-      
-      await loadWeekData()
-      
-      showNotification('success', 'Bienvenido', 'Planificador semanal cargado')
     })
 
     return {
-      // Estados
       isMobileMenuOpen,
       mealTypes,
+      weekDays,
       weekMeals,
-      allRecipes,
+      loading,
+      defaultImage,
       isSelectingRecipe,
       selectedDay,
       selectedMeal,
-      weekDays,
+      recipeSearchQuery,
+      filteredRecipesForModal,
       showGenerateWeeklyModal,
-      showShoppingListModal,
       generatedWeeklyMenu,
-      shoppingList,
       generationPreferences,
+      showShoppingListModal,
+      shoppingList,
       groupedShoppingList,
       shoppingListStats,
-      loading,
       showToast,
-      toastConfig,
-      
-      // Layout
-      toggleMobileMenu,
-      closeMobileMenu,
-      handleLogout,
-      
-      // Planificador
+      toastType,
+      toastTitle,
+      toastMessage,
+      toastIcon,
+      formatDate,
+      formatWeekRange,
+      getMealTypeLabel,
+      getCategoryLabel,
       getMealForSlot,
       openRecipeSelection,
       closeRecipeSelection,
       selectRecipe,
-      setOutsideMeal,
       removeMeal,
-      
-      // Navegación
-      previousWeek,
-      nextWeek,
-      goToCurrentWeek,
-      
-      // Helper functions
-      formatDate,
-      formatWeekRange,
-      getMealTypeLabel,
-      
-      // Generación de menú
-      generateWeeklyMenu,
-      closeGenerateWeeklyModal,
       generateDayMenu,
+      openGenerateWeeklyModal,
+      closeGenerateWeeklyModal,
       generateWeekPreview,
       applyGeneratedWeeklyMenu,
-      
-      // Lista de compras
       generateShoppingList,
       closeShoppingListModal,
       exportShoppingList,
-      
-      // Utils
-      handleImageError
+      previousWeek,
+      nextWeek,
+      goToCurrentWeek,
+      handleImageError,
+      toggleMobileMenu,
+      closeMobileMenu,
+      handleLogout
     }
   }
 }
 </script>
+
+<style scoped>
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease;
+}
+</style>
