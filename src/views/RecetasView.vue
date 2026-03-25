@@ -267,20 +267,23 @@
 
                     <!-- Ingredientes -->
                     <div class="mb-8">
-                      <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
-                        <span class="iconify w-5 h-5" :style="{ color: 'var(--primary)' }"
-                          data-icon="mdi:food-apple"></span>
+                      <h3 class="text-xl font-semibold mb-4 flex items-center gap-2 text-[#2C2C2C]">
+                        <span class="iconify w-5 h-5 text-[#5DA271]" data-icon="mdi:food-apple"></span>
                         Ingredientes
                       </h3>
-                      <div class="p-4 rounded-xl text-green-700" style="background-color: var(--muted);">
+                      <div class="p-4 rounded-xl bg-[rgba(168,213,186,0.1)]">
                         <div v-for="ing in recipeIngredients" :key="ing.ingredient_name"
-                          class="py-2 last:border-0 flex justify-between items-center">
-                          <span class="flex items-center gap-2">
-                            <span class="iconify w-4 h-4" :style="{ color: 'var(--primary)' }"
+                          class="py-2 last:border-0 flex justify-between items-center border-b border-[rgba(0,0,0,0.05)]">
+                          <span class="flex items-center gap-2 text-[#2C2C2C]">
+                            <span class="iconify w-4 h-4 text-[#5DA271]"
                               data-icon="mdi:checkbox-blank-circle-outline"></span>
                             <span>{{ ing.ingredient_name }}</span>
                           </span>
-                          <span class="font-medium">{{ ing.quantity }} {{ ing.unit }}</span>
+                          <span class="font-medium text-[#5DA271]">{{ ing.quantity }} {{ ing.unit }}</span>
+                        </div>
+                        <div v-if="recipeIngredients.length === 0" class="py-4 text-center text-[#6C7A6C]">
+                          <span class="iconify w-8 h-8 mx-auto mb-1 opacity-50" data-icon="mdi:food-off"></span>
+                          <p class="text-sm">No hay ingredientes registrados</p>
                         </div>
                       </div>
                     </div>

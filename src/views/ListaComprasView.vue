@@ -128,7 +128,7 @@
             </div>
 
             <!-- Selección de lista inicial -->
-            <div v-else-if="!currentListId && shoppingLists.length > 0"
+            <div v-if="!currentListId && shoppingLists.length > 0"
               class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-12 text-center shadow-sm">
               <div class="mx-auto mb-4 text-[#6C7A6C]">
                 <span class="iconify h-16 w-16" data-icon="mdi:cart-outline"></span>
@@ -289,7 +289,7 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/layout/Sidebar.vue'
@@ -297,520 +297,380 @@ import Header from '../components/layout/Header.vue'
 import { useAuthStore } from '../stores/auth'
 import { supabase } from '../supabase'
 
-export default {
-  name: 'ListaComprasView',
-  components: {
-    Sidebar,
-    Header
-  },
-  setup() {
-    const router = useRouter()
-    const authStore = useAuthStore()
+const router = useRouter()
+const authStore = useAuthStore()
 
-    const isMobileMenuOpen = ref(false)
-    const loading = ref(true)
-    const defaultImage = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200'
+const isMobileMenuOpen = ref(false)
+const loading = ref(true)
+const defaultImage = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=200&h=200'
 
-    // Listas de compras
-    const shoppingLists = ref([])
-    const currentListId = ref('')
-    const shoppingItems = ref([])
+// Listas de compras
+const shoppingLists = ref([])
+const currentListId = ref('')
+const shoppingItems = ref([])
 
-    // Ingredientes disponibles
-    const allIngredients = ref([])
-    const ingredientCategories = [
-      { key: 'all', name: 'Todos' },
-      { key: 'verduras', name: 'Verduras' },
-      { key: 'frutas', name: 'Frutas' },
-      { key: 'proteínas', name: 'Proteínas' },
-      { key: 'granos', name: 'Granos' },
-      { key: 'lácteos', name: 'Lácteos' },
-      { key: 'condimentos', name: 'Condimentos' },
-      { key: 'bebidas', name: 'Bebidas' },
-      { key: 'otros', name: 'Otros' }
-    ]
+// Ingredientes disponibles
+const allIngredients = ref([])
+const filteredIngredients = ref([])
+const ingredientCategories = [
+  { key: 'all', name: 'Todos' },
+  { key: 'verduras', name: 'Verduras' },
+  { key: 'frutas', name: 'Frutas' },
+  { key: 'proteínas', name: 'Proteínas' },
+  { key: 'granos', name: 'Granos' },
+  { key: 'lácteos', name: 'Lácteos' },
+  { key: 'condimentos', name: 'Condimentos' },
+  { key: 'bebidas', name: 'Bebidas' },
+  { key: 'otros', name: 'Otros' }
+]
 
-    // Modal de agregar producto
-    const showAddItemModal = ref(false)
-    const searchQuery = ref('')
-    const activeCategory = ref('all')
-    const filteredIngredients = ref([])
+// Modal de agregar producto
+const showAddItemModal = ref(false)
+const searchQuery = ref('')
+const activeCategory = ref('all')
 
-    // Modal de cantidad
-    const showQuantityModal = ref(false)
-    const selectedIngredient = ref(null)
-    const itemQuantity = ref(1)
-    const itemUnit = ref('unidades')
+// Modal de cantidad
+const showQuantityModal = ref(false)
+const selectedIngredient = ref(null)
+const itemQuantity = ref(1)
+const itemUnit = ref('unidades')
 
-    // Toast
-    const showToast = ref(false)
-    const toastType = ref('success')
-    const toastTitle = ref('')
-    const toastMessage = ref('')
-    const toastIcon = ref('mdi:check-circle')
+// Toast
+const showToast = ref(false)
+const toastType = ref('success')
+const toastTitle = ref('')
+const toastMessage = ref('')
+const toastIcon = ref('mdi:check-circle')
 
-    const showNotification = (type, title, message, icon = null) => {
-      toastType.value = type
-      toastTitle.value = title
-      toastMessage.value = message
-      toastIcon.value = icon || (type === 'success' ? 'mdi:check-circle' : type === 'error' ? 'mdi:alert-circle' : 'mdi:alert')
-      showToast.value = true
-      setTimeout(() => { showToast.value = false }, 3000)
+const showNotification = (type, title, message, icon = null) => {
+  toastType.value = type
+  toastTitle.value = title
+  toastMessage.value = message
+  toastIcon.value = icon || (type === 'success' ? 'mdi:check-circle' : type === 'error' ? 'mdi:alert-circle' : 'mdi:alert')
+  showToast.value = true
+  setTimeout(() => { showToast.value = false }, 3000)
+}
+
+const getCategoryName = (category) => {
+  const cat = ingredientCategories.find(c => c.key === category)
+  return cat ? cat.name : category
+}
+
+const loadShoppingLists = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('shopping_lists')
+      .select('*')
+      .eq('user_id', authStore.user?.id)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    shoppingLists.value = data || []
+
+    const activeList = shoppingLists.value.find(list => list.status === 'active')
+    if (activeList && !currentListId.value) {
+      currentListId.value = activeList.id
+      await loadShoppingList()
     }
 
-    const getCategoryName = (category) => {
-      const cat = ingredientCategories.find(c => c.key === category)
-      return cat ? cat.name : category
-    }
-
-    const loadShoppingLists = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('shopping_lists')
-          .select('*')
-          .eq('user_id', authStore.user?.id)
-          .order('created_at', { ascending: false })
-
-        if (error) throw error
-
-        shoppingLists.value = data || []
-
-        // Si hay una lista activa, seleccionarla automáticamente
-        const activeList = shoppingLists.value.find(list => list.status === 'active')
-        if (activeList && !currentListId.value) {
-          currentListId.value = activeList.id
-          await loadShoppingList()
-        }
-
-      } catch (error) {
-        console.error('Error cargando listas:', error)
-        showNotification('error', 'Error', 'No se pudieron cargar tus listas')
-      }
-    }
-
-    const loadShoppingList = async () => {
-      if (!currentListId.value) return
-
-      try {
-        loading.value = true
-
-        // CORREGIDO: Usar 'added_at' en lugar de 'created_at'
-        const { data, error } = await supabase
-          .from('shopping_list_items')
-          .select(`
-            id,
-            quantity,
-            unit,
-            is_purchased,
-            notes,
-            ingredient:ingredients (
-              id,
-              name,
-              category,
-              image_url
-            )
-          `)
-          .eq('list_id', currentListId.value)
-          .order('added_at', { ascending: true })
-
-        if (error) throw error
-
-        // Transformar datos para manejar caso donde ingredient es null
-        shoppingItems.value = (data || []).map(item => ({
-          id: item.id,
-          quantity: item.quantity,
-          unit: item.unit,
-          is_purchased: item.is_purchased,
-          notes: item.notes,
-          ingredient_id: item.ingredient?.id || null,
-          ingredient_name: item.ingredient?.name || 'Ingrediente',
-          ingredient_category: item.ingredient?.category || 'otros',
-          ingredient_image: item.ingredient?.image_url || defaultImage
-        }))
-
-      } catch (error) {
-        console.error('Error cargando lista:', error)
-        showNotification('error', 'Error', 'No se pudo cargar la lista de compras')
-        shoppingItems.value = []
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const loadIngredients = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('ingredients')
-          .select('*')
-          .order('name')
-
-        if (error) throw error
-
-        allIngredients.value = data || []
-        filteredIngredients.value = [...allIngredients.value]
-
-      } catch (error) {
-        console.error('Error cargando ingredientes:', error)
-        showNotification('error', 'Error', 'No se pudieron cargar los productos')
-      }
-    }
-
-    const createNewList = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('shopping_lists')
-          .insert({
-            user_id: authStore.user?.id,
-            name: `Lista ${new Date().toLocaleDateString()}`,
-            status: 'active'
-          })
-          .select()
-          .single()
-
-        if (error) throw error
-
-        shoppingLists.value.unshift(data)
-        currentListId.value = data.id
-        await loadShoppingList()
-        showNotification('success', 'Éxito', 'Nueva lista creada')
-
-      } catch (error) {
-        console.error('Error creando lista:', error)
-        showNotification('error', 'Error', 'No se pudo crear la lista')
-      }
-    }
-
-    const completeList = async () => {
-      try {
-        const { error } = await supabase
-          .from('shopping_lists')
-          .update({ status: 'completed', updated_at: new Date().toISOString() })
-          .eq('id', currentListId.value)
-
-        if (error) throw error
-
-        // Actualizar estado local
-        const listIndex = shoppingLists.value.findIndex(l => l.id === currentListId.value)
-        if (listIndex !== -1) {
-          shoppingLists.value[listIndex].status = 'completed'
-        }
-
-        currentListId.value = ''
-        shoppingItems.value = []
-
-        showNotification('success', 'Éxito', 'Lista marcada como completada')
-
-      } catch (error) {
-        console.error('Error completando lista:', error)
-        showNotification('error', 'Error', 'No se pudo completar la lista')
-      }
-    }
-
-    const togglePurchased = async (itemId) => {
-      try {
-        const item = shoppingItems.value.find(i => i.id === itemId)
-        if (!item) return
-
-        const newStatus = !item.is_purchased
-
-        const { error } = await supabase
-          .from('shopping_list_items')
-          .update({
-            is_purchased: newStatus,
-            purchased_at: newStatus ? new Date().toISOString() : null
-          })
-          .eq('id', itemId)
-
-        if (error) throw error
-
-        item.is_purchased = newStatus
-
-      } catch (error) {
-        console.error('Error actualizando estado:', error)
-        showNotification('error', 'Error', 'No se pudo actualizar el estado')
-      }
-    }
-
-    const removeFromShoppingList = async (itemId) => {
-      try {
-        const { error } = await supabase
-          .from('shopping_list_items')
-          .delete()
-          .eq('id', itemId)
-
-        if (error) throw error
-
-        shoppingItems.value = shoppingItems.value.filter(item => item.id !== itemId)
-        showNotification('success', 'Eliminado', 'Producto eliminado de la lista')
-
-      } catch (error) {
-        console.error('Error eliminando producto:', error)
-        showNotification('error', 'Error', 'No se pudo eliminar el producto')
-      }
-    }
-
-    const addToList = async () => {
-      // CORREGIDO: Verificar que selectedIngredient existe y tiene id
-      if (!selectedIngredient.value || !selectedIngredient.value.id) {
-        showNotification('error', 'Error', 'No se pudo identificar el producto')
-        return
-      }
-
-      if (!currentListId.value) {
-        showNotification('warning', 'Advertencia', 'Primero selecciona o crea una lista')
-        return
-      }
-
-      try {
-        const { error } = await supabase
-          .from('shopping_list_items')
-          .insert({
-            list_id: currentListId.value,
-            ingredient_id: selectedIngredient.value.id,
-            quantity: parseFloat(itemQuantity.value),
-            unit: itemUnit.value,
-            is_purchased: false
-          })
-
-        if (error) throw error
-
-        await loadShoppingList()
-        closeQuantityModal()
-        showNotification('success', 'Agregado', `${selectedIngredient.value.name} agregado a la lista`)
-
-      } catch (error) {
-        console.error('Error agregando a la lista:', error)
-        showNotification('error', 'Error', 'No se pudo agregar el producto')
-      }
-    }
-
-    // Métodos (eliminar las duplicaciones al final)
-    const openAddItemModal = () => {
-      if (!currentListId.value) {
-        showNotification('warning', 'Advertencia', 'Primero selecciona o crea una lista')
-        return
-      }
-      showAddItemModal.value = true
-      searchQuery.value = ''
-      activeCategory.value = 'all'
-      filteredIngredients.value = [...allIngredients.value]
-    }
-
-    const closeAddItemModal = () => {
-      showAddItemModal.value = false
-    }
-
-    const openQuantityModal = (ingredient) => {
-      selectedIngredient.value = ingredient
-      itemQuantity.value = 1
-      itemUnit.value = ingredient.default_unit || 'unidades'
-      closeAddItemModal()
-      showQuantityModal.value = true
-    }
-
-    const closeQuantityModal = () => {
-      showQuantityModal.value = false
-      selectedIngredient.value = null
-    }
-
-    const setActiveCategory = (category) => {
-      activeCategory.value = category
-      filterIngredients()
-    }
-
-    const filterIngredients = () => {
-      let filtered = [...allIngredients.value]
-
-      if (activeCategory.value !== 'all') {
-        filtered = filtered.filter(ing => ing.category === activeCategory.value)
-      }
-
-      if (searchQuery.value.trim() !== '') {
-        const query = searchQuery.value.toLowerCase()
-        filtered = filtered.filter(ing =>
-          ing.name.toLowerCase().includes(query)
-        )
-      }
-
-      filteredIngredients.value = filtered
-    }
-
-    // Computed properties
-    const checkedCount = computed(() => {
-      return shoppingItems.value.filter(item => item.is_purchased).length
-    })
-
-    const totalCount = computed(() => {
-      return shoppingItems.value.length
-    })
-
-    const progress = computed(() => {
-      return totalCount.value > 0 ? (checkedCount.value / totalCount.value) * 100 : 0
-    })
-
-    const groupedItems = computed(() => {
-      const groups = {}
-      shoppingItems.value.forEach(item => {
-        const category = item.ingredient_category || 'otros'
-        const categoryName = getCategoryName(category)
-        if (!groups[categoryName]) {
-          groups[categoryName] = []
-        }
-        groups[categoryName].push(item)
-      })
-      return groups
-    })
-
-    const handleImageError = (event) => {
-      event.target.src = defaultImage
-    }
-
-    const toggleMobileMenu = () => {
-      isMobileMenuOpen.value = !isMobileMenuOpen.value
-    }
-
-    const closeMobileMenu = () => {
-      isMobileMenuOpen.value = false
-    }
-
-    const handleLogout = async () => {
-      await authStore.logout()
-      router.push('/login')
-    }
-
-    onMounted(async () => {
-      if (authStore.isAuthenticated) {
-        await Promise.all([
-          loadShoppingLists(),
-          loadIngredients()
-        ])
-        loading.value = false
-      }
-    })
-
-    const totalCount = computed(() => {
-      return shoppingItems.value.length
-    })
-
-    const progress = computed(() => {
-      return totalCount.value > 0 ? (checkedCount.value / totalCount.value) * 100 : 0
-    })
-
-    const groupedItems = computed(() => {
-      const groups = {}
-      shoppingItems.value.forEach(item => {
-        const category = item.ingredient_category || 'otros'
-        const categoryName = getCategoryName(category)
-        if (!groups[categoryName]) {
-          groups[categoryName] = []
-        }
-        groups[categoryName].push(item)
-      })
-      return groups
-    })
-
-    // Modal functions
-    const openAddItemModal = () => {
-      showAddItemModal.value = true
-      searchQuery.value = ''
-      activeCategory.value = 'all'
-      filteredProducts.value = [...allProducts.value]
-    }
-
-    const closeAddItemModal = () => {
-      showAddItemModal.value = false
-    }
-
-    const setActiveCategory = (category) => {
-      activeCategory.value = category
-      filterIngredients()
-    }
-
-    const filterProducts = () => {
-      let filtered = [...allProducts.value]
-
-      if (activeCategory.value !== 'all') {
-        filtered = filtered.filter(product => product.category === activeCategory.value)
-      }
-
-      if (searchQuery.value.trim() !== '') {
-        const query = searchQuery.value.toLowerCase()
-        filtered = filtered.filter(product =>
-          product.name.toLowerCase().includes(query) ||
-          product.category.toLowerCase().includes(query)
-        )
-      }
-
-      filteredProducts.value = filtered
-    }
-
-    const addProductToList = (product) => {
-      const exists = shoppingList.value.some(item =>
-        item.name.toLowerCase() === product.name.toLowerCase()
-      )
-
-      if (!exists) {
-        addToShoppingList({
-          name: product.name,
-          category: product.category,
-          quantity: '1 unidad',
-          checked: false
-        })
-
-        closeAddItemModal()
-      } else {
-        alert(`${product.name} ya está en tu lista de compras`)
-      }
-    }
-
-    const handleImageError = (event) => {
-      event.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjFmNWYxIi8+CjxwYXRoIGQ9Ik01MCA1MEgxNTBWMTUwSDUwVjUwWiIgZmlsbD0iI2UxZThlMCIvPgo8L3N2Zz4='
-    }
-
-    return {
-      isMobileMenuOpen,
-      loading,
-      shoppingLists,
-      currentListId,
-      shoppingItems,
-      allIngredients,
-      ingredientCategories,
-      showAddItemModal,
-      searchQuery,
-      activeCategory,
-      filteredIngredients,
-      showQuantityModal,
-      selectedIngredient,
-      itemQuantity,
-      itemUnit,
-      defaultImage,
-      showToast,
-      toastType,
-      toastTitle,
-      toastMessage,
-      toastIcon,
-      checkedCount,
-      totalCount,
-      progress,
-      groupedItems,
-      getCategoryName,
-      loadShoppingList,
-      createNewList,
-      completeList,
-      togglePurchased,
-      removeFromShoppingList,
-      addToList,
-      openAddItemModal,
-      closeAddItemModal,
-      openQuantityModal,
-      closeQuantityModal,
-      setActiveCategory,
-      filterIngredients,
-      handleImageError,
-      toggleMobileMenu,
-      closeMobileMenu,
-      handleLogout
-    }
+  } catch (error) {
+    console.error('Error cargando listas:', error)
+    showNotification('error', 'Error', 'No se pudieron cargar tus listas')
   }
 }
+
+const loadShoppingList = async () => {
+  if (!currentListId.value) return
+
+  try {
+    loading.value = true
+
+    const { data, error } = await supabase
+      .from('shopping_list_items')
+      .select(`
+        id,
+        quantity,
+        unit,
+        is_purchased,
+        notes,
+        ingredient:ingredients (
+          id,
+          name,
+          category,
+          image_url
+        )
+      `)
+      .eq('list_id', currentListId.value)
+      .order('added_at', { ascending: true })
+
+    if (error) throw error
+
+    shoppingItems.value = (data || []).map(item => ({
+      id: item.id,
+      quantity: item.quantity,
+      unit: item.unit,
+      is_purchased: item.is_purchased,
+      notes: item.notes,
+      ingredient_id: item.ingredient?.id || null,
+      ingredient_name: item.ingredient?.name || 'Ingrediente',
+      ingredient_category: item.ingredient?.category || 'otros',
+      ingredient_image: item.ingredient?.image_url || defaultImage
+    }))
+
+  } catch (error) {
+    console.error('Error cargando lista:', error)
+    showNotification('error', 'Error', 'No se pudo cargar la lista de compras')
+    shoppingItems.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+const loadIngredients = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('ingredients')
+      .select('*')
+      .order('name')
+
+    if (error) throw error
+
+    allIngredients.value = data || []
+    filteredIngredients.value = [...allIngredients.value]
+
+  } catch (error) {
+    console.error('Error cargando ingredientes:', error)
+    showNotification('error', 'Error', 'No se pudieron cargar los productos')
+  }
+}
+
+const createNewList = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('shopping_lists')
+      .insert({
+        user_id: authStore.user?.id,
+        name: `Lista ${new Date().toLocaleDateString()}`,
+        status: 'active'
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+
+    shoppingLists.value.unshift(data)
+    currentListId.value = data.id
+    await loadShoppingList()
+    showNotification('success', 'Éxito', 'Nueva lista creada')
+
+  } catch (error) {
+    console.error('Error creando lista:', error)
+    showNotification('error', 'Error', 'No se pudo crear la lista')
+  }
+}
+
+const completeList = async () => {
+  try {
+    const { error } = await supabase
+      .from('shopping_lists')
+      .update({ status: 'completed', updated_at: new Date().toISOString() })
+      .eq('id', currentListId.value)
+
+    if (error) throw error
+
+    const listIndex = shoppingLists.value.findIndex(l => l.id === currentListId.value)
+    if (listIndex !== -1) {
+      shoppingLists.value[listIndex].status = 'completed'
+    }
+
+    currentListId.value = ''
+    shoppingItems.value = []
+    showNotification('success', 'Éxito', 'Lista marcada como completada')
+
+  } catch (error) {
+    console.error('Error completando lista:', error)
+    showNotification('error', 'Error', 'No se pudo completar la lista')
+  }
+}
+
+const togglePurchased = async (itemId) => {
+  try {
+    const item = shoppingItems.value.find(i => i.id === itemId)
+    if (!item) return
+
+    const newStatus = !item.is_purchased
+
+    const { error } = await supabase
+      .from('shopping_list_items')
+      .update({
+        is_purchased: newStatus,
+        purchased_at: newStatus ? new Date().toISOString() : null
+      })
+      .eq('id', itemId)
+
+    if (error) throw error
+
+    item.is_purchased = newStatus
+
+  } catch (error) {
+    console.error('Error actualizando estado:', error)
+    showNotification('error', 'Error', 'No se pudo actualizar el estado')
+  }
+}
+
+const removeFromShoppingList = async (itemId) => {
+  try {
+    const { error } = await supabase
+      .from('shopping_list_items')
+      .delete()
+      .eq('id', itemId)
+
+    if (error) throw error
+
+    shoppingItems.value = shoppingItems.value.filter(item => item.id !== itemId)
+    showNotification('success', 'Eliminado', 'Producto eliminado de la lista')
+
+  } catch (error) {
+    console.error('Error eliminando producto:', error)
+    showNotification('error', 'Error', 'No se pudo eliminar el producto')
+  }
+}
+
+const addToList = async () => {
+  if (!selectedIngredient.value || !selectedIngredient.value.id) {
+    showNotification('error', 'Error', 'No se pudo identificar el producto')
+    return
+  }
+
+  if (!currentListId.value) {
+    showNotification('warning', 'Advertencia', 'Primero selecciona o crea una lista')
+    return
+  }
+
+  try {
+    const { error } = await supabase
+      .from('shopping_list_items')
+      .insert({
+        list_id: currentListId.value,
+        ingredient_id: selectedIngredient.value.id,
+        quantity: parseFloat(itemQuantity.value),
+        unit: itemUnit.value,
+        is_purchased: false
+      })
+
+    if (error) throw error
+
+    await loadShoppingList()
+    closeQuantityModal()
+    showNotification('success', 'Agregado', `${selectedIngredient.value.name} agregado a la lista`)
+
+  } catch (error) {
+    console.error('Error agregando a la lista:', error)
+    showNotification('error', 'Error', 'No se pudo agregar el producto')
+  }
+}
+
+const openAddItemModal = () => {
+  if (!currentListId.value) {
+    showNotification('warning', 'Advertencia', 'Primero selecciona o crea una lista')
+    return
+  }
+  showAddItemModal.value = true
+  searchQuery.value = ''
+  activeCategory.value = 'all'
+  filteredIngredients.value = [...allIngredients.value]
+}
+
+const closeAddItemModal = () => {
+  showAddItemModal.value = false
+}
+
+const openQuantityModal = (ingredient) => {
+  selectedIngredient.value = ingredient
+  itemQuantity.value = 1
+  itemUnit.value = ingredient.default_unit || 'unidades'
+  closeAddItemModal()
+  showQuantityModal.value = true
+}
+
+const closeQuantityModal = () => {
+  showQuantityModal.value = false
+  selectedIngredient.value = null
+}
+
+const setActiveCategory = (category) => {
+  activeCategory.value = category
+  filterIngredients()
+}
+
+const filterIngredients = () => {
+  let filtered = [...allIngredients.value]
+
+  if (activeCategory.value !== 'all') {
+    filtered = filtered.filter(ing => ing.category === activeCategory.value)
+  }
+
+  if (searchQuery.value.trim() !== '') {
+    const query = searchQuery.value.toLowerCase()
+    filtered = filtered.filter(ing =>
+      ing.name.toLowerCase().includes(query)
+    )
+  }
+
+  filteredIngredients.value = filtered
+}
+
+const handleImageError = (event) => {
+  event.target.src = defaultImage
+}
+
+const toggleMobileMenu = () => {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value
+}
+
+const closeMobileMenu = () => {
+  isMobileMenuOpen.value = false
+}
+
+const handleLogout = async () => {
+  await authStore.logout()
+  router.push('/login')
+}
+
+// Computed properties
+const checkedCount = computed(() => {
+  return shoppingItems.value.filter(item => item.is_purchased).length
+})
+
+const totalCount = computed(() => {
+  return shoppingItems.value.length
+})
+
+const progress = computed(() => {
+  return totalCount.value > 0 ? (checkedCount.value / totalCount.value) * 100 : 0
+})
+
+const groupedItems = computed(() => {
+  const groups = {}
+  shoppingItems.value.forEach(item => {
+    const category = item.ingredient_category || 'otros'
+    const categoryName = getCategoryName(category)
+    if (!groups[categoryName]) {
+      groups[categoryName] = []
+    }
+    groups[categoryName].push(item)
+  })
+  return groups
+})
+
+onMounted(async () => {
+  if (authStore.isAuthenticated) {
+    await Promise.all([
+      loadShoppingLists(),
+      loadIngredients()
+    ])
+    loading.value = false
+  }
+})
 </script>
