@@ -766,6 +766,8 @@ export default {
   setup() {
     const router = useRouter()
     const authStore = useAuthStore()
+    
+    console.log('API Key configurada:', import.meta.env.VITE_SPOONACULAR_API_KEY ? '✅ Sí' : '❌ No')
 
     // Layout
     const isMobileMenuOpen = ref(false)

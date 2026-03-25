@@ -1,3 +1,4 @@
+<!-- src/views/RecetasView.vue - VERSIÓN CORREGIDA -->
 <template>
   <div class="min-h-screen bg-[#F6F9F6]" :class="{ 'max-md:overflow-hidden': isMobileMenuOpen }">
     <!-- Sidebar - Fixed position -->
@@ -21,7 +22,13 @@
               </div>
               <div>
                 <h1 class="mb-1 text-2xl font-semibold text-[#2C2C2C]">Recetas</h1>
-                <p class="text-sm text-[#6C7A6C]">Explora nuestra colección de recetas saludables</p>
+                <p class="text-sm text-[#6C7A6C]">
+                  Explora nuestra colección de recetas saludables
+                  <span v-if="externalCount > 0"
+                    class="ml-2 text-xs bg-[rgba(93,162,113,0.1)] px-2 py-0.5 rounded-full">
+                    +{{ externalCount }} externas
+                  </span>
+                </p>
               </div>
             </div>
 
@@ -32,10 +39,9 @@
                 <span
                   class="iconify absolute left-4 top-1/2 z-2 h-5 w-5 -translate-y-1/2 text-[#6C7A6C] transition-all duration-300 group-focus-within:text-[#5DA271] group-focus-within:scale-110"
                   data-icon="mdi:magnify"></span>
-                <input type="text" placeholder="Buscar recetas..." v-model="searchQuery"
-                  class="w-full rounded-2xl border-2 border-[rgba(0,0,0,0.06)] bg-white/80 py-4 pl-12 pr-5 text-[15px] text-[#2C2C2C] transition-all duration-300 placeholder:text-[#6C7A6C]/60 backdrop-blur-sm focus:border-[#5DA271] focus:outline-none focus:ring-4 focus:ring-[rgba(93,162,113,0.15)] focus:bg-white hover:border-[rgba(93,162,113,0.3)] hover:shadow-md"
-                  @input="filterRecipes" />
-                <!-- Efecto de brillo sutil -->
+                <input type="text" placeholder="Buscar recetas (locales + externas)..." v-model="searchQuery"
+                  @input="debouncedSearch" @keyup.enter="debouncedSearch"
+                  class="w-full rounded-2xl border-2 border-[rgba(0,0,0,0.06)] bg-white/80 py-4 pl-12 pr-5 text-[15px] text-[#2C2C2C] transition-all duration-300 placeholder:text-[#6C7A6C]/60 backdrop-blur-sm focus:border-[#5DA271] focus:outline-none focus:ring-4 focus:ring-[rgba(93,162,113,0.15)] focus:bg-white hover:border-[rgba(93,162,113,0.3)] hover:shadow-md" />
                 <div
                   class="absolute inset-0 rounded-2xl pointer-events-none opacity-0 transition-opacity duration-300 group-focus-within:opacity-100"
                   style="background: radial-gradient(circle at 30% 50%, rgba(93,162,113,0.08) 0%, transparent 70%);">
@@ -51,7 +57,6 @@
                     ? 'bg-linear-to-r from-[#5DA271] to-[#4A8B5C] text-white shadow-lg shadow-[#5DA271]/30'
                     : 'bg-white/80 backdrop-blur-sm border-2 border-[rgba(0,0,0,0.06)] text-[#2C2C2C] hover:border-[#5DA271] hover:bg-[rgba(168,213,186,0.15)] hover:shadow-md hover:-translate-y-0.5'
                 ]">
-                  <!-- Efecto de brillo en hover -->
                   <span
                     class="absolute inset-0 bg-linear-to-r from-white/0 via-white/30 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></span>
                   <span class="iconify h-4.5 w-4.5 transition-transform duration-300 group-hover:scale-110"
@@ -71,16 +76,19 @@
                       ? 'bg-linear-to-r from-[#5DA271] to-[#4A8B5C] text-white shadow-lg shadow-[#5DA271]/30'
                       : 'bg-white/80 backdrop-blur-sm border-2 border-[rgba(0,0,0,0.06)] text-[#2C2C2C] hover:border-[#5DA271] hover:bg-[rgba(168,213,186,0.15)] hover:shadow-md hover:-translate-y-0.5'
                   ]">
-                  <!-- Efecto de brillo en hover -->
                   <span
                     class="absolute inset-0 bg-linear-to-r from-white/0 via-white/30 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></span>
                   <span class="relative z-10">{{ category.label }}</span>
-
-                  <!-- Indicador de activo sutil -->
                   <span v-if="selectedCategory === category.value"
                     class="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-white/60 rounded-full animate-pulse">
                   </span>
                 </button>
+              </div>
+
+              <!-- Indicador de búsqueda externa -->
+              <div v-if="searchingExternal" class="flex items-center gap-2 text-xs text-[#5DA271]">
+                <div class="w-3 h-3 rounded-full border-2 border-[#5DA271] border-t-transparent animate-spin"></div>
+                <span>Buscando recetas externas...</span>
               </div>
             </div>
 
@@ -91,7 +99,7 @@
               </div>
             </div>
 
-            <!-- Grid de recetas (mismo diseño que el home) -->
+            <!-- Grid de recetas -->
             <div v-else-if="displayedRecipes.length > 0"
               class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
               <div v-for="recipe in displayedRecipes" :key="recipe.id"
@@ -110,11 +118,21 @@
                     </span>
                   </div>
 
+                  <!-- Badge de fuente (local/externa) -->
+                  <div class="absolute right-3 top-3">
+                    <div class="flex items-center gap-1 rounded-lg px-2 py-1 text-white text-xs backdrop-blur-sm"
+                      :class="recipe.isExternal ? 'bg-purple-600/90' : 'bg-[#5DA271]/90'">
+                      <span class="iconify w-3 h-3" :data-icon="recipe.isExternal ? 'mdi:api' : 'mdi:database'"></span>
+                      <span>{{ recipe.isExternal ? 'Spoonacular' : 'Local' }}</span>
+                    </div>
+                  </div>
+
                   <!-- Badge de compatibilidad -->
-                  <div class="absolute bottom-3 right-3">
+                  <div v-if="recipe.match_percentage !== undefined && recipe.total_ingredients > 0"
+                    class="absolute bottom-3 right-3">
                     <div class="flex items-center gap-1 rounded-lg bg-black/50 px-2 py-1 text-white text-xs">
                       <span class="iconify w-3 h-3" data-icon="mdi:check-circle"></span>
-                      <span>{{ recipe.match_percentage || 0 }}% compatible</span>
+                      <span>{{ recipe.match_percentage }}% compatible</span>
                     </div>
                   </div>
 
@@ -134,29 +152,29 @@
                   <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-1.5 text-sm text-[#6C7A6C]">
                       <span class="iconify h-4 w-4 text-[#5DA271]" data-icon="mdi:clock-outline"></span>
-                      <span>{{ recipe.total_time }} min</span>
+                      <span>{{ recipe.total_time || '--' }} min</span>
                     </div>
                     <div class="flex items-center gap-1.5 text-sm text-[#6C7A6C]">
                       <span class="iconify h-4 w-4 text-[#5DA271]" data-icon="mdi:account-group-outline"></span>
-                      <span>{{ recipe.servings }} porciones</span>
+                      <span>{{ recipe.servings || '--' }} porc.</span>
                     </div>
                     <div class="flex items-center gap-1.5 text-sm text-[#6C7A6C]">
                       <span class="iconify h-4 w-4 text-red-500" data-icon="mdi:fire"></span>
-                      <span>{{ recipe.calories_per_serving || '--' }} kcal</span>
+                      <span>{{ recipe.calories_per_serving || '--' }}</span>
                     </div>
                   </div>
 
-                  <!-- Barra de progreso de ingredientes (misma que en el home) -->
-                  <div class="mb-4">
+                  <!-- Barra de progreso de ingredientes (SOLO si hay ingredientes) -->
+                  <div v-if="recipe.total_ingredients && recipe.total_ingredients > 0" class="mb-4">
                     <div class="flex justify-between text-xs mb-1.5">
                       <span class="text-[#6C7A6C]">Ingredientes disponibles</span>
                       <span class="font-medium text-[#5DA271]">
-                        {{ recipe.available_ingredients || 0 }}/{{ recipe.total_ingredients || 0 }}
+                        {{ recipe.available_ingredients || 0 }}/{{ recipe.total_ingredients }}
                       </span>
                     </div>
                     <div class="h-1.5 w-full overflow-hidden rounded-full bg-[#E8F0E8]">
                       <div class="h-full rounded-full transition-all duration-300" :style="{
-                        width: ((recipe.available_ingredients || 0) / (recipe.total_ingredients || 1) * 100) + '%',
+                        width: ((recipe.available_ingredients || 0) / recipe.total_ingredients * 100) + '%',
                         backgroundColor: '#5DA271'
                       }"></div>
                     </div>
@@ -178,8 +196,24 @@
               </div>
             </div>
 
+            <!-- Paginación -->
+            <div v-if="totalPages > 1 && !searchQuery && !showOnlyAvailable && selectedCategory === 'all'"
+              class="mt-8 flex justify-center gap-2">
+              <button @click="prevPage" :disabled="currentPage === 1"
+                class="px-4 py-2 rounded-xl border border-gray-200 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#5DA271]">
+                Anterior
+              </button>
+              <span class="px-4 py-2 text-gray-700">
+                Página {{ currentPage }} de {{ totalPages }}
+              </span>
+              <button @click="nextPage" :disabled="currentPage === totalPages"
+                class="px-4 py-2 rounded-xl border border-gray-200 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#5DA271]">
+                Siguiente
+              </button>
+            </div>
+
             <!-- Estado vacío -->
-            <div v-else
+            <div v-else-if="!loading && displayedRecipes.length === 0"
               class="mt-10 rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white p-15 text-center shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
               <div class="mx-auto mb-5 text-[#6C7A6C]">
                 <span class="iconify h-16 w-16" data-icon="mdi:food-off"></span>
@@ -192,7 +226,7 @@
               </button>
             </div>
 
-            <!-- Modal de detalle de receta (con el diseño mejorado del home) -->
+            <!-- Modal de detalle de receta (con diseño original) -->
             <div v-if="showRecipeModal"
               class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-4 animate-fade-in"
               @click="closeRecipeModal">
@@ -204,7 +238,7 @@
                   <span class="iconify w-5 h-5" data-icon="mdi:close" style="color: var(--foreground);"></span>
                 </button>
 
-                <div v-if="loading" class="flex flex-col items-center justify-center min-h-75"
+                <div v-if="loadingRecipe" class="flex flex-col items-center justify-center min-h-75"
                   style="color: var(--muted-foreground);">
                   <div class="w-10 h-10 border-4 rounded-full animate-spin mb-4"
                     style="border-color: var(--border); border-top-color: var(--primary);"></div>
@@ -222,6 +256,9 @@
                     </div>
                     <div class="absolute bottom-0 left-0 right-0 p-8 text-white">
                       <h2 class="text-3xl font-bold mb-2">{{ selectedRecipe.title }}</h2>
+                      <div v-if="selectedRecipe.isExternal" class="flex items-center gap-2 mt-1">
+                        <span class="text-xs bg-purple-600/80 px-2 py-0.5 rounded-full">Spoonacular</span>
+                      </div>
                     </div>
                   </div>
 
@@ -230,11 +267,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-4 rounded-xl"
                       style="background-color: var(--muted);">
                       <div class="text-center">
-                        <span class="block text-lg font-semibold">{{ selectedRecipe.total_time }} min</span>
+                        <span class="block text-lg font-semibold">{{ selectedRecipe.total_time || '--' }} min</span>
                         <span class="text-xs">Tiempo</span>
                       </div>
                       <div class="text-center">
-                        <span class="block text-lg font-semibold">{{ selectedRecipe.servings }}</span>
+                        <span class="block text-lg font-semibold">{{ selectedRecipe.servings || '--' }}</span>
                         <span class="text-xs">Porciones</span>
                       </div>
                       <div class="text-center">
@@ -277,7 +314,7 @@
                           <span class="flex items-center gap-2 text-[#2C2C2C]">
                             <span class="iconify w-4 h-4 text-[#5DA271]"
                               data-icon="mdi:checkbox-blank-circle-outline"></span>
-                            <span>{{ ing.ingredient_name }}</span>
+                            <span>{{ ing.ingredient_name || ing.name }}</span> <!-- Mostrar nombre -->
                           </span>
                           <span class="font-medium text-[#5DA271]">{{ ing.quantity }} {{ ing.unit }}</span>
                         </div>
@@ -300,8 +337,8 @@
                           <div
                             class="w-8 h-8 rounded-full flex items-center justify-center font-semibold text-white shrink-0"
                             :style="{ backgroundColor: 'var(--primary)' }">{{ idx + 1 }}</div>
-                          <p class="text-sm leading-relaxed" style="color: var(--foreground);">{{ step.step ||
-                            step.description || step }}</p>
+                          <p class="text-sm leading-relaxed" style="color: var(--foreground);">{{
+                            translateInstructions(step) }}</p>
                         </div>
                       </div>
                     </div>
@@ -351,10 +388,12 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { useRecipesStore } from '@/stores/recipes'
+import { supabase } from '@/supabase'
 import Sidebar from '../components/layout/Sidebar.vue'
 import Header from '../components/layout/Header.vue'
-import { useAuthStore } from '../stores/auth'
-import { supabase } from '../supabase'
+import { translateInstructions as translateInstructionsService, translateIngredient } from '@/services/translations'
 
 export default {
   name: 'RecetasView',
@@ -365,14 +404,15 @@ export default {
   setup() {
     const router = useRouter()
     const authStore = useAuthStore()
+    const recipesStore = useRecipesStore()
 
+    // Layout
     const isMobileMenuOpen = ref(false)
-    const loading = ref(true)
-    const allRecipes = ref([])
-    const userPantryIngredients = ref([])
-    const recipeIngredientsCache = ref({})
-    const favoritesSet = ref(new Set())
     const defaultImage = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=300'
+
+    // Paginación
+    const ITEMS_PER_PAGE = 10
+    const currentPage = ref(1)
 
     // Filtros
     const categories = [
@@ -386,12 +426,15 @@ export default {
     const selectedCategory = ref('all')
     const searchQuery = ref('')
     const showOnlyAvailable = ref(false)
+    const searchingExternal = ref(false)
+    let searchTimeout = null
 
     // Modal
     const showRecipeModal = ref(false)
     const selectedRecipe = ref(null)
     const recipeIngredients = ref([])
     const isFavorite = ref(false)
+    const loadingRecipe = ref(false)
 
     // Toast
     const showToast = ref(false)
@@ -420,27 +463,58 @@ export default {
       return labels[category] || category || 'Receta'
     }
 
-    // Cargar todas las recetas
-    const loadRecipes = async () => {
-      try {
-        loading.value = true
+    // Traducción básica de instrucciones (CORREGIDA)
+    const translateInstructions = (step) => {
+      if (!step) return ''
+      // Asegurar que step es string
+      let text = String(step)
 
-        const { data, error } = await supabase
-          .from('recipes')
-          .select('*')
-          .eq('is_public', true)
-          .order('created_at', { ascending: false })
-
-        if (error) throw error
-
-        allRecipes.value = data || []
-
-      } catch (error) {
-        console.error('Error cargando recetas:', error)
-        showNotification('error', 'Error', 'No se pudieron cargar las recetas')
-      } finally {
-        loading.value = false
+      const translations = {
+        'Heat your oven': 'Precalienta el horno',
+        'Place your': 'Coloca tus',
+        'Add your': 'Agrega tus',
+        'Mix thoroughly': 'Mezcla bien',
+        'Bake for': 'Hornea por',
+        'minutes': 'minutos',
+        'until': 'hasta que',
+        'browned': 'esté dorado',
+        'oven': 'horno',
+        'sweet potatoes': 'batatas',
+        'butter': 'mantequilla',
+        'eggs': 'huevos',
+        'vanilla extract': 'extracto de vainilla',
+        'cinnamon': 'canela',
+        'sugar': 'azúcar',
+        'cream': 'crema',
+        'melt': 'derrite',
+        'skillet': 'sartén',
+        'olive oil': 'aceite de oliva',
+        'pork chops': 'chuletas de cerdo',
+        'medium high': 'fuego medio-alto',
+        'lower the heat': 'baja el fuego',
+        'salt and pepper': 'sal y pimienta',
+        'meanwhile': 'mientras tanto',
+        'broil': 'gratinar',
+        'mix together': 'mezcla',
+        'heavy cream': 'crema de leche',
+        'mustard': 'mostaza',
+        'cheese': 'queso',
+        'remove from': 'retira del',
+        'stove': 'fogón',
+        'oven proof dish': 'fuente para horno',
+        'spread': 'extiende',
+        'mixture': 'mezcla',
+        'minutes': 'minutos',
+        'side': 'lado',
+        'taste': 'gusto'
       }
+
+      for (const [eng, esp] of Object.entries(translations)) {
+        const regex = new RegExp(eng, 'gi')
+        text = text.replace(regex, esp)
+      }
+
+      return text
     }
 
     // Cargar despensa del usuario
@@ -448,86 +522,22 @@ export default {
       try {
         const { data, error } = await supabase
           .from('user_pantry')
-          .select('ingredient_id, quantity')
+          .select('ingredient_id, ingredient:ingredients(name)')
           .eq('user_id', authStore.user?.id)
 
         if (error) throw error
-
-        userPantryIngredients.value = data.map(item => item.ingredient_id)
-
+        return (data || []).map(item => ({
+          id: item.ingredient_id,
+          name: item.ingredient?.name?.toLowerCase()
+        })).filter(i => i.name)
       } catch (error) {
         console.error('Error cargando despensa:', error)
-        userPantryIngredients.value = []
+        return []
       }
     }
 
-    // Cargar favoritos
-    const loadFavorites = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('favorites')
-          .select('recipe_id')
-          .eq('user_id', authStore.user?.id)
-
-        if (error) throw error
-
-        favoritesSet.value = new Set(data.map(fav => fav.recipe_id))
-
-      } catch (error) {
-        console.error('Error cargando favoritos:', error)
-        favoritesSet.value = new Set()
-      }
-    }
-
-    // Calcular disponibilidad de una receta
-    const calculateRecipeAvailability = async (recipeId) => {
-      try {
-        const { data: ingredients, error } = await supabase
-          .from('recipe_ingredients')
-          .select('ingredient_id')
-          .eq('recipe_id', recipeId)
-
-        if (error) throw error
-
-        if (!ingredients || ingredients.length === 0) {
-          return { available_ingredients: 0, total_ingredients: 0, match_percentage: 0 }
-        }
-
-        const totalIngredients = ingredients.length
-        const availableIngredients = ingredients.filter(ing =>
-          userPantryIngredients.value.includes(ing.ingredient_id)
-        ).length
-        const matchPercentage = Math.round((availableIngredients / totalIngredients) * 100)
-
-        return {
-          available_ingredients: availableIngredients,
-          total_ingredients: totalIngredients,
-          match_percentage: matchPercentage
-        }
-
-      } catch (error) {
-        console.error('Error calculando disponibilidad:', error)
-        return { available_ingredients: 0, total_ingredients: 0, match_percentage: 0 }
-      }
-    }
-
-    // Calcular disponibilidad para todas las recetas
-    const calculateAllAvailability = async () => {
-      for (const recipe of allRecipes.value) {
-        const availability = await calculateRecipeAvailability(recipe.id)
-        recipe.available_ingredients = availability.available_ingredients
-        recipe.total_ingredients = availability.total_ingredients
-        recipe.match_percentage = availability.match_percentage
-      }
-    }
-
-    // Cargar ingredientes de una receta
-    const loadRecipeIngredients = async (recipeId) => {
-      if (recipeIngredientsCache.value[recipeId]) {
-        recipeIngredients.value = recipeIngredientsCache.value[recipeId]
-        return
-      }
-
+    // Cargar ingredientes de una receta local
+    const loadLocalRecipeIngredients = async (recipeId) => {
       try {
         const { data, error } = await supabase
           .from('recipe_ingredients')
@@ -540,57 +550,316 @@ export default {
 
         if (error) throw error
 
-        recipeIngredients.value = data.map(item => ({
+        return (data || []).map(item => ({
+          ingredient_name: item.ingredient?.name || 'Ingrediente',
           quantity: item.quantity,
-          unit: item.unit,
-          ingredient_name: item.ingredient?.name || 'Ingrediente'
+          unit: item.unit
         }))
-
-        recipeIngredientsCache.value[recipeId] = recipeIngredients.value
-
       } catch (error) {
-        console.error('Error cargando ingredientes:', error)
-        recipeIngredients.value = []
+        console.error('Error cargando ingredientes locales:', error)
+        return []
       }
     }
 
-    // Verificar si una receta está en favoritos
-    const checkIsFavorite = (recipeId) => {
-      return favoritesSet.value.has(recipeId)
+    // Calcular compatibilidad de una receta
+    const calculateAvailability = async (recipe, pantry) => {
+      if (!recipe.ingredients || recipe.ingredients.length === 0) {
+        return { available_ingredients: 0, total_ingredients: 0, match_percentage: 0 }
+      }
+
+      const totalIngredients = recipe.ingredients.length
+      const availableIngredients = recipe.ingredients.filter(ing => {
+        const ingName = ing.name?.toLowerCase() || ing.ingredient_name?.toLowerCase()
+        return pantry.some(p => p.name?.includes(ingName) || ingName?.includes(p.name))
+      }).length
+
+      const matchPercentage = totalIngredients > 0 ? Math.round((availableIngredients / totalIngredients) * 100) : 0
+
+      return {
+        available_ingredients: availableIngredients,
+        total_ingredients: totalIngredients,
+        match_percentage: matchPercentage
+      }
     }
 
-    // Toggle favorito
+    // Cargar recetas locales
+    const loadLocalRecipes = async () => {
+      const { data, error } = await supabase
+        .from('recipes')
+        .select('*')
+        .eq('is_public', true)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      // Cargar ingredientes para cada receta local
+      const recipesWithIngredients = []
+      for (const recipe of (data || [])) {
+        const ingredients = await loadLocalRecipeIngredients(recipe.id)
+        recipesWithIngredients.push({
+          ...recipe,
+          ingredients,
+          isExternal: false,
+          source: 'local'
+        })
+      }
+
+      return recipesWithIngredients
+    }
+
+    // Cargar todas las recetas con paginación
+    const loadAllRecipes = async () => {
+      searchingExternal.value = true
+      try {
+        // Cargar locales
+        const localRecipes = await loadLocalRecipes()
+
+        // Cargar externas de Spoonacular (paginadas)
+        const offset = (currentPage.value - 1) * ITEMS_PER_PAGE
+        const externalRecipes = await recipesStore.loadExternalRecipesPaginated(offset, ITEMS_PER_PAGE)
+
+        // Combinar
+        const allRecipes = [...localRecipes, ...externalRecipes]
+
+        // Calcular disponibilidad con despensa
+        const pantry = await loadUserPantry()
+        for (const recipe of allRecipes) {
+          const availability = await calculateAvailability(recipe, pantry)
+          Object.assign(recipe, availability)
+        }
+
+        recipesStore.allRecipes = allRecipes
+      } catch (error) {
+        console.error('Error cargando recetas:', error)
+      } finally {
+        searchingExternal.value = false
+      }
+    }
+
+    // Búsqueda con debounce
+    const debouncedSearch = () => {
+      if (searchTimeout) clearTimeout(searchTimeout)
+      searchTimeout = setTimeout(async () => {
+        if (searchQuery.value.length >= 2) {
+          searchingExternal.value = true
+          try {
+            const results = await recipesStore.searchRecipes(searchQuery.value)
+            const pantry = await loadUserPantry()
+            for (const recipe of results) {
+              const availability = await calculateAvailability(recipe, pantry)
+              Object.assign(recipe, availability)
+            }
+            recipesStore.allRecipes = results
+            currentPage.value = 1
+          } catch (error) {
+            console.error('Error en búsqueda:', error)
+          } finally {
+            searchingExternal.value = false
+          }
+        } else if (searchQuery.value === '') {
+          await loadAllRecipes()
+        }
+      }, 500)
+    }
+
+    // Computed properties
+    const displayedRecipes = computed(() => {
+      let recipes = [...recipesStore.allRecipes]
+
+      if (selectedCategory.value !== 'all') {
+        recipes = recipes.filter(r => r.category === selectedCategory.value)
+      }
+
+      if (showOnlyAvailable.value) {
+        recipes = recipes.filter(r => (r.match_percentage || 0) === 100)
+      }
+
+      if (searchQuery.value) {
+        const query = searchQuery.value.toLowerCase()
+        recipes = recipes.filter(r => r.title?.toLowerCase().includes(query))
+      }
+
+      return recipes
+    })
+
+    const totalRecetas = computed(() => recipesStore.allRecipes.length)
+    const totalPages = computed(() => Math.ceil(recipesStore.allRecipes.length / ITEMS_PER_PAGE))
+    const availableCount = computed(() => recipesStore.allRecipes.filter(r => (r.match_percentage || 0) === 100).length)
+    const externalCount = computed(() => recipesStore.externalRecipes.length)
+    const loading = computed(() => recipesStore.loading.combined || searchingExternal.value)
+
+    const prevPage = () => {
+      if (currentPage.value > 1) {
+        currentPage.value--
+        loadAllRecipes()
+      }
+    }
+
+    const nextPage = () => {
+      if (currentPage.value < totalPages.value) {
+        currentPage.value++
+        loadAllRecipes()
+      }
+    }
+
+    const toggleAvailableRecipes = () => {
+      showOnlyAvailable.value = !showOnlyAvailable.value
+      if (showOnlyAvailable.value) {
+        recipesStore.allRecipes = recipesStore.allRecipes.filter(r => (r.match_percentage || 0) === 100)
+      } else {
+        loadAllRecipes()
+      }
+    }
+
+    const setSelectedCategory = async (category) => {
+      selectedCategory.value = category
+      if (category === 'all') {
+        await loadAllRecipes()
+      } else {
+        searchingExternal.value = true
+        try {
+          const results = await recipesStore.getRecipesByCategory(category)
+          const pantry = await loadUserPantry()
+          for (const recipe of results) {
+            const availability = await calculateAvailability(recipe, pantry)
+            Object.assign(recipe, availability)
+          }
+          recipesStore.allRecipes = results
+        } catch (error) {
+          console.error('Error filtrando:', error)
+        } finally {
+          searchingExternal.value = false
+        }
+      }
+    }
+
+    const openRecipeDetail = async (recipe) => {
+      loadingRecipe.value = true
+      showRecipeModal.value = true
+
+      try {
+        selectedRecipe.value = recipe
+
+        // Cargar ingredientes si no los tiene
+        if (!recipe.ingredients || recipe.ingredients.length === 0) {
+          if (recipe.isExternal) {
+            const fullRecipe = await recipesStore.getRecipeDetails(recipe.id)
+            if (fullRecipe && fullRecipe.ingredients) {
+              selectedRecipe.value = fullRecipe
+              recipeIngredients.value = fullRecipe.ingredients.map(ing => ({
+                ingredient_name: ing.name,
+                quantity: ing.quantity,
+                unit: ing.unit
+              }))
+            } else {
+              recipeIngredients.value = []
+            }
+          } else {
+            // Receta local - cargar ingredientes
+            const ingredients = await loadLocalRecipeIngredients(recipe.id)
+            recipeIngredients.value = ingredients
+            selectedRecipe.value.ingredients = ingredients
+          }
+        } else {
+          recipeIngredients.value = recipe.ingredients
+        }
+
+        // Verificar favorito
+        if (!recipe.isExternal) {
+          const { data } = await supabase
+            .from('favorites')
+            .select('id')
+            .eq('user_id', authStore.user?.id)
+            .eq('recipe_id', recipe.id)
+            .maybeSingle()
+          isFavorite.value = !!data
+        } else {
+          try {
+            const { data } = await supabase
+              .from('favorite_external_recipes')
+              .select('id')
+              .eq('user_id', authStore.user?.id)
+              .eq('spoonacular_id', recipe.spoonacular_id || recipe.id.replace('spoon_', ''))
+              .maybeSingle()
+            isFavorite.value = !!data
+          } catch (error) {
+            console.warn('Error verificando favorito externo:', error)
+            isFavorite.value = false
+          }
+        }
+
+      } catch (error) {
+        console.error('Error cargando detalle:', error)
+      } finally {
+        loadingRecipe.value = false
+      }
+    }
+
+    const closeRecipeModal = () => {
+      showRecipeModal.value = false
+      selectedRecipe.value = null
+      recipeIngredients.value = []
+    }
+
     const toggleFavorite = async () => {
       if (!selectedRecipe.value) return
 
       try {
-        if (isFavorite.value) {
-          const { error } = await supabase
-            .from('favorites')
-            .delete()
-            .eq('user_id', authStore.user?.id)
-            .eq('recipe_id', selectedRecipe.value.id)
+        if (selectedRecipe.value.isExternal) {
+          const spoonacularId = selectedRecipe.value.spoonacular_id || selectedRecipe.value.id.replace('spoon_', '')
 
-          if (error) throw error
+          if (isFavorite.value) {
+            const { error } = await supabase
+              .from('favorite_external_recipes')
+              .delete()
+              .eq('user_id', authStore.user?.id)
+              .eq('spoonacular_id', spoonacularId)
 
-          favoritesSet.value.delete(selectedRecipe.value.id)
-          isFavorite.value = false
-          showNotification('success', 'Eliminado', 'Receta eliminada de favoritos')
+            if (error) throw error
+            showNotification('success', 'Eliminado', 'Receta eliminada de favoritos')
+          } else {
+            const { error } = await supabase
+              .from('favorite_external_recipes')
+              .insert({
+                user_id: authStore.user?.id,
+                spoonacular_id: spoonacularId,
+                recipe_data: {
+                  title: selectedRecipe.value.title,
+                  image_url: selectedRecipe.value.image_url,
+                  total_time: selectedRecipe.value.total_time,
+                  servings: selectedRecipe.value.servings,
+                  category: selectedRecipe.value.category,
+                  tags: selectedRecipe.value.tags
+                }
+              })
 
+            if (error) throw error
+            showNotification('success', 'Agregado', 'Receta agregada a favoritos')
+          }
         } else {
-          const { error } = await supabase
-            .from('favorites')
-            .insert({
-              user_id: authStore.user?.id,
-              recipe_id: selectedRecipe.value.id
-            })
+          if (isFavorite.value) {
+            const { error } = await supabase
+              .from('favorites')
+              .delete()
+              .eq('user_id', authStore.user?.id)
+              .eq('recipe_id', selectedRecipe.value.id)
 
-          if (error) throw error
+            if (error) throw error
+            showNotification('success', 'Eliminado', 'Receta eliminada de favoritos')
+          } else {
+            const { error } = await supabase
+              .from('favorites')
+              .insert({
+                user_id: authStore.user?.id,
+                recipe_id: selectedRecipe.value.id
+              })
 
-          favoritesSet.value.add(selectedRecipe.value.id)
-          isFavorite.value = true
-          showNotification('success', 'Agregado', 'Receta agregada a favoritos')
+            if (error) throw error
+            showNotification('success', 'Agregado', 'Receta agregada a favoritos')
+          }
         }
+
+        isFavorite.value = !isFavorite.value
 
       } catch (error) {
         console.error('Error actualizando favoritos:', error)
@@ -598,182 +867,67 @@ export default {
       }
     }
 
-    // Agregar a lista de compras desde el modal
     const addToShoppingList = async () => {
-      try {
-        if (!selectedRecipe.value) return
+      if (!selectedRecipe.value) return
 
-        let { data: lists, error: listsError } = await supabase
+      try {
+        let { data: lists } = await supabase
           .from('shopping_lists')
           .select('id')
           .eq('user_id', authStore.user?.id)
           .eq('status', 'active')
           .limit(1)
 
-        if (listsError) throw listsError
-
-        let listId = null
-        if (lists && lists.length > 0) {
-          listId = lists[0].id
-        } else {
-          const { data: newList, error: createError } = await supabase
+        let listId = lists?.[0]?.id
+        if (!listId) {
+          const { data: newList } = await supabase
             .from('shopping_lists')
             .insert({ user_id: authStore.user?.id, name: 'Lista de Compras', status: 'active' })
             .select()
             .single()
-          if (createError) throw createError
           listId = newList.id
         }
 
-        const { data: ingredients, error: ingredientsError } = await supabase
-          .from('recipe_ingredients')
-          .select('ingredient_id, quantity, unit')
-          .eq('recipe_id', selectedRecipe.value.id)
+        const ingredients = selectedRecipe.value.ingredients || recipeIngredients.value
 
-        if (ingredientsError) throw ingredientsError
+        if (ingredients.length > 0) {
+          for (const ing of ingredients) {
+            const { data: existingIng } = await supabase
+              .from('ingredients')
+              .select('id')
+              .ilike('name', `%${ing.ingredient_name || ing.name}%`)
+              .limit(1)
+              .maybeSingle()
 
-        if (ingredients && ingredients.length > 0) {
-          const itemsToAdd = ingredients.map(ing => ({
-            list_id: listId,
-            ingredient_id: ing.ingredient_id,
-            quantity: ing.quantity,
-            unit: ing.unit,
-            notes: `Para receta: ${selectedRecipe.value.title}`
-          }))
-
-          const { error: insertError } = await supabase
-            .from('shopping_list_items')
-            .upsert(itemsToAdd, { onConflict: 'list_id,ingredient_id' })
-
-          if (insertError) throw insertError
-          showNotification('success', 'Éxito', 'Ingredientes agregados a la lista de compras')
+            if (existingIng) {
+              await supabase
+                .from('shopping_list_items')
+                .upsert({
+                  list_id: listId,
+                  ingredient_id: existingIng.id,
+                  quantity: ing.quantity || 1,
+                  unit: ing.unit || 'unidades',
+                  notes: `De receta: ${selectedRecipe.value.title}`
+                }, { onConflict: 'list_id,ingredient_id' })
+            }
+          }
+          showNotification('success', 'Éxito', 'Ingredientes agregados a la lista')
         } else {
           showNotification('info', 'Información', 'Esta receta no tiene ingredientes registrados')
         }
 
       } catch (error) {
-        console.error('Error agregando a lista de compras:', error)
+        console.error('Error:', error)
         showNotification('error', 'Error', 'No se pudieron agregar los ingredientes')
       }
     }
 
-    // Agregar a lista de compras desde la tarjeta
     const addToShoppingListFromRecipe = async (recipe) => {
-      try {
-        let { data: lists, error: listsError } = await supabase
-          .from('shopping_lists')
-          .select('id')
-          .eq('user_id', authStore.user?.id)
-          .eq('status', 'active')
-          .limit(1)
-
-        if (listsError) throw listsError
-
-        let listId = null
-        if (lists && lists.length > 0) {
-          listId = lists[0].id
-        } else {
-          const { data: newList, error: createError } = await supabase
-            .from('shopping_lists')
-            .insert({ user_id: authStore.user?.id, name: 'Lista de Compras', status: 'active' })
-            .select()
-            .single()
-          if (createError) throw createError
-          listId = newList.id
-        }
-
-        const { data: ingredients, error: ingredientsError } = await supabase
-          .from('recipe_ingredients')
-          .select('ingredient_id, quantity, unit')
-          .eq('recipe_id', recipe.id)
-
-        if (ingredientsError) throw ingredientsError
-
-        if (ingredients && ingredients.length > 0) {
-          const itemsToAdd = ingredients.map(ing => ({
-            list_id: listId,
-            ingredient_id: ing.ingredient_id,
-            quantity: ing.quantity,
-            unit: ing.unit,
-            notes: `Para receta: ${recipe.title}`
-          }))
-
-          const { error: insertError } = await supabase
-            .from('shopping_list_items')
-            .upsert(itemsToAdd, { onConflict: 'list_id,ingredient_id' })
-
-          if (insertError) throw insertError
-          showNotification('success', 'Éxito', `Ingredientes de "${recipe.title}" agregados a la lista`)
-        } else {
-          showNotification('info', 'Información', 'Esta receta no tiene ingredientes registrados')
-        }
-
-      } catch (error) {
-        console.error('Error agregando a lista de compras:', error)
-        showNotification('error', 'Error', 'No se pudieron agregar los ingredientes')
-      }
-    }
-
-    // Abrir detalle de receta
-    const openRecipeDetail = async (recipe) => {
+      const original = selectedRecipe.value
       selectedRecipe.value = recipe
-      isFavorite.value = checkIsFavorite(recipe.id)
-      await loadRecipeIngredients(recipe.id)
-      showRecipeModal.value = true
-    }
-
-    // Cerrar modal
-    const closeRecipeModal = () => {
-      showRecipeModal.value = false
-      selectedRecipe.value = null
-      recipeIngredients.value = []
-    }
-
-    // Recetas filtradas por categoría y búsqueda
-    const filteredByCategoryAndSearch = computed(() => {
-      let recipes = [...allRecipes.value]
-
-      if (selectedCategory.value !== 'all') {
-        recipes = recipes.filter(r => r.category === selectedCategory.value)
-      }
-
-      if (searchQuery.value.trim()) {
-        const query = searchQuery.value.toLowerCase()
-        recipes = recipes.filter(r =>
-          r.title.toLowerCase().includes(query) ||
-          (r.tags && r.tags.some(tag => tag.toLowerCase().includes(query)))
-        )
-      }
-
-      return recipes
-    })
-
-    // Recetas mostradas (con o sin filtro de disponibilidad)
-    const displayedRecipes = computed(() => {
-      let recipes = filteredByCategoryAndSearch.value
-
-      if (showOnlyAvailable.value) {
-        recipes = recipes.filter(r => (r.match_percentage || 0) === 100)
-      }
-
-      return recipes
-    })
-
-    // Contador de recetas disponibles
-    const availableCount = computed(() => {
-      return allRecipes.value.filter(r => (r.match_percentage || 0) === 100).length
-    })
-
-    const filterRecipes = () => {
-      // El filtro es automático por computed
-    }
-
-    const toggleAvailableRecipes = () => {
-      showOnlyAvailable.value = !showOnlyAvailable.value
-    }
-
-    const setSelectedCategory = (category) => {
-      selectedCategory.value = category
+      recipeIngredients.value = recipe.ingredients || []
+      await addToShoppingList()
+      selectedRecipe.value = original
     }
 
     const handleImageError = (event) => {
@@ -795,29 +949,29 @@ export default {
 
     onMounted(async () => {
       if (authStore.isAuthenticated) {
-        await Promise.all([
-          loadRecipes(),
-          loadUserPantry(),
-          loadFavorites()
-        ])
-
-        await calculateAllAvailability()
+        await loadAllRecipes()
       }
     })
 
     return {
       isMobileMenuOpen,
-      loading,
       categories,
       selectedCategory,
       searchQuery,
       showOnlyAvailable,
       availableCount,
+      externalCount,
+      totalRecetas,
       displayedRecipes,
+      currentPage,
+      totalPages,
+      loading,
+      searchingExternal,
       showRecipeModal,
       selectedRecipe,
       recipeIngredients,
       isFavorite,
+      loadingRecipe,
       defaultImage,
       showToast,
       toastType,
@@ -825,7 +979,10 @@ export default {
       toastMessage,
       toastIcon,
       getCategoryLabel,
-      filterRecipes,
+      translateInstructions,
+      debouncedSearch,
+      prevPage,
+      nextPage,
       toggleAvailableRecipes,
       setSelectedCategory,
       openRecipeDetail,
@@ -857,5 +1014,35 @@ export default {
 
 .animate-slide-in-right {
   animation: slide-in-right 0.3s ease;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease;
 }
 </style>
