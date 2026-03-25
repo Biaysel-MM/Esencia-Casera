@@ -22,17 +22,20 @@
             <div class="rounded-2xl border p-6 bg-linear-to-br from-[rgba(93,162,113,0.2)] to-[rgba(168,213,186,0.2)]"
               style="border-color: var(--border);">
               <div class="flex items-center gap-5 max-md:flex-col max-md:text-center">
-                <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#5DA271] text-xl font-semibold text-white">
+                <div
+                  class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#5DA271] text-xl font-semibold text-white">
                   {{ userInitials }}
                 </div>
                 <div>
-                  <h1 class="mb-1 text-[28px] font-semibold text-[#2C2C2C] max-md:text-2xl">¡Hola {{ userName }}! 👋</h1>
-                  <p class="text-base text-[#6C7A6C]">Tienes <strong>{{ pantryItems.length }}</strong> ingredientes en tu despensa</p>
+                  <h1 class="mb-1 text-[28px] font-semibold text-[#2C2C2C] max-md:text-2xl">¡Hola {{ userName }}! 👋
+                  </h1>
+                  <p class="text-base text-[#6C7A6C]">Tienes <strong>{{ pantryItems.length }}</strong> ingredientes en
+                    tu despensa</p>
                 </div>
               </div>
             </div>
 
-            <!-- Daily Meals Section -->
+            <!-- Daily Meals Section (diseño igual a RecetasView) -->
             <section class="rounded-2xl p-6 shadow-sm border"
               style="background-color: var(--card); border-color: var(--border);">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -68,40 +71,68 @@
 
                 <template v-else>
                   <div v-for="meal in todayMeals" :key="meal.id"
-                    class="rounded-xl border overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-                    style="background-color: var(--card); border-color: var(--border);"
-                    @click="openRecipeModal(meal.recipe_id)">
-                    <div class="relative h-40 overflow-hidden">
-                      <img :src="meal.image_url || defaultImage" :alt="meal.title" class="w-full h-full object-cover"
-                        @error="handleImageError">
-                      <div class="absolute top-3 left-3 text-2xl">{{ getMealEmoji(meal.meal_type) }}</div>
+                    class="group cursor-pointer overflow-hidden rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#5DA271] hover:shadow-[0_12px_24px_rgba(0,0,0,0.1)]"
+                    @click="openRecipeModal(meal.recipe_id)"
+                    style="background-color: var(--card); border-color: var(--border);">
+                    <div class="relative h-48 overflow-hidden">
+                      <img :src="meal.image_url || defaultImage" :alt="meal.title"
+                        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        @error="handleImageError" />
                       <div class="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
-                      <div class="absolute bottom-3 left-3 right-3">
-                        <h4 class="text-white text-sm font-medium">{{ getMealTypeText(meal.meal_type) }}</h4>
+
+                      <!-- Badge de categoría -->
+                      <div class="absolute left-3 top-3">
+                        <span class="rounded-lg bg-[#5DA271] px-3 py-1.5 text-xs font-medium text-white">
+                          {{ getCategoryLabel(meal.category) }}
+                        </span>
+                      </div>
+
+                      <!-- Badge de compatibilidad (si aplica) -->
+                      <div class="absolute bottom-3 right-3">
+                        <div class="flex items-center gap-1 rounded-lg bg-black/50 px-2 py-1 text-white text-xs">
+                          <span class="iconify w-3 h-3" data-icon="mdi:calendar"></span>
+                          <span>Planificado</span>
+                        </div>
+                      </div>
+
+                      <!-- Tags -->
+                      <div class="absolute bottom-3 left-3 flex gap-1">
+                        <span v-for="(tag, idx) in (meal.tags || []).slice(0, 2)" :key="idx"
+                          class="rounded px-2 py-0.5 text-[10px] font-medium bg-white/90 text-[#2C2C2C]">
+                          {{ tag }}
+                        </span>
                       </div>
                     </div>
-                    <div class="p-4">
-                      <h3 class="font-medium mb-3 line-clamp-1" style="color: var(--foreground);">{{ meal.title }}</h3>
-                      <div class="flex gap-4 mb-4 text-xs" style="color: var(--muted-foreground);">
-                        <div class="flex items-center gap-1.5">
-                          <span class="iconify w-3.5 h-3.5" data-icon="mdi:clock-outline"></span>
+
+                    <div class="p-5">
+                      <h3 class="mb-3 text-lg font-semibold text-[#2C2C2C] line-clamp-1">{{ meal.title }}</h3>
+
+                      <!-- Métricas -->
+                      <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-1.5 text-sm text-[#6C7A6C]">
+                          <span class="iconify h-4 w-4 text-[#5DA271]" data-icon="mdi:clock-outline"></span>
                           <span>{{ meal.total_time }} min</span>
                         </div>
-                        <div class="flex items-center gap-1.5">
-                          <span class="iconify w-3.5 h-3.5" data-icon="mdi:account-group-outline"></span>
+                        <div class="flex items-center gap-1.5 text-sm text-[#6C7A6C]">
+                          <span class="iconify h-4 w-4 text-[#5DA271]" data-icon="mdi:account-group-outline"></span>
                           <span>{{ meal.servings }} porciones</span>
                         </div>
+                        <div class="flex items-center gap-1.5 text-sm text-[#6C7A6C]">
+                          <span class="iconify h-4 w-4 text-red-500" data-icon="mdi:fire"></span>
+                          <span>{{ meal.calories_per_serving || '--' }} kcal</span>
+                        </div>
                       </div>
+
+                      <!-- Botones de acción -->
                       <div class="flex gap-2">
                         <button @click.stop="openRecipeModal(meal.recipe_id)"
-                          class="flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 text-white"
-                          style="background-color: var(--primary);">
+                          class="flex-1 rounded-xl bg-[#5DA271] py-2.5 text-sm font-medium text-white transition-all duration-200 hover:bg-[rgba(93,162,113,0.9)]">
                           Ver receta
                         </button>
                         <button @click.stop="openChangeMealModal(meal.meal_type)"
-                          class="px-4 py-2.5 rounded-xl border transition-all duration-200 text-sm font-medium"
-                          style="border-color: var(--border); color: var(--foreground); background-color: transparent;">
-                          Cambiar
+                          class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-3 py-2.5 transition-all duration-200 hover:bg-[#D8EBD0]"
+                          title="Cambiar comida">
+                          <span class="iconify h-4 w-4 text-[#5DA271]" data-icon="mdi:swap-horizontal"></span>
                         </button>
                       </div>
                     </div>
@@ -110,114 +141,73 @@
               </div>
             </section>
 
-            <!-- RECOMENDACIONES BASADAS EN DESPENSA -->
+            <!-- My Pantry (estilo antiguo con imagen y autocompletado) -->
             <section class="rounded-2xl p-6 shadow-sm border"
               style="background-color: var(--card); border-color: var(--border);">
-              <div class="flex items-center justify-between mb-6">
-                <div>
-                  <h2 class="text-xl font-semibold" style="color: var(--foreground);">🍳 Recetas que puedes preparar hoy</h2>
-                  <p class="text-sm mt-1" style="color: var(--muted-foreground);">
-                    Basado en los {{ pantryItems.length }} ingredientes que tienes en tu despensa
-                  </p>
-                </div>
-                <button @click="refreshRecommendations"
-                  class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-sm"
-                  style="border-color: var(--border); color: var(--primary); background-color: transparent;">
-                  <span class="iconify w-4 h-4" data-icon="mdi:refresh"></span>
-                  Actualizar
-                </button>
-              </div>
-
-              <div v-if="loadingStates.recommendations" class="flex justify-center py-12">
-                <div class="w-10 h-10 border-4 rounded-full animate-spin"
-                  style="border-color: var(--border); border-top-color: var(--primary);"></div>
-              </div>
-
-              <div v-else-if="recommendedRecipes.length === 0" class="text-center py-12"
-                style="color: var(--muted-foreground);">
-                <span class="iconify w-16 h-16 mx-auto mb-4 opacity-50" data-icon="mdi:food-off"></span>
-                <h3 class="text-lg font-medium mb-2">No hay recetas disponibles con tus ingredientes</h3>
-                <p class="text-sm">Agrega más ingredientes a tu despensa para ver recetas recomendadas</p>
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900"><i class="iconify text-green-800 h-5 w-5"
+                    data-icon="mdi:food"></i>
+                  Mi Despensa</h2>
                 <button @click="openAddIngredientModal"
-                  class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-medium transition-colors duration-200"
-                  style="background-color: var(--primary);">
-                  <span class="iconify w-4 h-4" data-icon="mdi:plus"></span>
-                  Agregar ingredientes
+                  class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-200 font-medium text-sm"
+                  style="border-color: var(--border); color: var(--primary); background-color: transparent;">
+                  <span class="iconify w-5 h-5" data-icon="mdi:plus"></span>
+                  Agregar ingrediente
                 </button>
               </div>
 
-              <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div v-for="recipe in recommendedRecipes" :key="recipe.recipe_id"
-                  class="rounded-xl border overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer group"
-                  style="background-color: var(--card); border-color: var(--border);"
-                  @click="openRecipeModal(recipe.recipe_id)">
-                  <div class="relative h-48 overflow-hidden">
-                    <img :src="recipe.image_url || defaultImage" :alt="recipe.title"
-                      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div v-if="loadingStates.pantry && pantryItems.length === 0"
+                  class="col-span-full flex flex-col items-center justify-center py-12"
+                  style="color: var(--muted-foreground);">
+                  <div class="w-10 h-10 border-4 rounded-full animate-spin mb-4"
+                    style="border-color: var(--border); border-top-color: var(--primary);"></div>
+                  <p>Cargando despensa...</p>
+                </div>
+
+                <div v-else-if="pantryItems.length === 0"
+                  class="col-span-full flex flex-col items-center justify-center py-12"
+                  style="color: var(--muted-foreground);">
+                  <span class="iconify w-12 h-12 mb-4" data-icon="mdi:fridge-outline"></span>
+                  <p>Tu despensa está vacía</p>
+                  <button @click="openAddIngredientModal"
+                    class="mt-4 px-4 py-2 rounded-xl text-white text-sm font-medium transition-colors duration-200"
+                    style="background-color: var(--primary);">
+                    Agregar tu primer ingrediente
+                  </button>
+                </div>
+
+                <div v-else v-for="item in pantryItems" :key="item.id"
+                  class="rounded-xl border overflow-hidden hover:shadow-md transition-all duration-200"
+                  style="background-color: var(--card); border-color: var(--border);">
+                  <div class="relative h-32">
+                    <img :src="item.image_url || defaultImage" :alt="item.name" class="w-full h-full object-cover"
                       @error="handleImageError">
-                    <div class="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
-                    <div class="absolute top-3 left-3">
-                      <span class="px-2 py-1 rounded-lg text-xs font-medium text-white"
-                        :style="{ backgroundColor: 'var(--primary)' }">
-                        {{ getCategoryLabel(recipe.category) }}
-                      </span>
-                    </div>
-                    <div class="absolute bottom-3 right-3">
-                      <div class="flex items-center gap-1 px-2 py-1 rounded-lg bg-black/50 text-white text-xs">
-                        <span class="iconify w-3 h-3" data-icon="mdi:check-circle"></span>
-                        <span>{{ recipe.match_percentage }}% compatible</span>
-                      </div>
-                    </div>
-                    <div class="absolute bottom-3 left-3">
-                      <div class="flex gap-1">
-                        <span v-for="(tag, idx) in (recipe.tags || []).slice(0, 2)" :key="idx"
-                          class="px-2 py-0.5 rounded text-[10px] font-medium bg-white/90 text-[#2C2C2C]">
-                          {{ tag }}
-                        </span>
-                      </div>
-                    </div>
+                    <span v-if="item.expiry_status === 'danger'"
+                      class="absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-medium text-white bg-red-600">
+                      ⚠️ Pronto vence
+                    </span>
                   </div>
-                  <div class="p-4">
-                    <h3 class="font-semibold text-lg mb-2 line-clamp-1" style="color: var(--foreground);">
-                      {{ recipe.title }}
-                    </h3>
-                    <div class="flex items-center justify-between mb-3">
-                      <div class="flex items-center gap-1.5 text-xs" style="color: var(--muted-foreground);">
-                        <span class="iconify w-3.5 h-3.5" data-icon="mdi:clock-outline"></span>
-                        <span>{{ recipe.total_time }} min</span>
-                      </div>
-                      <div class="flex items-center gap-1.5 text-xs" style="color: var(--muted-foreground);">
-                        <span class="iconify w-3.5 h-3.5" data-icon="mdi:account-group-outline"></span>
-                        <span>{{ recipe.servings }} porciones</span>
-                      </div>
-                      <div class="flex items-center gap-1.5 text-xs" style="color: var(--muted-foreground);">
-                        <span class="iconify w-3.5 h-3.5" data-icon="mdi:fire"></span>
-                        <span>{{ recipe.calories_per_serving || '--' }} kcal</span>
-                      </div>
-                    </div>
-                    <div class="mb-3">
-                      <div class="flex justify-between text-xs mb-1">
-                        <span style="color: var(--muted-foreground);">Ingredientes disponibles</span>
-                        <span class="font-medium" style="color: var(--primary);">
-                          {{ recipe.available_ingredients }}/{{ recipe.total_ingredients }}
-                        </span>
-                      </div>
-                      <div class="h-1.5 w-full overflow-hidden rounded-full" style="background-color: var(--muted);">
-                        <div class="h-full rounded-full transition-all duration-300"
-                          :style="{ width: recipe.match_percentage + '%', backgroundColor: 'var(--primary)' }"></div>
-                      </div>
-                    </div>
-                    <div class="flex gap-2">
-                      <button @click.stop="openRecipeModal(recipe.recipe_id)"
-                        class="flex-1 py-2 rounded-lg text-sm font-medium transition-colors duration-200 text-white"
-                        style="background-color: var(--primary);">
-                        Ver receta
+                  <div class="p-3">
+                    <h4 class="font-medium text-sm mb-1 line-clamp-1" style="color: var(--foreground);">{{ item.name }}
+                    </h4>
+                    <p class="text-xs mb-2" style="color: var(--foreground);">{{ item.quantity }} {{ item.unit }}</p>
+                    <div class="flex gap-1.5">
+                      <button @click="decreaseQuantity(item)"
+                        class="w-8 h-8 rounded-lg border transition-colors duration-200 flex items-center justify-center"
+                        style="border-color: var(--border); background-color: var(--card);">
+                        <span class="iconify w-4 h-4" data-icon="mdi:minus" style="color: var(--foreground);"></span>
                       </button>
-                      <button @click.stop="addToShoppingListFromRecommendation(recipe)"
-                        class="px-3 py-2 rounded-lg border transition-all duration-200"
-                        style="border-color: var(--border); background-color: transparent; color: var(--foreground);"
-                        title="Agregar a lista de compras">
-                        <span class="iconify w-4 h-4" data-icon="mdi:cart-plus"></span>
+                      <button @click="increaseQuantity(item)"
+                        class="w-8 h-8 rounded-lg border transition-colors duration-200 flex items-center justify-center"
+                        style="border-color: var(--border); background-color: var(--card);">
+                        <span class="iconify w-4 h-4" data-icon="mdi:plus" style="color: var(--foreground);"></span>
+                      </button>
+                      <button @click="removeIngredient(item)"
+                        class="w-8 h-8 rounded-lg border ml-auto transition-colors duration-200 flex items-center justify-center"
+                        style="border-color: var(--destructive); background-color: var(--card);">
+                        <span class="iconify w-4 h-4" data-icon="mdi:trash-can-outline"
+                          style="color: var(--destructive);"></span>
                       </button>
                     </div>
                   </div>
@@ -227,7 +217,8 @@
 
             <!-- Grid Layout for Recipes and Weather -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <!-- Recommended Recipes Section (segunda sección de recetas) -->
+              <!-- Popular Recipes Section -->
+              <!-- Popular Recipes Section (diseño compacto y responsive) -->
               <section class="rounded-2xl p-6 shadow-sm border"
                 style="background-color: var(--card); border-color: var(--border);">
                 <div class="flex items-center justify-between mb-6">
@@ -248,24 +239,80 @@
                       style="border-color: var(--border); border-top-color: var(--primary);"></div>
                     <p>Cargando recetas...</p>
                   </div>
+
                   <div v-else v-for="recipe in popularRecipes.slice(0, 2)" :key="recipe.id"
+                    class="group cursor-pointer overflow-hidden rounded-xl border border-[rgba(0,0,0,0.08)] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#5DA271] hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]"
                     @click="openRecipeModal(recipe.id)"
-                    class="rounded-xl border overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                     style="background-color: var(--card); border-color: var(--border);">
-                    <div class="relative h-32">
+                    <div class="relative h-32 overflow-hidden">
                       <img :src="recipe.image_url || defaultImage" :alt="recipe.title"
-                        class="w-full h-full object-cover" @error="handleImageError">
-                      <span class="absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium text-white"
-                        :style="{ backgroundColor: 'var(--primary)' }">{{ recipe.badge || 'Recomendada' }}</span>
-                    </div>
-                    <div class="p-3">
-                      <h4 class="font-medium text-sm mb-2 line-clamp-1" style="color: var(--foreground);">{{ recipe.title }}</h4>
-                      <div class="flex gap-3 text-xs mb-3" style="color: var(--muted-foreground);">
-                        <span>⏱️ {{ recipe.total_time }} min</span>
-                        <span>👥 {{ recipe.servings }} porciones</span>
+                        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        @error="handleImageError" />
+                      <div class="absolute inset-0 bg-linear-to-t from-black/50 to-transparent"></div>
+
+                      <!-- Badge de categoría (más pequeño) -->
+                      <div class="absolute left-2 top-2">
+                        <span class="rounded-md bg-[#5DA271] px-2 py-0.5 text-[10px] font-medium text-white">
+                          {{ getCategoryLabel(recipe.category) }}
+                        </span>
                       </div>
-                      <button class="w-full py-2 rounded-lg text-xs font-medium transition-all duration-200"
-                        style="border: 1px solid var(--primary); color: var(--primary); background-color: transparent;">
+
+                      <!-- Badge de popularidad -->
+                      <div class="absolute bottom-2 right-2">
+                        <div
+                          class="flex items-center gap-0.5 rounded-md bg-black/50 px-1.5 py-0.5 text-white text-[10px]">
+                          <span class="iconify w-2.5 h-2.5" data-icon="mdi:star"></span>
+                          <span>Popular</span>
+                        </div>
+                      </div>
+
+                      <!-- Tags (opcional, más pequeños) -->
+                      <div class="absolute bottom-2 left-2 flex gap-1">
+                        <span v-for="(tag, idx) in (recipe.tags || []).slice(0, 1)" :key="idx"
+                          class="rounded px-1.5 py-0.5 text-[9px] font-medium bg-white/90 text-[#2C2C2C]">
+                          {{ tag }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="p-3">
+                      <h3 class="mb-2 text-sm font-semibold text-[#2C2C2C] line-clamp-1">{{ recipe.title }}</h3>
+
+                      <!-- Métricas más compactas -->
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-1 text-[11px] text-[#6C7A6C]">
+                          <span class="iconify h-3 w-3 text-[#5DA271]" data-icon="mdi:clock-outline"></span>
+                          <span>{{ recipe.total_time }} min</span>
+                        </div>
+                        <div class="flex items-center gap-1 text-[11px] text-[#6C7A6C]">
+                          <span class="iconify h-3 w-3 text-[#5DA271]" data-icon="mdi:account-group-outline"></span>
+                          <span>{{ recipe.servings }} porc.</span>
+                        </div>
+                        <div class="flex items-center gap-1 text-[11px] text-[#6C7A6C]">
+                          <span class="iconify h-3 w-3 text-red-500" data-icon="mdi:fire"></span>
+                          <span>{{ recipe.calories_per_serving || '--' }}</span>
+                        </div>
+                      </div>
+
+                      <!-- Barra de progreso más pequeña (si aplica) -->
+                      <div v-if="recipe.available_ingredients !== undefined" class="mb-2">
+                        <div class="flex justify-between text-[10px] mb-1">
+                          <span class="text-[#6C7A6C]">Ingredientes</span>
+                          <span class="font-medium text-[#5DA271] text-[10px]">
+                            {{ recipe.available_ingredients || 0 }}/{{ recipe.total_ingredients || 0 }}
+                          </span>
+                        </div>
+                        <div class="h-1 w-full overflow-hidden rounded-full bg-[#E8F0E8]">
+                          <div class="h-full rounded-full transition-all duration-300" :style="{
+                            width: ((recipe.available_ingredients || 0) / (recipe.total_ingredients || 1) * 100) + '%',
+                            backgroundColor: '#5DA271'
+                          }"></div>
+                        </div>
+                      </div>
+
+                      <!-- Botón más pequeño -->
+                      <button @click.stop="openRecipeModal(recipe.id)"
+                        class="w-full rounded-lg bg-[#5DA271] py-1.5 text-xs font-medium text-white transition-all duration-200 hover:bg-[rgba(93,162,113,0.9)]">
                         Ver receta
                       </button>
                     </div>
@@ -284,7 +331,8 @@
                     </div>
                     <div>
                       <h3 class="font-medium text-white text-base">Sugerencia del clima</h3>
-                      <p class="text-sm text-white/90">{{ weatherSuggestion ? `${weatherSuggestion.temperature}°C - ${weatherSuggestion.condition}` : 'Cargando clima...' }}</p>
+                      <p class="text-sm text-white/90">{{ weatherSuggestion ? `${weatherSuggestion.temperature}°C -
+                        ${weatherSuggestion.condition}` : 'Cargando clima...' }}</p>
                     </div>
                   </div>
                   <div class="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
@@ -303,7 +351,8 @@
                       </div>
                       <div class="bg-white/15 rounded-lg p-2 text-center">
                         <span class="block text-xs text-white/80">Viento</span>
-                        <span class="block text-lg font-semibold">{{ weatherSuggestion?.wind_speed || '--' }} km/h</span>
+                        <span class="block text-lg font-semibold">{{ weatherSuggestion?.wind_speed || '--' }}
+                          km/h</span>
                       </div>
                     </div>
                     <button v-if="weatherSuggestion?.recipe_id" @click="openRecipeModal(weatherSuggestion.recipe_id)"
@@ -353,7 +402,8 @@
                       <div class="flex-1">
                         <p class="text-sm font-medium" style="color: var(--foreground);">{{ notification.title }}</p>
                         <p class="text-xs mt-0.5" style="color: var(--muted-foreground);">{{ notification.message }}</p>
-                        <p class="text-xs mt-0.5 opacity-70" style="color: var(--muted-foreground);">{{ formatTimeAgo(notification.created_at) }}</p>
+                        <p class="text-xs mt-0.5 opacity-70" style="color: var(--muted-foreground);">{{
+                          formatTimeAgo(notification.created_at) }}</p>
                       </div>
                     </div>
                   </div>
@@ -361,75 +411,6 @@
               </div>
             </div>
 
-            <!-- My Pantry Section (Completa) -->
-            <section class="rounded-2xl p-6 shadow-sm border"
-              style="background-color: var(--card); border-color: var(--border);">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <h2 class="text-xl font-semibold" style="color: var(--foreground);">📦 Mi Despensa</h2>
-                <button @click="openAddIngredientModal"
-                  class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-200 font-medium text-sm"
-                  style="border-color: var(--border); color: var(--primary); background-color: transparent;">
-                  <span class="iconify w-5 h-5" data-icon="mdi:plus"></span>
-                  Agregar ingrediente
-                </button>
-              </div>
-
-              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                <div v-if="loadingStates.pantry && pantryItems.length === 0"
-                  class="col-span-full flex flex-col items-center justify-center py-12"
-                  style="color: var(--muted-foreground);">
-                  <div class="w-10 h-10 border-4 rounded-full animate-spin mb-4"
-                    style="border-color: var(--border); border-top-color: var(--primary);"></div>
-                  <p>Cargando despensa...</p>
-                </div>
-
-                <div v-else-if="pantryItems.length === 0"
-                  class="col-span-full flex flex-col items-center justify-center py-12"
-                  style="color: var(--muted-foreground);">
-                  <span class="iconify w-12 h-12 mb-4" data-icon="mdi:fridge-outline"></span>
-                  <p>Tu despensa está vacía</p>
-                  <button @click="openAddIngredientModal"
-                    class="mt-4 px-4 py-2 rounded-xl text-white text-sm font-medium transition-colors duration-200"
-                    style="background-color: var(--primary);">
-                    Agregar tu primer ingrediente
-                  </button>
-                </div>
-
-                <div v-else v-for="item in pantryItems" :key="item.id"
-                  class="rounded-xl border overflow-hidden hover:shadow-md transition-all duration-200"
-                  style="background-color: var(--card); border-color: var(--border);">
-                  <div class="relative h-32">
-                    <img :src="item.image_url || defaultImage" :alt="item.name" class="w-full h-full object-cover"
-                      @error="handleImageError">
-                    <span v-if="item.expiry_status === 'danger'" class="absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-medium text-white bg-red-600">
-                      ⚠️ Pronto vence
-                    </span>
-                  </div>
-                  <div class="p-3">
-                    <h4 class="font-medium text-sm mb-1 line-clamp-1" style="color: var(--foreground);">{{ item.name }}</h4>
-                    <p class="text-xs mb-2" style="color: var(--foreground);">{{ item.quantity }} {{ item.unit }}</p>
-                    <div class="flex gap-1.5">
-                      <button @click="decreaseQuantity(item)"
-                        class="w-8 h-8 rounded-lg border transition-colors duration-200 flex items-center justify-center"
-                        style="border-color: var(--border); background-color: var(--card);">
-                        <span class="iconify w-4 h-4" data-icon="mdi:minus" style="color: var(--foreground);"></span>
-                      </button>
-                      <button @click="increaseQuantity(item)"
-                        class="w-8 h-8 rounded-lg border transition-colors duration-200 flex items-center justify-center"
-                        style="border-color: var(--border); background-color: var(--card);">
-                        <span class="iconify w-4 h-4" data-icon="mdi:plus" style="color: var(--foreground);"></span>
-                      </button>
-                      <button @click="removeIngredient(item)"
-                        class="w-8 h-8 rounded-lg border ml-auto transition-colors duration-200 flex items-center justify-center"
-                        style="border-color: var(--destructive); background-color: var(--card);">
-                        <span class="iconify w-4 h-4" data-icon="mdi:trash-can-outline"
-                          style="color: var(--destructive);"></span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
           </div>
         </div>
       </main>
@@ -451,7 +432,7 @@
       </div>
     </div>
 
-    <!-- RECIPE MODAL - MEJORADO (igual al de RecetasView) -->
+    <!-- RECIPE MODAL -->
     <div v-if="showRecipeModal"
       class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-4 animate-fade-in"
       @click="closeRecipeModal">
@@ -505,12 +486,15 @@
 
             <!-- Botones de acción -->
             <div class="flex gap-4 mb-8">
-              <button @click="toggleFavorite" class="flex-1 py-3 rounded-xl border font-medium transition-all duration-200"
+              <button @click="toggleFavorite"
+                class="flex-1 py-3 rounded-xl border font-medium transition-all duration-200"
                 :style="{ borderColor: 'var(--border)', backgroundColor: 'transparent', color: 'var(--foreground)' }">
-                <span class="iconify w-5 h-5 inline mr-2" :data-icon="isFavorite ? 'mdi:heart' : 'mdi:heart-outline'"></span>
+                <span class="iconify w-5 h-5 inline mr-2"
+                  :data-icon="isFavorite ? 'mdi:heart' : 'mdi:heart-outline'"></span>
                 {{ isFavorite ? 'En favoritos' : 'Agregar a favoritos' }}
               </button>
-              <button @click="addToShoppingList" class="flex-1 py-3 rounded-xl text-white font-medium transition-all duration-200"
+              <button @click="addToShoppingList"
+                class="flex-1 py-3 rounded-xl text-white font-medium transition-all duration-200"
                 :style="{ backgroundColor: 'var(--primary)' }">
                 <span class="iconify w-5 h-5 inline mr-2" data-icon="mdi:cart-plus"></span>
                 Lista de compras
@@ -525,9 +509,10 @@
               </h3>
               <div class="p-4 rounded-xl" style="background-color: var(--muted);">
                 <div v-for="ing in recipeIngredients" :key="ing.ingredient_id"
-                  class="py-2 border-b last:border-0 flex justify-between items-center">
+                  class="py-2 last:border-0 flex justify-between items-center">
                   <span class="flex items-center gap-2">
-                    <span class="iconify w-4 h-4" :style="{ color: 'var(--primary)' }" data-icon="mdi:checkbox-blank-circle-outline"></span>
+                    <span class="iconify w-4 h-4" :style="{ color: 'var(--primary)' }"
+                      data-icon="mdi:checkbox-blank-circle-outline"></span>
                     <span>{{ ing.ingredient_name }}</span>
                   </span>
                   <span class="font-medium">{{ ing.quantity }} {{ ing.unit }}</span>
@@ -538,7 +523,8 @@
             <!-- Instrucciones -->
             <div v-if="currentRecipe.steps && currentRecipe.steps.length > 0" class="mb-8">
               <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
-                <span class="iconify w-5 h-5" :style="{ color: 'var(--primary)' }" data-icon="mdi:format-list-numbered"></span>
+                <span class="iconify w-5 h-5" :style="{ color: 'var(--primary)' }"
+                  data-icon="mdi:format-list-numbered"></span>
                 Instrucciones
               </h3>
               <div class="flex flex-col gap-4">
@@ -553,7 +539,8 @@
             <!-- Tags -->
             <div v-if="currentRecipe.tags && currentRecipe.tags.length > 0">
               <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
-                <span class="iconify w-5 h-5" :style="{ color: 'var(--primary)' }" data-icon="mdi:tag-multiple-outline"></span>
+                <span class="iconify w-5 h-5" :style="{ color: 'var(--primary)' }"
+                  data-icon="mdi:tag-multiple-outline"></span>
                 Etiquetas
               </h3>
               <div class="flex flex-wrap gap-2">
@@ -625,23 +612,44 @@
       </div>
     </div>
 
-    <!-- ADD INGREDIENT MODAL -->
+    <!-- ADD INGREDIENT MODAL  -->
     <div v-if="showAddIngredientModal"
       class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-4 animate-fade-in"
       @click="closeAddIngredientModal">
       <div class="rounded-2xl max-w-200 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in p-8" @click.stop
         style="background-color: var(--card);">
-        <button @click="closeAddIngredientModal" class="absolute top-4 right-4 w-10 h-10 rounded-xl border">✕</button>
-        <h2 class="text-2xl font-semibold text-center mb-6">Agregar Ingrediente</h2>
-        <div class="relative mb-6">
-          <span class="iconify absolute left-4 top-1/2 -translate-y-1/2" data-icon="mdi:magnify"></span>
-          <input type="text" v-model="ingredientSearch" placeholder="Buscar ingrediente..."
-            class="w-full pl-12 pr-4 py-3 rounded-xl border">
+        <button @click="closeAddIngredientModal"
+          class="absolute top-4 right-4 w-10 h-10 rounded-xl border transition-all duration-200 flex items-center justify-center"
+          style="background-color: var(--background); border-color: var(--border);">
+          <span class="iconify w-5 h-5" data-icon="mdi:close" style="color: var(--foreground);"></span>
+        </button>
+
+        <h2 class="text-2xl font-semibold text-center mb-6" style="color: var(--foreground);">Agregar Ingrediente</h2>
+
+        <div class="mb-6">
+          <div class="relative">
+            <span class="iconify w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2"
+              style="color: var(--muted-foreground);" data-icon="mdi:magnify"></span>
+            <input type="text" v-model="ingredientSearch" @input="filterIngredients" placeholder="Buscar ingrediente..."
+              class="w-full pl-12 pr-4 py-3.5 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200"
+              style="border-color: var(--border); background-color: var(--input-background); color: var(--foreground);">
+          </div>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-100 overflow-y-auto">
-          <div v-for="ing in filteredIngredientList" :key="ing.id" @click="selectIngredient(ing)"
-            class="border rounded-xl p-3 text-center cursor-pointer hover:shadow-md">
-            <div class="font-medium text-sm">{{ ing.name }}</div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-100 overflow-y-auto p-1">
+          <div v-for="ingredient in filteredIngredientList" :key="ingredient.id" @click="selectIngredient(ingredient)"
+            class="relative rounded-xl border p-4 flex flex-col items-center gap-2 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
+            style="border-color: var(--border); background-color: var(--card);">
+            <div class="w-20 h-20 rounded-lg overflow-hidden">
+              <img :src="ingredient.image_url || defaultImage" :alt="ingredient.name" class="w-full h-full object-cover"
+                @error="handleImageError">
+            </div>
+            <div class="font-medium text-sm text-center" style="color: var(--foreground);">{{ ingredient.name }}</div>
+            <button
+              class="absolute top-2 right-2 w-8 h-8 rounded-full text-white flex items-center justify-center transition-all duration-200 hover:scale-110"
+              style="background-color: var(--primary);">
+              <span class="iconify w-4 h-4" data-icon="mdi:plus"></span>
+            </button>
           </div>
         </div>
       </div>
@@ -653,40 +661,88 @@
       @click="closeIngredientDetailsModal">
       <div class="rounded-2xl max-w-125 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in p-8" @click.stop
         style="background-color: var(--card);">
-        <button @click="closeIngredientDetailsModal" class="absolute top-4 right-4 w-10 h-10 rounded-xl border">✕</button>
-        <h2 class="text-2xl font-semibold text-center mb-6">{{ selectedIngredient?.name }}</h2>
-        <div class="flex flex-col gap-4 mb-6">
+        <button @click="closeIngredientDetailsModal"
+          class="absolute top-4 right-4 w-10 h-10 rounded-xl border transition-all duration-200 flex items-center justify-center"
+          style="background-color: var(--background); border-color: var(--border);">
+          <span class="iconify w-5 h-5" data-icon="mdi:close" style="color: var(--foreground);"></span>
+        </button>
+
+        <h2 class="text-2xl font-semibold text-center mb-6" style="color: var(--foreground);">{{ selectedIngredient.name
+        }}
+        </h2>
+
+        <div class="w-full h-50 rounded-xl overflow-hidden mb-6">
+          <img :src="selectedIngredient.image_url || defaultImage" :alt="selectedIngredient.name"
+            class="w-full h-full object-cover" @error="handleImageError">
+        </div>
+        <div>
+          <label class="block font-medium mb-2" style="color: var(--foreground);">Categoría</label>
+          <select v-model="newIngredientData.category"
+            class="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200"
+            style="border-color: var(--border); background-color: var(--input-background); color: var(--foreground);">
+            <option value="verduras">Verduras</option>
+            <option value="frutas">Frutas</option>
+            <option value="proteínas">Proteínas</option>
+            <option value="granos">Granos</option>
+            <option value="lácteos">Lácteos</option>
+            <option value="condimentos">Condimentos</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-5 mb-8">
           <div>
-            <label>Categoría</label>
-            <select v-model="newIngredientData.category" class="w-full p-3 rounded-xl border">
-              <option value="verduras">Verduras</option>
-              <option value="frutas">Frutas</option>
-              <option value="proteínas">Proteínas</option>
-              <option value="granos">Granos</option>
-              <option value="lácteos">Lácteos</option>
-              <option value="condimentos">Condimentos</option>
-            </select>
-          </div>
-          <div>
-            <label>Cantidad</label>
+            <label class="block font-medium mb-2" style="color: var(--foreground);">Cantidad</label>
             <div class="flex gap-2">
-              <input type="number" v-model="newIngredientData.quantity" class="flex-1 p-3 rounded-xl border">
-              <select v-model="newIngredientData.unit" class="w-30 p-3 rounded-xl border">
-                <option value="unidades">unidades</option>
-                <option value="gramos">gramos</option>
-                <option value="kg">kg</option>
+              <input type="number" v-model="newIngredientData.quantity" min="1"
+                class="flex-1 p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200"
+                style="border-color: var(--border); background-color: var(--input-background); color: var(--foreground);">
+              <select v-model="newIngredientData.unit"
+                class="w-30 p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200"
+                style="border-color: var(--border); background-color: var(--input-background); color: var(--foreground);">
+                <option value="unidades">Unidades</option>
+                <option value="gramos">Gramos</option>
+                <option value="kg">Kilogramos</option>
+                <option value="ml">Mililitros</option>
+                <option value="litros">Litros</option>
+                <option value="tazas">Tazas</option>
+                <option value="cucharadas">Cucharadas</option>
+                <option value="cucharaditas">Cucharaditas</option>
+                <option value="manojos">Manojos</option>
+                <option value="dientes">Dientes</option>
+                <option value="latas">Latas</option>
               </select>
             </div>
           </div>
+
           <div>
-            <label>Días hasta vencer</label>
-            <input type="number" v-model="newIngredientData.expiryDays" class="w-full p-3 rounded-xl border">
+            <label class="block font-medium mb-2" style="color: var(--foreground);">Días hasta vencer (opcional)</label>
+            <div class="relative">
+              <input type="number" v-model="newIngredientData.expiryDays" min="1" placeholder="Ej: 7"
+                class="w-full p-3 pr-16 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200"
+                style="border-color: var(--border); background-color: var(--input-background); color: var(--foreground);">
+              <span class="absolute right-4 top-1/2 -translate-y-1/2"
+                style="color: var(--muted-foreground);">días</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-medium mb-2" style="color: var(--foreground);">Notas adicionales (opcional)</label>
+            <textarea v-model="newIngredientData.notes" rows="3" placeholder="Ej: Tomates orgánicos, maduros"
+              class="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200 resize-none"
+              style="border-color: var(--border); background-color: var(--input-background); color: var(--foreground);"></textarea>
           </div>
         </div>
-        <div class="flex gap-3">
-          <button @click="closeIngredientDetailsModal" class="flex-1 py-3 rounded-xl border">Cancelar</button>
-          <button @click="addIngredientToPantry" class="flex-1 py-3 rounded-xl text-white"
-            :style="{ backgroundColor: 'var(--primary)' }">Agregar</button>
+
+        <div class="flex gap-4 justify-end">
+          <button @click="closeIngredientDetailsModal"
+            class="px-6 py-3 rounded-xl border transition-colors duration-200 font-medium"
+            style="border-color: var(--border); background-color: transparent; color: var(--foreground);">
+            Cancelar
+          </button>
+          <button @click="addIngredientToPantry"
+            class="px-6 py-3 rounded-xl text-white font-medium transition-colors duration-200"
+            style="background-color: var(--primary);">
+            Agregar a Despensa
+          </button>
         </div>
       </div>
     </div>
@@ -722,7 +778,6 @@ export default {
     // Data states
     const todayMeals = ref([])
     const pantryItems = ref([])
-    const recommendedRecipes = ref([])
     const popularRecipes = ref([])
     const weatherSuggestion = ref(null)
     const notifications = ref([])
@@ -751,14 +806,13 @@ export default {
     const showToast = ref(false)
 
     // Loading states
-    const loadingStates = reactive({ 
-      meals: true, 
-      pantry: true, 
-      recommendations: true, 
+    const loadingStates = reactive({
+      meals: true,
+      pantry: true,
       popularRecipes: true,
       weather: true,
       notifications: true,
-      recipeModal: false 
+      recipeModal: false
     })
 
     // Toast
@@ -825,12 +879,86 @@ export default {
     })
 
     // ========== LOAD TODAY'S MEALS ==========
+    // ========== LOAD TODAY'S MEALS ==========
     const loadTodayMeals = async () => {
       try {
         loadingStates.meals = true
-        const { data, error } = await supabase.from('todays_meals_view').select('*')
-        if (error) throw error
-        todayMeals.value = data || []
+
+        const today = new Date()
+        const dayOfWeek = (today.getDay() + 6) % 7 // Lunes=0, Domingo=6
+
+        // Obtener la semana actual
+        const weekStart = new Date(today)
+        const dayDiff = today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)
+        weekStart.setDate(dayDiff)
+        const weekStartStr = weekStart.toISOString().split('T')[0]
+
+        // Obtener el planner de la semana actual
+        let { data: planner, error: plannerError } = await supabase
+          .from('weekly_planner')
+          .select('id')
+          .eq('user_id', authStore.user?.id)
+          .eq('week_start', weekStartStr)
+          .single()
+
+        if (plannerError && plannerError.code === 'PGRST116') {
+          // No existe planner para esta semana, crear uno
+          const weekEnd = new Date(weekStart)
+          weekEnd.setDate(weekStart.getDate() + 6)
+          const { data: newPlanner, error: createError } = await supabase
+            .from('weekly_planner')
+            .insert({
+              user_id: authStore.user?.id,
+              week_start: weekStartStr,
+              week_end: weekEnd.toISOString().split('T')[0],
+              preferences: {}
+            })
+            .select()
+            .single()
+
+          if (createError) throw createError
+          planner = newPlanner
+        } else if (plannerError) {
+          throw plannerError
+        }
+
+        // Obtener las comidas del día actual
+        const { data: meals, error: mealsError } = await supabase
+          .from('planned_meals')
+          .select(`
+        id,
+        meal_type,
+        day_of_week,
+        recipe:recipes (
+          id,
+          title,
+          total_time,
+          servings,
+          image_url,
+          category,
+          calories_per_serving,
+          tags
+        )
+      `)
+          .eq('planner_id', planner.id)
+          .eq('day_of_week', dayOfWeek)
+
+        if (mealsError) throw mealsError
+
+        // Transformar los datos
+        todayMeals.value = (meals || []).map(meal => ({
+          id: meal.id,
+          meal_type: meal.meal_type,
+          recipe_id: meal.recipe?.id,
+          title: meal.recipe?.title,
+          total_time: meal.recipe?.total_time,
+          servings: meal.recipe?.servings,
+          image_url: meal.recipe?.image_url,
+          category: meal.recipe?.category,
+          calories_per_serving: meal.recipe?.calories_per_serving,
+          tags: meal.recipe?.tags
+        }))
+
       } catch (error) {
         console.error('Error cargando comidas:', error)
         todayMeals.value = []
@@ -879,26 +1007,6 @@ export default {
         pantryItems.value = []
       } finally {
         loadingStates.pantry = false
-      }
-    }
-
-    // ========== LOAD RECOMMENDATIONS BASED ON PANTRY ==========
-    const loadRecommendations = async () => {
-      try {
-        loadingStates.recommendations = true
-        const { data, error } = await supabase
-          .from('available_recipes_view')
-          .select('*')
-          .order('match_percentage', { ascending: false })
-          .limit(6)
-
-        if (error) throw error
-        recommendedRecipes.value = data || []
-      } catch (error) {
-        console.error('Error cargando recomendaciones:', error)
-        recommendedRecipes.value = []
-      } finally {
-        loadingStates.recommendations = false
       }
     }
 
@@ -1090,26 +1198,6 @@ export default {
       }
     }
 
-    const addToShoppingListFromRecommendation = async (recipe) => {
-      if (!recipe.recipe_id) return
-      try {
-        let { data: list } = await supabase.from('shopping_lists').select('id').eq('user_id', authStore.user?.id).eq('status', 'active').limit(1).single()
-        let listId = list?.id
-        if (!listId) {
-          const { data: newList } = await supabase.from('shopping_lists').insert({ user_id: authStore.user?.id, name: 'Lista de Compras' }).select().single()
-          listId = newList.id
-        }
-        const { data: ingredients } = await supabase.from('recipe_ingredients').select('ingredient_id, quantity, unit').eq('recipe_id', recipe.recipe_id)
-        if (ingredients?.length) {
-          await supabase.from('shopping_list_items').upsert(ingredients.map(i => ({ list_id: listId, ingredient_id: i.ingredient_id, quantity: i.quantity, unit: i.unit })), { onConflict: 'list_id,ingredient_id' })
-          showNotification('success', 'Éxito', `Ingredientes de "${recipe.title}" agregados a la lista`)
-        }
-      } catch (error) {
-        console.error('Error:', error)
-        showNotification('error', 'Error', 'No se pudo agregar')
-      }
-    }
-
     // ========== CHANGE MEAL ==========
     const openChangeMealModal = (mealType) => {
       currentMealType.value = mealType
@@ -1213,7 +1301,7 @@ export default {
       }
     }
 
-    // ========== PANTRY ACTIONS ==========
+    // ========== PANTRY ACTIONS CON AUTO-CATEGORÍA ==========
     const openAddIngredientModal = () => {
       ingredientSearch.value = ''
       showAddIngredientModal.value = true
@@ -1223,15 +1311,68 @@ export default {
       showAddIngredientModal.value = false
     }
 
+    const filterIngredients = () => { }
+
     const selectIngredient = (ingredient) => {
       selectedIngredient.value = ingredient
       closeAddIngredientModal()
       showIngredientDetailsModal.value = true
+
+      // AUTO-COMPLETAR CATEGORÍA BASADA EN EL INGREDIENTE
+      // La categoría ya viene de la base de datos, así que no necesitamos seleccionarla manualmente
+      newIngredientData.category = ingredient.category || getAutoCategory(ingredient.name)
+      newIngredientData.quantity = 1
+      newIngredientData.unit = ingredient.default_unit || 'unidades'
+      newIngredientData.expiryDays = null
+      newIngredientData.notes = ''
+    }
+
+    // Función auxiliar para determinar categoría automáticamente por si la base de datos no la tiene
+    const getAutoCategory = (ingredientName) => {
+      const name = ingredientName.toLowerCase()
+
+      // Verduras
+      if (['plátano verde', 'yuca', 'ñame', 'batata', 'cebolla', 'ajo', 'ají cubanela', 'ajíes morrones', 'cilantro', 'cilantro ancho', 'tomate', 'lechuga', 'zanahoria', 'brócoli', 'papas'].some(v => name.includes(v))) {
+        return 'verduras'
+      }
+
+      // Frutas
+      if (['plátano maduro', 'aguacate', 'limón', 'naranja agria', 'fresas', 'plátano', 'guineo verde'].some(f => name.includes(f))) {
+        return 'frutas'
+      }
+
+      // Proteínas
+      if (['pollo', 'cerdo', 'res', 'carne de res', 'salami', 'huevos', 'arenque', 'sardinas'].some(p => name.includes(p))) {
+        return 'proteínas'
+      }
+
+      // Granos
+      if (['arroz', 'habichuelas', 'guandules', 'maíz', 'pasta', 'espaguetis', 'avena', 'pan'].some(g => name.includes(g))) {
+        return 'granos'
+      }
+
+      // Condimentos
+      if (['sal', 'pimienta', 'orégano', 'canela', 'clavo', 'vinagre', 'aceite', 'manteca', 'sazón', 'sofrito', 'pasta de tomate'].some(c => name.includes(c))) {
+        return 'condimentos'
+      }
+
+      // Lácteos
+      if (['leche', 'queso', 'mantequilla'].some(l => name.includes(l))) {
+        return 'lácteos'
+      }
+
+      return 'otros'
     }
 
     const closeIngredientDetailsModal = () => {
       showIngredientDetailsModal.value = false
       selectedIngredient.value = null
+      // Resetear datos
+      newIngredientData.category = 'verduras'
+      newIngredientData.quantity = 1
+      newIngredientData.unit = 'unidades'
+      newIngredientData.expiryDays = null
+      newIngredientData.notes = ''
     }
 
     const filteredIngredientList = computed(() => {
@@ -1250,6 +1391,10 @@ export default {
           expiryDate = new Date()
           expiryDate.setDate(expiryDate.getDate() + parseInt(newIngredientData.expiryDays))
         }
+
+        // Usar la categoría que viene del ingrediente o la autocompletada
+        const categoryToUse = selectedIngredient.value.category || getAutoCategory(selectedIngredient.value.name)
+
         await supabase.rpc('add_to_pantry', {
           p_user_id: authStore.user?.id,
           p_ingredient_id: selectedIngredient.value.id,
@@ -1258,7 +1403,8 @@ export default {
           p_expiry_date: expiryDate ? expiryDate.toISOString().split('T')[0] : null,
           p_notes: newIngredientData.notes
         })
-        await Promise.all([loadPantry(), loadRecommendations()])
+
+        await loadPantry()
         showNotification('success', 'Agregado', `${selectedIngredient.value.name} agregado a la despensa`)
         closeIngredientDetailsModal()
       } catch (error) {
@@ -1275,7 +1421,7 @@ export default {
         } else {
           await supabase.from('user_pantry').update({ quantity: newQuantity }).eq('id', item.id)
         }
-        await Promise.all([loadPantry(), loadRecommendations()])
+        await loadPantry()
       } catch (error) {
         console.error('Error:', error)
       }
@@ -1285,7 +1431,7 @@ export default {
       try {
         const newQuantity = (item.quantity || 1) + 1
         await supabase.from('user_pantry').update({ quantity: newQuantity }).eq('id', item.id)
-        await Promise.all([loadPantry(), loadRecommendations()])
+        await loadPantry()
       } catch (error) {
         console.error('Error:', error)
       }
@@ -1294,16 +1440,11 @@ export default {
     const removeIngredient = async (item) => {
       try {
         await supabase.from('user_pantry').delete().eq('id', item.id)
-        await Promise.all([loadPantry(), loadRecommendations()])
+        await loadPantry()
         showNotification('success', 'Eliminado', `${item.name} eliminado de la despensa`)
       } catch (error) {
         console.error('Error:', error)
       }
-    }
-
-    const refreshRecommendations = async () => {
-      await loadRecommendations()
-      showNotification('success', 'Actualizado', 'Recomendaciones actualizadas con tu despensa')
     }
 
     // ========== NOTIFICATIONS ==========
@@ -1342,7 +1483,6 @@ export default {
           loadAllRecipes(),
           loadAllIngredients()
         ])
-        await loadRecommendations()
       }
     })
 
@@ -1352,7 +1492,6 @@ export default {
       userInitials,
       todayMeals,
       pantryItems,
-      recommendedRecipes,
       popularRecipes,
       weatherSuggestion,
       weatherIcon,
@@ -1389,7 +1528,6 @@ export default {
       closeRecipeModal,
       toggleFavorite,
       addToShoppingList,
-      addToShoppingListFromRecommendation,
       openChangeMealModal,
       closeChangeMealModal,
       selectMeal,
@@ -1405,7 +1543,6 @@ export default {
       decreaseQuantity,
       increaseQuantity,
       removeIngredient,
-      refreshRecommendations,
       handleNotification,
       goToRecipes,
       handleImageError,
@@ -1419,18 +1556,48 @@ export default {
 
 <style>
 @keyframes slide-in-right {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
+
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
+
 @keyframes slide-in {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.animate-slide-in-right { animation: slide-in-right 0.3s ease; }
-.animate-fade-in { animation: fade-in 0.3s ease; }
-.animate-slide-in { animation: slide-in 0.3s ease; }
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease;
+}
 </style>
