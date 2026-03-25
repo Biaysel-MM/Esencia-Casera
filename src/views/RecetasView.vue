@@ -393,7 +393,6 @@ import { useRecipesStore } from '@/stores/recipes'
 import { supabase } from '@/supabase'
 import Sidebar from '../components/layout/Sidebar.vue'
 import Header from '../components/layout/Header.vue'
-import { translateInstructions as translateInstructionsService, translateIngredient } from '@/services/translations'
 
 export default {
   name: 'RecetasView',
@@ -466,55 +465,7 @@ export default {
     // Traducción básica de instrucciones (CORREGIDA)
     const translateInstructions = (step) => {
       if (!step) return ''
-      // Asegurar que step es string
-      let text = String(step)
-
-      const translations = {
-        'Heat your oven': 'Precalienta el horno',
-        'Place your': 'Coloca tus',
-        'Add your': 'Agrega tus',
-        'Mix thoroughly': 'Mezcla bien',
-        'Bake for': 'Hornea por',
-        'minutes': 'minutos',
-        'until': 'hasta que',
-        'browned': 'esté dorado',
-        'oven': 'horno',
-        'sweet potatoes': 'batatas',
-        'butter': 'mantequilla',
-        'eggs': 'huevos',
-        'vanilla extract': 'extracto de vainilla',
-        'cinnamon': 'canela',
-        'sugar': 'azúcar',
-        'cream': 'crema',
-        'melt': 'derrite',
-        'skillet': 'sartén',
-        'olive oil': 'aceite de oliva',
-        'pork chops': 'chuletas de cerdo',
-        'medium high': 'fuego medio-alto',
-        'lower the heat': 'baja el fuego',
-        'salt and pepper': 'sal y pimienta',
-        'meanwhile': 'mientras tanto',
-        'broil': 'gratinar',
-        'mix together': 'mezcla',
-        'heavy cream': 'crema de leche',
-        'mustard': 'mostaza',
-        'cheese': 'queso',
-        'remove from': 'retira del',
-        'stove': 'fogón',
-        'oven proof dish': 'fuente para horno',
-        'spread': 'extiende',
-        'mixture': 'mezcla',
-        'minutes': 'minutos',
-        'side': 'lado',
-        'taste': 'gusto'
-      }
-
-      for (const [eng, esp] of Object.entries(translations)) {
-        const regex = new RegExp(eng, 'gi')
-        text = text.replace(regex, esp)
-      }
-
-      return text
+      return step // Ya viene traducido de spoonacular.js
     }
 
     // Cargar despensa del usuario
@@ -738,30 +689,15 @@ export default {
       showRecipeModal.value = true
 
       try {
-        selectedRecipe.value = recipe
-
-        // Cargar ingredientes si no los tiene
-        if (!recipe.ingredients || recipe.ingredients.length === 0) {
-          if (recipe.isExternal) {
-            const fullRecipe = await recipesStore.getRecipeDetails(recipe.id)
-            if (fullRecipe && fullRecipe.ingredients) {
-              selectedRecipe.value = fullRecipe
-              recipeIngredients.value = fullRecipe.ingredients.map(ing => ({
-                ingredient_name: ing.name,
-                quantity: ing.quantity,
-                unit: ing.unit
-              }))
-            } else {
-              recipeIngredients.value = []
-            }
-          } else {
-            // Receta local - cargar ingredientes
-            const ingredients = await loadLocalRecipeIngredients(recipe.id)
-            recipeIngredients.value = ingredients
-            selectedRecipe.value.ingredients = ingredients
+        if (recipe.isExternal && (!recipe.steps || recipe.steps.length === 0)) {
+          const fullRecipe = await recipesStore.getRecipeDetails(recipe.id)
+          if (fullRecipe) {
+            selectedRecipe.value = fullRecipe
+            recipeIngredients.value = fullRecipe.ingredients || []
           }
         } else {
-          recipeIngredients.value = recipe.ingredients
+          selectedRecipe.value = recipe
+          recipeIngredients.value = recipe.ingredients || []
         }
 
         // Verificar favorito

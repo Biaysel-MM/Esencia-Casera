@@ -2,7 +2,178 @@
 
 // Diccionario completo de traducciones
 const translations = {
-  // Verbos de cocina
+  // ========== UNIDADES DE MEDIDA ==========
+  'tablespoon': 'cucharada',
+  'tablespoons': 'cucharadas',
+  'tbsp': 'cucharada',
+  'tbsps': 'cucharadas',
+  'teaspoon': 'cucharadita',
+  'teaspoons': 'cucharaditas',
+  'tsp': 'cucharadita',
+  'tsps': 'cucharaditas',
+  'cup': 'taza',
+  'cups': 'tazas',
+  'ml': 'ml',
+  'milliliter': 'mililitro',
+  'milliliters': 'mililitros',
+  'liter': 'litro',
+  'liters': 'litros',
+  'l': 'litro',
+  'gram': 'gramo',
+  'grams': 'gramos',
+  'g': 'gramos',
+  'kg': 'kg',
+  'kilogram': 'kilogramo',
+  'kilograms': 'kilogramos',
+  'ounce': 'onza',
+  'ounces': 'onzas',
+  'oz': 'onzas',
+  'pound': 'libra',
+  'pounds': 'libras',
+  'lb': 'libra',
+  'lbs': 'libras',
+  'piece': 'unidad',
+  'pieces': 'unidades',
+  'slice': 'rebanada',
+  'slices': 'rebanadas',
+  'clove': 'diente',
+  'cloves': 'dientes',
+  'handful': 'puñado',
+  'pinch': 'pizca',
+  'dash': 'pizca',
+  'bunch': 'manojo',
+  'bunches': 'manojos',
+  'large': 'grande',
+  'medium': 'mediano',
+  'small': 'pequeño',
+  'fresh': 'fresco',
+  'dried': 'seco',
+  'old fashioned': 'antiguo',
+  'rolled oats': 'avena en hojuelas',
+  'semisweet': 'semiamargo',
+  'chocolate chips': 'chispas de chocolate',
+  'baking powder': 'polvo de hornear',
+  'baking soda': 'bicarbonato de sodio',
+  'vanilla extract': 'extracto de vainilla',
+  'granulated sugar': 'azúcar granulada',
+  'brown sugar': 'azúcar morena',
+  'kosher salt': 'sal kosher',
+  'egg yolk': 'yema de huevo',
+  'egg yolks': 'yemas de huevo',
+  'all-purpose flour': 'harina de trigo',
+  'whole wheat flour': 'harina integral',
+  'bread flour': 'harina de pan',
+  'coconut oil': 'aceite de coco',
+  'sesame oil': 'aceite de sésamo',
+  'soy sauce': 'salsa de soya',
+  'fish sauce': 'salsa de pescado',
+  'worcestershire sauce': 'salsa inglesa',
+  'hot sauce': 'salsa picante',
+  'maple syrup': 'jarabe de arce',
+  'corn syrup': 'jarabe de maíz',
+  'molasses': 'melaza',
+  'honey': 'miel',
+  'yeast': 'levadura',
+  
+  // ========== INGREDIENTES COMUNES ==========
+  'basil': 'albahaca',
+  'garlic': 'ajo',
+  'onion': 'cebolla',
+  'tomato': 'tomate',
+  'potato': 'papa',
+  'carrot': 'zanahoria',
+  'broccoli': 'brócoli',
+  'spinach': 'espinaca',
+  'lettuce': 'lechuga',
+  'cucumber': 'pepino',
+  'bell pepper': 'pimiento morrón',
+  'zucchini': 'calabacín',
+  'mushroom': 'champiñón',
+  'celery': 'apio',
+  'eggplant': 'berenjena',
+  'asparagus': 'espárrago',
+  'chicken': 'pollo',
+  'beef': 'carne de res',
+  'pork': 'cerdo',
+  'fish': 'pescado',
+  'salmon': 'salmón',
+  'shrimp': 'camarones',
+  'prawns': 'langostinos',
+  'egg': 'huevo',
+  'eggs': 'huevos',
+  'milk': 'leche',
+  'butter': 'mantequilla',
+  'cheese': 'queso',
+  'cream': 'crema',
+  'rice': 'arroz',
+  'pasta': 'pasta',
+  'flour': 'harina',
+  'sugar': 'azúcar',
+  'salt': 'sal',
+  'pepper': 'pimienta',
+  'olive oil': 'aceite de oliva',
+  'vegetable oil': 'aceite vegetal',
+  'vinegar': 'vinagre',
+  'apple cider vinegar': 'vinagre de manzana',
+  'lemon': 'limón',
+  'lime': 'lima',
+  'orange': 'naranja',
+  'parsley': 'perejil',
+  'cilantro': 'cilantro',
+  'oregano': 'orégano',
+  'thyme': 'tomillo',
+  'rosemary': 'romero',
+  'feta': 'queso feta',
+  'parmesan': 'queso parmesano',
+  'mozzarella': 'queso mozzarella',
+  'cheddar': 'queso cheddar',
+  'gouda': 'queso gouda',
+  'ricotta': 'queso ricotta',
+  'cream cheese': 'queso crema',
+  'cottage cheese': 'queso cottage',
+  'goat cheese': 'queso de cabra',
+  'blue cheese': 'queso azul',
+  'gambas': 'gambas',
+  'scallops': 'vieiras',
+  'mussels': 'mejillones',
+  'clams': 'almejas',
+  'squid': 'calamar',
+  'octopus': 'pulpo',
+  'lobster': 'langosta',
+  'crab': 'cangrejo',
+  'baguette': 'baguette',
+  'bread': 'pan',
+  'pumpkin': 'calabaza',
+  'apple': 'manzana',
+  'banana': 'plátano',
+  'strawberry': 'fresa',
+  'blueberry': 'arándano',
+  'raspberry': 'frambuesa',
+  'avocado': 'aguacate',
+  'tomatoes': 'tomates',
+  'onions': 'cebollas',
+  'carrots': 'zanahorias',
+  'potatoes': 'papas',
+  'mushrooms': 'champiñones',
+  'cranberries': 'arándanos rojos',
+  'cranberry': 'arándano rojo',
+  'chocolate': 'chocolate',
+  'oat': 'avena',
+  'oats': 'avena',
+  'nut': 'nuez',
+  'nuts': 'nueces',
+  'almond': 'almendra',
+  'almonds': 'almendras',
+  'walnut': 'nuez',
+  'walnuts': 'nueces',
+  'pecan': 'pacana',
+  'pecans': 'pacanas',
+  'peanut': 'maní',
+  'peanuts': 'maníes',
+  'cashew': 'marañón',
+  'cashews': 'marañones',
+  
+  // ========== VERBOS DE COCINA ==========
   'heat': 'calienta',
   'preheat': 'precalienta',
   'add': 'agrega',
@@ -19,12 +190,11 @@ const translations = {
   'peel': 'pela',
   'cut': 'corta',
   'place': 'coloca',
-  'put': 'pon',
   'pour': 'vierte',
   'cook': 'cocina',
   'bake': 'hornea',
   'roast': 'asa',
-  'grill': 'asala a la parrilla',
+  'grill': 'asala',
   'fry': 'fríe',
   'sauté': 'saltea',
   'boil': 'hierve',
@@ -32,17 +202,6 @@ const translations = {
   'steam': 'cocina al vapor',
   'season': 'sazona',
   'serve': 'sirve',
-  'cool': 'deja enfriar',
-  'refrigerate': 'refrigera',
-  'freeze': 'congela',
-  'drain': 'escurre',
-  'rinse': 'enjuaga',
-  'wash': 'lava',
-  'dry': 'seca',
-  'spread': 'extiende',
-  'sprinkle': 'espolvorea',
-  'top': 'cubre',
-  'garnish': 'decora',
   'remove': 'retira',
   'let': 'deja',
   'rest': 'reposar',
@@ -54,108 +213,53 @@ const translations = {
   'toss': 'mezcla',
   'coat': 'cubre',
   'roll': 'enrolla',
-  'shape': 'da forma',
-  'flatten': 'aplana',
-  'stuff': 'rellena',
   'wrap': 'envuelve',
-  'uncover': 'destapa',
   'cover': 'tapa',
+  'uncover': 'destapa',
   'check': 'verifica',
-  'adjust': 'ajusta',
   'taste': 'prueba',
-  'test': 'prueba',
-  'turn': 'voltea',
-  'flip': 'voltea',
-  'strain': 'cuela',
-  'sift': 'cernir',
+  'line': 'forra',
+  'spoon': 'cuchara',
+  'spoonful': 'cucharada',
+  'heaping': 'colmada',
+  'level': 'rasa',
+  'sprinkle': 'espolvorea',
+  'dust': 'espolvorea',
   'knead': 'amasa',
   'proof': 'deja levar',
   'ferment': 'fermenta',
-  
-  // Ingredientes comunes (traducción completa)
-  'broccoli rabe': 'brócoli rabe',
-  'broccoli rabe': 'brócoli rabe',
-  'brócoli rabe': 'brócoli rabe',
-  'breaded veal scallopini': 'escalopas de ternera empanizadas',
-  'scallopini': 'escalopas',
-  'veal': 'ternera',
-  'breaded': 'empanizada',
-  'chicken breast': 'pechuga de pollo',
-  'olive oil': 'aceite de oliva',
-  'garlic': 'ajo',
-  'onion': 'cebolla',
-  'tomato': 'tomate',
-  'salt': 'sal',
-  'pepper': 'pimienta',
-  'black pepper': 'pimienta negra',
-  'butter': 'mantequilla',
-  'flour': 'harina',
-  'sugar': 'azúcar',
-  'egg': 'huevo',
-  'eggs': 'huevos',
-  'milk': 'leche',
+  'glaze': 'glasea',
+  'frost': 'cubre con glaseado',
+  'dip': 'sumerge',
+  'drain': 'escurre',
+  'pat': 'palmaditas',
+  'dry': 'seca',
+  'wash': 'lava',
+  'rinse': 'enjuaga',
+  'soak': 'remoja',
+  'marinate': 'marina',
+  'brine': 'salmuera',
+  'smoke': 'ahuma',
+  'sear': 'sella',
+  'brown': 'dora',
+  'caramelize': 'carameliza',
+  'toast': 'tuesta',
+  'grind': 'muele',
+  'crush': 'aplasta',
+  'mash': 'machaca',
+  'puree': 'puré',
+  'strain': 'cuela',
+  'sift': 'tamiza',
+  'fold': 'involucra',
   'cream': 'crema',
-  'cheese': 'queso',
-  'rice': 'arroz',
-  'pasta': 'pasta',
-  'potato': 'papa',
-  'potatoes': 'papas',
-  'carrot': 'zanahoria',
-  'carrots': 'zanahorias',
-  'onions': 'cebollas',
-  'garlic cloves': 'dientes de ajo',
-  'lemon': 'limón',
-  'lime': 'lima',
-  'orange': 'naranja',
-  'basil': 'albahaca',
-  'parsley': 'perejil',
-  'cilantro': 'cilantro',
-  'oregano': 'orégano',
-  'thyme': 'tomillo',
-  'rosemary': 'romero',
   
-  // Unidades de medida
-  'cup': 'taza',
-  'cups': 'tazas',
-  'tablespoon': 'cucharada',
-  'tablespoons': 'cucharadas',
-  'teaspoon': 'cucharadita',
-  'teaspoons': 'cucharaditas',
-  'ounce': 'onza',
-  'ounces': 'onzas',
-  'pound': 'libra',
-  'pounds': 'libras',
-  'gram': 'gramo',
-  'grams': 'gramos',
-  'kilogram': 'kilogramo',
-  'kilograms': 'kilogramos',
-  'liter': 'litro',
-  'liters': 'litros',
-  'milliliter': 'mililitro',
-  'milliliters': 'mililitros',
-  'pinch': 'pizca',
-  'dash': 'chorrito',
-  
-  // Tiempo y temperatura
-  'minute': 'minuto',
-  'minutes': 'minutos',
-  'hour': 'hora',
-  'hours': 'horas',
-  'second': 'segundo',
-  'seconds': 'segundos',
-  'degree': 'grado',
-  'degrees': 'grados',
-  'fahrenheit': 'fahrenheit',
-  'celsius': 'celsius',
-  
-  // Conectores y palabras comunes
+  // ========== CONECTORES ==========
   'and': 'y',
   'or': 'o',
   'with': 'con',
   'in': 'en',
   'on': 'sobre',
   'over': 'sobre',
-  'under': 'debajo',
   'into': 'en',
   'to': 'a',
   'for': 'por',
@@ -169,8 +273,46 @@ const translations = {
   'the': '',
   'a': '',
   'an': '',
+  'of': 'de',
+  'from': 'de',
+  'by': 'por',
+  'with': 'con',
+  'about': 'aproximadamente',
+  'around': 'alrededor de',
+  'between': 'entre',
+  'among': 'entre',
+  'during': 'durante',
+  'through': 'a través de',
+  'throughout': 'durante todo',
+  'within': 'dentro de',
+  'without': 'sin',
   
-  // Adjetivos
+  // ========== TIEMPO ==========
+  'minute': 'minuto',
+  'minutes': 'minutos',
+  'hour': 'hora',
+  'hours': 'horas',
+  'second': 'segundo',
+  'seconds': 'segundos',
+  'day': 'día',
+  'days': 'días',
+  'week': 'semana',
+  'weeks': 'semanas',
+  'month': 'mes',
+  'months': 'meses',
+  
+  // ========== TEMPERATURA ==========
+  'degree': 'grado',
+  'degrees': 'grados',
+  'fahrenheit': 'fahrenheit',
+  'celsius': 'celsius',
+  'hot': 'caliente',
+  'cold': 'frío',
+  'warm': 'tibio',
+  'cool': 'frío',
+  'room temperature': 'temperatura ambiente',
+  
+  // ========== ADJETIVOS ==========
   'golden': 'dorado',
   'brown': 'dorado',
   'tender': 'tierno',
@@ -181,16 +323,47 @@ const translations = {
   'raw': 'crudo',
   'fresh': 'fresco',
   'frozen': 'congelado',
-  'hot': 'caliente',
-  'cold': 'frío',
-  'warm': 'tibio',
-  'cool': 'frío',
   'done': 'listo',
   'ready': 'listo',
+  'smooth': 'suave',
+  'creamy': 'cremoso',
+  'thick': 'espeso',
+  'thin': 'claro',
+  'liquid': 'líquido',
+  'solid': 'sólido',
+  'melted': 'derretido',
+  'softened': 'ablandado',
+  'room temperature': 'temperatura ambiente',
+  'chilled': 'enfriado',
+  'warm': 'tibio',
   
-  // Frases completas
+  // ========== UTENSILIOS ==========
+  'bowl': 'tazón',
+  'pan': 'sartén',
+  'pot': 'olla',
+  'skillet': 'sartén',
+  'baking sheet': 'bandeja para hornear',
+  'baking dish': 'molde para horno',
+  'oven': 'horno',
+  'stove': 'estufa',
+  'microwave': 'microondas',
+  'blender': 'licuadora',
+  'mixer': 'batidora',
+  'whisk': 'batidor',
+  'spatula': 'espátula',
+  'ladle': 'cucharón',
+  'colander': 'colador',
+  'strainer': 'colador',
+  'knife': 'cuchillo',
+  'cutting board': 'tabla de cortar',
+  'rolling pin': 'rodillo',
+  'parchment paper': 'papel pergamino',
+  'aluminum foil': 'papel aluminio',
+  'plastic wrap': 'papel film',
+  'cooling rack': 'rejilla de enfriamiento',
+  
+  // ========== FRASES COMPLETAS ==========
   'to taste': 'al gusto',
-  'to your taste': 'a tu gusto',
   'salt and pepper to taste': 'sal y pimienta al gusto',
   'salt and pepper': 'sal y pimienta',
   'for a few minutes': 'por unos minutos',
@@ -205,115 +378,43 @@ const translations = {
   'serve immediately': 'sirve inmediatamente',
   'serve warm': 'sirve tibio',
   'serve hot': 'sirve caliente',
-  'enjoy': 'disfruta'
+  'mix well': 'mezcla bien',
+  'stir well': 'revuelve bien',
+  'beat until smooth': 'bate hasta que esté suave',
+  'beat until creamy': 'bate hasta que esté cremoso',
+  'beat until fluffy': 'bate hasta que esté esponjoso',
+  'in a medium bowl': 'en un tazón mediano',
+  'in a large bowl': 'en un tazón grande',
+  'in a small bowl': 'en un tazón pequeño',
+  'baking powder': 'polvo de hornear',
+  'baking soda': 'bicarbonato de sodio',
+  'vanilla extract': 'extracto de vainilla',
+  'old fashioned rolled oats': 'avena en hojuelas tradicional',
+  'semisweet chocolate chips': 'chispas de chocolate semiamargo',
+  'granulated sugar': 'azúcar granulada',
+  'brown sugar': 'azúcar morena',
+  'kosher salt': 'sal kosher',
+  'egg yolk': 'yema de huevo'
 }
 
-// Traducción de tags
-const tagTranslations = {
-  'breakfast': 'Desayuno',
-  'lunch': 'Almuerzo',
-  'dinner': 'Cena',
-  'main course': 'Plato principal',
-  'side dish': 'Acompañamiento',
-  'appetizer': 'Entrada',
-  'starter': 'Entrada',
-  'dessert': 'Postre',
-  'snack': 'Merienda',
-  'soup': 'Sopa',
-  'salad': 'Ensalada',
-  'vegetarian': 'Vegetariano',
-  'vegan': 'Vegano',
-  'gluten free': 'Sin gluten',
-  'dairy free': 'Sin lácteos',
-  'healthy': 'Saludable',
-  'quick': 'Rápido',
-  'easy': 'Fácil',
-  'cheap': 'Económico',
-  'holiday': 'Festivo',
-  'christmas': 'Navidad',
-  'thanksgiving': 'Acción de gracias',
-  'summer': 'Verano',
-  'winter': 'Invierno',
-  'spring': 'Primavera',
-  'fall': 'Otoño',
-  'autumn': 'Otoño'
-}
-
-// Frases compuestas que deben traducirse primero (orden de mayor a menor longitud)
-const compoundPhrases = [
-  'salt and pepper to taste',
-  'salt and pepper',
-  'for a few minutes',
-  'for about',
-  'until golden brown',
-  'until tender',
-  'remove from heat',
-  'remove from oven',
-  'let cool',
-  'let rest',
-  'set aside',
-  'serve immediately',
-  'serve warm',
-  'serve hot',
-  'to taste',
-  'to your taste'
-]
+// Obtener todas las claves ordenadas por longitud (más largas primero)
+const sortedKeys = Object.keys(translations).sort((a, b) => b.length - a.length)
 
 /**
- * Traduce un nombre de ingrediente
+ * Traduce texto usando diccionario local
  */
-export const translateIngredient = (ingredientName) => {
-  if (!ingredientName) return ''
-  let translated = ingredientName.toLowerCase()
+export const translateText = async (text, targetLang = 'es') => {
+  if (!text || text.trim() === '') return ''
   
-  // Ordenar claves por longitud (más largas primero) para mejor coincidencia
-  const sortedKeys = Object.keys(translations).sort((a, b) => b.length - a.length)
+  let translated = String(text)
   
   for (const eng of sortedKeys) {
     const regex = new RegExp(`\\b${eng}\\b`, 'gi')
     translated = translated.replace(regex, translations[eng])
   }
   
-  // Capitalizar primera letra
-  return translated.charAt(0).toUpperCase() + translated.slice(1)
-}
-
-/**
- * Traduce un tag
- */
-export const translateTag = (tag) => {
-  if (!tag) return ''
-  const lowerTag = tag.toLowerCase()
-  return tagTranslations[lowerTag] || tag
-}
-
-/**
- * Traduce instrucciones completas con orden de palabras español
- */
-export const translateInstructions = (text) => {
-  if (!text) return ''
-  if (typeof text !== 'string') text = String(text)
-  
-  let translated = text
-  
-  // Primero traducir frases compuestas
-  for (const phrase of compoundPhrases) {
-    const regex = new RegExp(phrase, 'gi')
-    translated = translated.replace(regex, translations[phrase.toLowerCase()] || phrase)
-  }
-  
-  // Luego traducir palabras individuales
-  const sortedKeys = Object.keys(translations).sort((a, b) => b.length - a.length)
-  
-  for (const eng of sortedKeys) {
-    const regex = new RegExp(`\\b${eng}\\b`, 'gi')
-    translated = translated.replace(regex, translations[eng])
-  }
-  
-  // Limpiar espacios múltiples
+  // Limpiar espacios múltiples y puntuación
   translated = translated.replace(/\s+/g, ' ').trim()
-  
-  // Corregir puntuación
   translated = translated.replace(/\s+([.,!?:;])/g, '$1')
   
   // Capitalizar primera letra de cada oración
@@ -325,9 +426,47 @@ export const translateInstructions = (text) => {
 }
 
 /**
- * Traduce un título de receta
+ * Traduce y formatea un ingrediente
  */
-export const translateTitle = (title) => {
+export const translateIngredient = async (ingredient) => {
+  if (!ingredient) return { name: '', quantity: null, unit: '' }
+  
+  if (typeof ingredient === 'object') {
+    const translatedName = await translateText(ingredient.name || ingredient.ingredient_name || '')
+    return {
+      name: translatedName,
+      quantity: ingredient.quantity,
+      unit: ingredient.unit
+    }
+  }
+  
+  const translated = await translateText(String(ingredient))
+  return { name: translated, quantity: null, unit: '' }
+}
+
+export const translateBatch = async (texts) => {
+  const results = []
+  for (const text of texts) {
+    results.push(await translateText(text))
+  }
+  return results
+}
+
+export const translateTag = async (tag) => {
+  if (!tag) return ''
+  return translateText(tag)
+}
+
+export const translateInstructions = async (instructions) => {
+  if (!instructions) return ''
+  return translateText(instructions)
+}
+
+export const translateTitle = async (title) => {
   if (!title) return ''
-  return translateInstructions(title)
+  return translateText(title)
+}
+
+export const clearTranslationCache = () => {
+  console.log('🗑️ Cache de traducciones limpiado')
 }
