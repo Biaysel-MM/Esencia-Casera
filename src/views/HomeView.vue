@@ -759,6 +759,8 @@ import { supabase } from '@/supabase'
 import { useAuthStore } from '@/stores/auth'
 import Sidebar from '../components/layout/Sidebar.vue'
 import Header from '../components/layout/Header.vue'
+// Agregar imports
+import { formatQuantity, getStepText } from '@/services/translations'
 
 export default {
   name: 'InicioView',

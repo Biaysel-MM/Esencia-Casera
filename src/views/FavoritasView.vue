@@ -27,7 +27,9 @@
 
             <!-- Loading State -->
             <div v-if="loading" class="flex justify-center py-12">
-              <div class="h-10 w-10 animate-spin rounded-full border-4 border-[rgba(93,162,113,0.2)] border-t-[#5DA271]"></div>
+              <div
+                class="h-10 w-10 animate-spin rounded-full border-4 border-[rgba(93,162,113,0.2)] border-t-[#5DA271]">
+              </div>
             </div>
 
             <!-- Grid de recetas favoritas (mismo diseño que RecetasView) -->
@@ -51,7 +53,8 @@
 
                   <!-- Badge de favorito -->
                   <div class="absolute right-3 top-3">
-                    <div class="flex items-center gap-1 rounded-lg bg-[rgba(93,162,113,0.9)] px-2 py-1 text-white text-xs backdrop-blur-sm">
+                    <div
+                      class="flex items-center gap-1 rounded-lg bg-[rgba(93,162,113,0.9)] px-2 py-1 text-white text-xs backdrop-blur-sm">
                       <span class="iconify w-3 h-3" data-icon="mdi:heart"></span>
                       <span>Favorita</span>
                     </div>
@@ -145,7 +148,9 @@
                 </button>
 
                 <div v-if="loadingRecipe" class="flex flex-col items-center justify-center min-h-75">
-                  <div class="w-10 h-10 border-4 border-[rgba(93,162,113,0.2)] border-t-[#5DA271] rounded-full animate-spin mb-4"></div>
+                  <div
+                    class="w-10 h-10 border-4 border-[rgba(93,162,113,0.2)] border-t-[#5DA271] rounded-full animate-spin mb-4">
+                  </div>
                   <p class="text-[#6C7A6C]">Cargando receta...</p>
                 </div>
 
@@ -154,7 +159,8 @@
                     <img :src="selectedRecipe.image_url || defaultImage" :alt="selectedRecipe.title"
                       class="w-full h-full object-cover" @error="handleImageError">
                     <div class="absolute inset-0 bg-linear-to-t from-black/70 to-transparent"></div>
-                    <div class="absolute left-5 top-5 rounded-xl bg-[#5DA271] px-4 py-2 text-sm font-semibold text-white">
+                    <div
+                      class="absolute left-5 top-5 rounded-xl bg-[#5DA271] px-4 py-2 text-sm font-semibold text-white">
                       {{ getCategoryLabel(selectedRecipe.category) }}
                     </div>
                     <div class="absolute bottom-0 left-0 right-0 p-8 text-white">
@@ -166,7 +172,8 @@
                     <!-- Métricas de la receta -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-4 rounded-xl bg-[rgba(168,213,186,0.1)]">
                       <div class="text-center">
-                        <span class="block text-lg font-semibold text-[#2C2C2C]">{{ selectedRecipe.total_time }} min</span>
+                        <span class="block text-lg font-semibold text-[#2C2C2C]">{{ selectedRecipe.total_time }}
+                          min</span>
                         <span class="text-xs text-[#6C7A6C]">Tiempo</span>
                       </div>
                       <div class="text-center">
@@ -174,11 +181,13 @@
                         <span class="text-xs text-[#6C7A6C]">Porciones</span>
                       </div>
                       <div class="text-center">
-                        <span class="block text-lg font-semibold text-[#2C2C2C]">{{ selectedRecipe.calories_per_serving || '--' }} kcal</span>
+                        <span class="block text-lg font-semibold text-[#2C2C2C]">{{ selectedRecipe.calories_per_serving
+                          || '--' }} kcal</span>
                         <span class="text-xs text-[#6C7A6C]">Calorías</span>
                       </div>
                       <div class="text-center">
-                        <span class="block text-lg font-semibold text-[#2C2C2C]">{{ selectedRecipe.rating || 'Nuevo' }}</span>
+                        <span class="block text-lg font-semibold text-[#2C2C2C]">{{ selectedRecipe.rating || 'Nuevo'
+                          }}</span>
                         <span class="text-xs text-[#6C7A6C]">Calificación</span>
                       </div>
                     </div>
@@ -187,7 +196,8 @@
                     <div class="flex gap-4 mb-8">
                       <button @click="toggleFavorite"
                         class="flex-1 py-3 rounded-xl border border-[rgba(0,0,0,0.08)] font-medium transition-all duration-200 bg-white text-[#2C2C2C] hover:bg-[#D8EBD0] hover:border-[#5DA271]">
-                        <span class="iconify w-5 h-5 inline mr-2" :data-icon="isFavorite ? 'mdi:heart' : 'mdi:heart-outline'"></span>
+                        <span class="iconify w-5 h-5 inline mr-2"
+                          :data-icon="isFavorite ? 'mdi:heart' : 'mdi:heart-outline'"></span>
                         {{ isFavorite ? 'En favoritos' : 'Agregar a favoritos' }}
                       </button>
                       <button @click="addToShoppingList"
@@ -207,10 +217,12 @@
                         <div v-for="ing in recipeIngredients" :key="ing.ingredient_name"
                           class="py-2 last:border-0 flex justify-between items-center border-b border-[rgba(0,0,0,0.05)]">
                           <span class="flex items-center gap-2 text-[#2C2C2C]">
-                            <span class="iconify w-4 h-4 text-[#5DA271]" data-icon="mdi:checkbox-blank-circle-outline"></span>
+                            <span class="iconify w-4 h-4 text-[#5DA271]"
+                              data-icon="mdi:checkbox-blank-circle-outline"></span>
                             <span>{{ ing.ingredient_name }}</span>
                           </span>
-                          <span class="font-medium text-[#5DA271]">{{ ing.quantity }} {{ ing.unit }}</span>
+                          // En el template, usar formatQuantity
+                          <span class="font-medium text-[#5DA271]">{{ formatQuantity(ing.quantity, ing.unit) }}</span>
                         </div>
                       </div>
                     </div>
@@ -223,10 +235,12 @@
                       </h3>
                       <div class="flex flex-col gap-4">
                         <div v-for="(step, idx) in selectedRecipe.steps" :key="idx" class="flex gap-3">
-                          <div class="w-8 h-8 rounded-full bg-[#5DA271] flex items-center justify-center font-semibold text-white shrink-0">
+                          <div
+                            class="w-8 h-8 rounded-full bg-[#5DA271] flex items-center justify-center font-semibold text-white shrink-0">
                             {{ idx + 1 }}
                           </div>
-                          <p class="text-sm leading-relaxed text-[#2C2C2C]">{{ step.step || step.description || step }}</p>
+                          // En las instrucciones, usar getStepText
+                          <p class="text-sm leading-relaxed text-[#2C2C2C]">{{ getStepText(step) }}</p>
                         </div>
                       </div>
                     </div>
@@ -278,6 +292,8 @@ import Sidebar from '../components/layout/Sidebar.vue'
 import Header from '../components/layout/Header.vue'
 import { useAuthStore } from '../stores/auth'
 import { supabase } from '../supabase'
+// Agregar imports
+import { formatQuantity, getStepText } from '@/services/translations'
 
 export default {
   name: 'FavoritasView',
@@ -298,7 +314,7 @@ export default {
     const recipeIngredients = ref([])
     const isFavorite = ref(false)
     const defaultImage = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=300'
-    
+
     // Toast notification
     const showToast = ref(false)
     const toastType = ref('success')
@@ -329,7 +345,7 @@ export default {
     const loadFavorites = async () => {
       try {
         loading.value = true
-        
+
         const { data, error } = await supabase
           .from('favorites')
           .select(`
@@ -442,12 +458,12 @@ export default {
         if (error) throw error
 
         isFavorite.value = false
-        
+
         // Actualizar la lista de favoritos local
         favorites.value = favorites.value.filter(r => r.id !== selectedRecipe.value.id)
-        
+
         showNotification('success', 'Eliminado', 'Receta eliminada de favoritos')
-        
+
         // Si la receta que estamos viendo ya no está en favoritos, cerrar modal
         closeRecipeModal()
 
@@ -579,6 +595,7 @@ export default {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;

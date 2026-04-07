@@ -147,3 +147,7 @@ Sugerencias contextuales basadas en clima
 Seguimiento de hábitos de cocina
 
 Esta base de datos está diseñada para ser escalable, segura y fácil de mantener, con un enfoque en la experiencia del usuario y la gestión eficiente de recursos en el hogar.
+
+
+
+

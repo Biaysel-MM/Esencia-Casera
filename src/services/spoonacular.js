@@ -1,4 +1,4 @@
-// src/services/spoonacular.js
+// src/services/spoonacular.js - VERSIÓN COMPLETA CORREGIDA
 
 import { translateIngredient, translateTag, translateInstructions, translateTitle } from './translations'
 
@@ -59,7 +59,6 @@ const transformSpoonacularRecipe = async (recipe) => {
   })
   const ingredients = await Promise.all(ingredientsPromises)
   
-
   // Transformar tags
   const tagsPromises = (recipe.dishTypes || []).map(async tag => await translateTag(tag))
   let tags = await Promise.all(tagsPromises)
