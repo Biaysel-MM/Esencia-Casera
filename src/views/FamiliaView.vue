@@ -1,460 +1,417 @@
 <template>
-  <div class="min-h-screen bg-[#F6F9F6]" :class="{ 'max-md:overflow-hidden': isMobileMenuOpen }">
-    <!-- Sidebar - Fixed position -->
-    <Sidebar :is-mobile-open="isMobileMenuOpen" @close="closeMobileMenu" class="fixed left-0 top-0 z-1000 h-screen w-65 border-r border-[rgba(0,0,0,0.08)] bg-white transition-transform duration-300 ease-in-out max-md:w-70 max-md:-translate-x-full" :class="{ 'max-md:translate-x-0': isMobileMenuOpen }" />
+  <div class="min-h-screen bg-gray-50">
+    <Sidebar :is-mobile-open="isMobileMenuOpen" @close="closeMobileMenu" />
 
-    <!-- Main Content Area -->
-    <div class="min-h-screen bg-[#F6F9F6] transition-all duration-300 max-md:ml-0 md:ml-65">
-      <Header @toggle-mobile-menu="toggleMobileMenu" @logout="handleLogout" class="fixed left-65 right-0 top-0 z-900 h-17.5 border-b border-[rgba(0,0,0,0.08)] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.05)] transition-all duration-300 max-md:left-0 max-md:h-16" />
+    <div class="md:ml-65">
+      <Header @toggle-mobile-menu="toggleMobileMenu" @logout="handleLogout" />
 
-      <!-- Scrollable Content -->
-      <main class="min-h-[calc(100vh-70px)] overflow-y-auto bg-[#F6F9F6] pt-17.5 max-md:pt-16">
-        <div class="mx-auto w-full max-w-300 p-5 md:p-6">
-          <div class="mx-auto max-w-300">
-            <!-- Header -->
-            <div class="mb-10">
-              <div class="mb-10 flex items-center gap-4 max-md:flex-col max-md:items-start max-md:gap-3">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[rgba(93,162,113,0.2)]">
-                  <span class="iconify h-6 w-6 text-[#5DA271]" data-icon="mdi:account-group"></span>
-                </div>
-                <div>
-                  <h1 class="mb-1 text-2xl font-semibold text-[#2C2C2C]">Modo Familia</h1>
-                  <p class="text-sm text-[#6C7A6C]">Vota por tus recetas favoritas esta semana</p>
-                </div>
+      <main class="pt-17.5 p-6">
+        <div class="max-w-6xl mx-auto">
+          <!-- Header -->
+          <div class="flex justify-between items-center flex-wrap gap-4 mb-8">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+                <span class="iconify w-6 h-6 text-emerald-600" data-icon="mdi:account-group"></span>
               </div>
+              <div>
+                <h1 class="text-2xl font-semibold text-gray-900">Gestión Familiar</h1>
+                <p class="text-sm text-gray-500">Administra tu grupo familiar y las votaciones</p>
+              </div>
+            </div>
+            <button @click="openAddMemberModal"
+              class="px-5 py-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-2">
+              <span class="iconify w-5 h-5" data-icon="mdi:plus"></span>
+              Invitar miembro
+            </button>
+          </div>
 
-              <!-- Family Members -->
-              <div class="mb-8 rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-                <div class="mb-5 flex items-center justify-between max-md:flex-col max-md:items-start max-md:gap-4">
-                  <h3 class="text-lg font-semibold text-[#2C2C2C]">Miembros de la familia</h3>
-                  <button 
-                    @click="openAddMemberModal"
-                    class="flex cursor-pointer items-center gap-2 rounded-xl bg-[#5DA271] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[rgba(93,162,113,0.9)] max-md:w-full max-md:justify-center"
-                  >
-                    <span class="iconify h-4 w-4" data-icon="mdi:plus"></span>
-                    <span>Agregar</span>
-                  </button>
+          <!-- Family Members -->
+          <div class="bg-white rounded-2xl shadow-sm p-6 mb-8">
+            <h2 class="text-lg font-semibold text-gray-900 mb-5">Miembros de la familia</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div v-for="member in familyMembers" :key="member.id"
+                class="relative flex items-center gap-3 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all group">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-semibold" :class="member.color">
+                  {{ member.initials }}
                 </div>
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                  <div 
-                    v-for="member in familyMembers" 
-                    :key="member.id"
-                    class="relative flex items-center gap-3 rounded-xl bg-[rgba(168,213,186,0.2)] p-4 transition-colors hover:bg-[rgba(168,213,186,0.3)]"
-                  >
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-semibold text-white" :class="member.color">
+                <div class="flex-1">
+                  <p class="font-medium text-gray-900">{{ member.name }}</p>
+                  <p class="text-xs text-gray-400">{{ member.role === 'admin' ? 'Administrador' : 'Familiar' }}</p>
+                </div>
+                <span class="iconify w-5 h-5" :class="member.isOnline ? 'text-emerald-500' : 'text-gray-300'" 
+                      :data-icon="member.isOnline ? 'mdi:check-circle' : 'mdi:clock-outline'"></span>
+                <button v-if="member.id !== currentUserId && familyMembers.length > 1"
+                  @click="removeMember(member.id, member.name)"
+                  class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                  <span class="iconify w-3 h-3" data-icon="mdi:close"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Voting Statistics -->
+          <div class="bg-white rounded-2xl shadow-sm p-6 mb-8">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                <span class="iconify w-5 h-5 text-emerald-600" data-icon="mdi:chart-bar"></span>
+              </div>
+              <h2 class="text-lg font-semibold text-gray-900">Estadísticas de votación</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Participantes que han votado -->
+              <div class="border border-gray-200 rounded-xl p-4">
+                <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <span class="iconify w-4 h-4 text-emerald-600" data-icon="mdi:check-circle"></span>
+                  Han votado ({{ votedMembers.length }})
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  <div v-for="member in votedMembers" :key="member.id" 
+                       class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold" :class="member.color">
                       {{ member.initials }}
                     </div>
-                    <span class="flex-1 text-[15px] font-medium text-[#2C2C2C]">{{ member.name }}</span>
-                    <button
-                      v-if="familyMembers.length > 1"
-                      @click="removeMember(member.id, member.name)"
-                      class="absolute -right-2 -top-2 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-[#d4183d] text-white opacity-0 transition-opacity hover:bg-[rgba(212,24,61,0.9)] group-hover:opacity-100"
-                    >
-                      <span class="iconify h-3 w-3" data-icon="mdi:trash-can-outline"></span>
-                    </button>
+                    <span class="text-sm text-gray-700">{{ member.name }}</span>
                   </div>
                 </div>
               </div>
 
-              <!-- Voting Stats -->
-              <div class="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3">
-                <div class="flex items-center gap-4 rounded-2xl border border-[rgba(0,0,0,0.08)] bg-linear-to-br from-[rgba(93,162,113,0.2)] to-[rgba(93,162,113,0.05)] p-6 max-md:flex-col max-md:text-center">
-                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(93,162,113,0.2)]">
-                    <span class="iconify h-5 w-5 text-[#5DA271]" data-icon="mdi:trophy"></span>
-                  </div>
-                  <div>
-                    <p class="mb-1 text-sm text-[#6C7A6C]">Recetas votadas</p>
-                    <p class="text-[28px] font-semibold text-[#2C2C2C]">{{ votedRecipesCount }}</p>
-                  </div>
-                </div>
-
-                <div class="flex items-center gap-4 rounded-2xl border border-[rgba(0,0,0,0.08)] bg-linear-to-br from-[rgba(139,177,116,0.2)] to-[rgba(139,177,116,0.05)] p-6 max-md:flex-col max-md:text-center">
-                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(139,177,116,0.2)]">
-                    <span class="iconify h-5 w-5 text-[#8BB174]" data-icon="mdi:thumb-up"></span>
-                  </div>
-                  <div>
-                    <p class="mb-1 text-sm text-[#6C7A6C]">Total de votos</p>
-                    <p class="text-[28px] font-semibold text-[#2C2C2C]">{{ totalVotes }}</p>
-                  </div>
-                </div>
-
-                <div class="flex items-center gap-4 rounded-2xl border border-[rgba(0,0,0,0.08)] bg-linear-to-br from-[rgba(168,213,186,0.4)] to-[rgba(168,213,186,0.1)] p-6 max-md:flex-col max-md:text-center">
-                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(168,213,186,0.4)]">
-                    <span class="iconify h-5 w-5 text-[#2C2C2C]" data-icon="mdi:star"></span>
-                  </div>
-                  <div>
-                    <p class="mb-1 text-sm text-[#6C7A6C]">Participación</p>
-                    <p class="text-[28px] font-semibold text-[#2C2C2C]">{{ participationPercentage }}%</p>
+              <!-- Participantes que NO han votado -->
+              <div class="border border-gray-200 rounded-xl p-4">
+                <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <span class="iconify w-4 h-4 text-gray-400" data-icon="mdi:clock-outline"></span>
+                  Pendientes por votar ({{ pendingMembers.length }})
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  <div v-for="member in pendingMembers" :key="member.id" 
+                       class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold" :class="member.color">
+                      {{ member.initials }}
+                    </div>
+                    <span class="text-sm text-gray-500">{{ member.name }}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Voting Section -->
-            <div>
-              <h2 class="mb-8 text-xl font-semibold text-[#2C2C2C]">Vota por las recetas de esta semana</h2>
-              <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <div 
-                  v-for="recipe in allRecipes" 
-                  :key="recipe.id"
-                  class="overflow-hidden rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#5DA271] hover:shadow-[0_12px_24px_rgba(0,0,0,0.1)]"
-                >
-                  <div class="relative h-48 overflow-hidden">
-                    <img 
-                      :src="recipe.image" 
-                      :alt="recipe.name"
-                      class="h-full w-full object-cover"
-                      @error="handleImageError"
-                    />
-                    <div class="absolute inset-0 bg-linear-to-t from-black/50 to-transparent"></div>
-                    <div class="absolute left-4 top-4 rounded-lg bg-[#5DA271] px-3 py-1.5 text-xs font-medium text-white">{{ recipe.type }}</div>
-                    <div class="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 text-sm font-medium text-white">
-                      <span class="iconify h-4 w-4" data-icon="mdi:thumb-up"></span>
-                      <span>{{ getVoteCount(recipe.id) }}</span>
+            <!-- Detalle de votos por receta -->
+            <div class="mt-6">
+              <h3 class="text-sm font-semibold text-gray-700 mb-3">Votos por receta</h3>
+              <div class="space-y-3 max-h-80 overflow-y-auto">
+                <div v-for="recipe in recipesWithVotes" :key="recipe.id" 
+                     class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  <div class="flex items-center gap-3">
+                    <img :src="recipe.image_url || defaultImage" class="w-10 h-10 rounded-lg object-cover">
+                    <div>
+                      <p class="text-sm font-medium text-gray-900">{{ recipe.title }}</p>
+                      <div class="flex items-center gap-1 mt-1">
+                        <div v-for="voter in recipe.voters" :key="voter.id" 
+                             class="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
+                             :class="voter.color" :title="voter.name">
+                          {{ voter.initials }}
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  <div class="p-5">
-                    <h3 class="mb-5 text-lg font-semibold text-[#2C2C2C] leading-tight">{{ recipe.name }}</h3>
-
-                    <!-- Vote Progress -->
-                    <div class="mb-5">
-                      <div class="mb-2 flex items-center justify-between">
-                        <span class="text-[13px] text-[#6C7A6C]">Popularidad</span>
-                        <span class="text-sm font-semibold text-[#5DA271]">{{ getVotePercentage(recipe.id) }}%</span>
-                      </div>
-                      <div class="h-2 overflow-hidden rounded-full bg-[#D8EBD0]">
-                        <div 
-                          class="h-full rounded-full bg-[#5DA271] transition-all duration-300" 
-                          :style="{ width: getVotePercentage(recipe.id) + '%' }"
-                        ></div>
-                      </div>
-                    </div>
-
-                    <!-- Family Votes -->
-                    <div class="mb-5">
-                      <p class="mb-3 text-[13px] text-[#6C7A6C]">Votos de la familia</p>
-                      <div class="flex flex-wrap gap-2">
-                        <button
-                          v-for="member in familyMembers"
-                          :key="member.id"
-                          @click="handleVote(recipe.id, member.id)"
-                          class="cursor-pointer border-none bg-transparent p-0 transition-transform hover:scale-110"
-                          :class="{ 'scale-110': hasVoted(recipe.id, member.id) }"
-                        >
-                          <div class="flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold text-white" :class="member.color">
-                            {{ member.initials }}
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-
-                    <button
-                      @click="toggleCurrentUserVote(recipe.id)"
-                      class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-[rgba(0,0,0,0.08)] bg-transparent px-4 py-3 text-sm font-medium text-[#2C2C2C] transition-all duration-200 hover:bg-[#D8EBD0]"
-                      :class="{ 'border-[#5DA271] bg-[#5DA271] text-white hover:bg-[rgba(93,162,113,0.9)]': hasVoted(recipe.id, currentUserId) }"
-                    >
-                      <span class="iconify h-4 w-4" data-icon="mdi:thumb-up"></span>
-                      {{ hasVoted(recipe.id, currentUserId) ? 'Ya votaste' : 'Votar' }}
-                    </button>
+                  <div class="flex items-center gap-1">
+                    <span class="iconify w-4 h-4 text-emerald-600" data-icon="mdi:thumb-up"></span>
+                    <span class="font-semibold">{{ recipe.voteCount }}</span>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Family Code -->
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                <span class="iconify w-5 h-5 text-emerald-600" data-icon="mdi:qrcode"></span>
+              </div>
+              <h2 class="text-lg font-semibold text-gray-900">Código de familia</h2>
+            </div>
+            <div class="flex items-center gap-3 flex-wrap">
+              <code class="px-4 py-2 rounded-lg bg-gray-100 font-mono text-lg">{{ familyCode }}</code>
+              <button @click="copyFamilyCode" class="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 flex items-center gap-1">
+                <span class="iconify w-4 h-4" data-icon="mdi:content-copy"></span>
+                Copiar
+              </button>
+              <button @click="regenerateFamilyCode" class="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-red-500 flex items-center gap-1">
+                <span class="iconify w-4 h-4" data-icon="mdi:refresh"></span>
+                Regenerar
+              </button>
+            </div>
+            <p class="text-sm text-gray-500 mt-3">Comparte este código para que otros miembros se unan a tu familia</p>
           </div>
         </div>
       </main>
     </div>
 
     <!-- Add Member Modal -->
-    <div v-if="showAddMemberModal" class="fixed inset-0 z-2000 flex items-center justify-center bg-black/50 p-5 backdrop-blur-sm" @click="closeAddMemberModal">
-      <div class="w-full max-w-125 overflow-hidden rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white shadow-2xl" @click.stop>
-        <div class="relative border-b border-[rgba(0,0,0,0.08)] p-6">
-          <h3 class="mb-1 text-xl font-semibold text-[#2C2C2C]">Agregar miembro de la familia</h3>
-          <p class="text-sm text-[#6C7A6C]">Ingresa el nombre del nuevo miembro de la familia</p>
-          <button @click="closeAddMemberModal" class="absolute right-6 top-6 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-[#6C7A6C] transition-colors hover:bg-[#D8EBD0]">
-            <span class="iconify h-5 w-5" data-icon="mdi:close"></span>
+    <div v-if="showAddMemberModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" @click="closeAddMemberModal">
+      <div class="bg-white rounded-2xl max-w-md w-full" @click.stop>
+        <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+          <h3 class="text-lg font-semibold text-gray-900">Invitar miembro</h3>
+          <button @click="closeAddMemberModal" class="text-gray-400 hover:text-gray-600">
+            <span class="iconify w-5 h-5" data-icon="mdi:close"></span>
           </button>
         </div>
-        
-        <div class="p-6">
-          <div class="mb-6">
-            <label class="mb-2 block text-sm text-[#2C2C2C]">Nombre</label>
-            <input
-              type="text"
-              v-model="newMemberName"
-              placeholder="Ej: Ana García"
-              class="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-4 py-3.5 text-[15px] text-[#2C2C2C] transition-all duration-200 placeholder:text-[#6C7A6C] focus:border-[#5DA271] focus:outline-none focus:ring-3 focus:ring-[rgba(93,162,113,0.2)]"
-              @keyup.enter="addFamilyMember"
-              ref="memberInput"
-            />
-          </div>
-          
-          <div class="flex gap-3 max-md:flex-col">
-            <button @click="closeAddMemberModal" class="flex-1 cursor-pointer rounded-xl border border-[rgba(0,0,0,0.08)] bg-transparent px-4 py-3.5 text-sm font-medium text-[#2C2C2C] transition-colors hover:bg-[#D8EBD0]">
-              Cancelar
-            </button>
-            <button @click="addFamilyMember" class="flex-1 cursor-pointer rounded-xl bg-[#5DA271] px-4 py-3.5 text-sm font-medium text-white transition-colors hover:bg-[rgba(93,162,113,0.9)]">
-              Agregar
-            </button>
+        <div class="p-5">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email del usuario</label>
+          <input v-model="memberEmail" type="email" placeholder="correo@ejemplo.com"
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100">
+          <div class="flex gap-3 mt-5">
+            <button @click="closeAddMemberModal" class="flex-1 py-3 rounded-xl border border-gray-200">Cancelar</button>
+            <button @click="addFamilyMember" class="flex-1 py-3 rounded-xl bg-emerald-600 text-white">Enviar invitación</button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Toast -->
+    <div v-if="showToast" class="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-2">
+      <span class="iconify w-5 h-5" :data-icon="toastIcon"></span>
+      <span>{{ toastMessage }}</span>
+    </div>
   </div>
 </template>
 
-<script>
-import { ref, computed, onMounted, nextTick } from 'vue'
+<script setup>
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import Sidebar from '../components/layout/Sidebar.vue'
-import Header from '../components/layout/Header.vue'
+import { supabase } from '@/supabase'
+import { useAuthStore } from '@/stores/auth'
+import Sidebar from '@/components/layout/Sidebar.vue'
+import Header from '@/components/layout/Header.vue'
 
-export default {
-  name: 'FamiliaView',
-  components: {
-    Sidebar,
-    Header
-  },
-  setup() {
-    const router = useRouter()
-    
-    // Layout state
-    const isMobileMenuOpen = ref(false)
-    
-    // Modal state
-    const showAddMemberModal = ref(false)
-    const newMemberName = ref('')
-    const memberInput = ref(null)
-    
-    // Current user ID (simulado - en una app real vendría del store de auth)
-    const currentUserId = ref('1') // María
-    
-    // Colors for avatars
-    const colors = [
-      'bg-[#5DA271]', 
-      'bg-[#8BB174]', 
-      'bg-[#A8D5BA] text-[#2C2C2C]', 
-      'bg-[#d4183d]', 
-      'bg-[#D8EBD0] text-[#2C2C2C]'
-    ]
-    
-    // State for votes
-    const votes = ref({})
-    
-    // Family members data
-    const familyMembers = ref([
-      {
-        id: '1',
-        name: 'María',
-        initials: 'MA',
-        color: 'bg-[#5DA271]'
-      },
-      {
-        id: '2',
-        name: 'Juan',
-        initials: 'JU',
-        color: 'bg-[#8BB174]'
-      },
-      {
-        id: '3',
-        name: 'Ana',
-        initials: 'AN',
-        color: 'bg-[#A8D5BA] text-[#2C2C2C]'
+const router = useRouter()
+const authStore = useAuthStore()
+
+// Layout
+const isMobileMenuOpen = ref(false)
+const showAddMemberModal = ref(false)
+const memberEmail = ref('')
+const familyMembers = ref([])
+const familyCode = ref('')
+const currentUserId = ref(null)
+const votesData = ref({})
+const allRecipes = ref([])
+const defaultImage = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop'
+
+// Colors
+const colors = ['bg-emerald-600', 'bg-emerald-500', 'bg-teal-600', 'bg-green-600', 'bg-emerald-700', 'bg-teal-500']
+
+// Toast
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastIcon = ref('mdi:check-circle')
+const showNotification = (msg, icon = 'mdi:check-circle') => {
+  toastMessage.value = msg
+  toastIcon.value = icon
+  showToast.value = true
+  setTimeout(() => showToast.value = false, 3000)
+}
+
+// Computed
+const getWeekStart = () => {
+  const today = new Date()
+  const day = today.getDay()
+  const diff = today.getDate() - day + (day === 0 ? -6 : 1)
+  return new Date(today.setDate(diff)).toISOString().split('T')[0]
+}
+
+const votedMembers = computed(() => familyMembers.value.filter(m => m.hasVoted))
+const pendingMembers = computed(() => familyMembers.value.filter(m => !m.hasVoted))
+
+const recipesWithVotes = computed(() => {
+  return allRecipes.value.map(recipe => ({
+    ...recipe,
+    voteCount: votesData.value[recipe.id]?.length || 0,
+    voters: getVotersForRecipe(recipe.id)
+  })).filter(r => r.voteCount > 0).sort((a, b) => b.voteCount - a.voteCount)
+})
+
+const getVotersForRecipe = (recipeId) => {
+  const voterIds = votesData.value[recipeId] || []
+  return familyMembers.value
+    .filter(m => voterIds.includes(m.id))
+    .map(m => ({ id: m.id, name: m.name, initials: m.initials, color: m.color }))
+}
+
+// Load data
+const loadFamilyData = async () => {
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('family_code, full_name')
+      .eq('id', authStore.user?.id)
+      .single()
+
+    if (error) throw error
+
+    currentUserId.value = authStore.user?.id
+    familyCode.value = profile.family_code || ''
+
+    if (familyCode.value) {
+      const { data: members } = await supabase
+        .from('profiles')
+        .select('id, full_name, role')
+        .eq('family_code', familyCode.value)
+
+      if (members) {
+        familyMembers.value = members.map((m, idx) => ({
+          id: m.id,
+          name: m.full_name,
+          initials: m.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U',
+          role: m.role,
+          color: colors[idx % colors.length],
+          isOnline: true,
+          hasVoted: false,
+          votesCount: 0
+        }))
       }
-    ])
-    
-    // Recipes data
-    const allRecipes = ref([
-      {
-        id: '1',
-        name: 'Bowl de Avena con Frutas',
-        type: 'Desayuno',
-        image: 'https://images.unsplash.com/photo-1592503469196-3a7880cc2d05?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=300'
-      },
-      {
-        id: '2',
-        name: 'Ensalada de Pollo a la Parrilla',
-        type: 'Almuerzo',
-        image: 'https://images.unsplash.com/photo-1604909052743-94e838986d24?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=300'
-      },
-      {
-        id: '3',
-        name: 'Pasta Primavera',
-        type: 'Cena',
-        image: 'https://images.unsplash.com/photo-1704915912471-070dd75619c9?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=300'
-      },
-      {
-        id: '4',
-        name: 'Smoothie Energético',
-        type: 'Desayuno',
-        image: 'https://images.unsplash.com/photo-1577450680941-2011043c55f8?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=300'
-      },
-      {
-        id: '5',
-        name: 'Sopa de Verduras',
-        type: 'Almuerzo',
-        image: 'https://images.unsplash.com/photo-1643786661490-966f1877effa?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=300'
-      },
-      {
-        id: '6',
-        name: 'Tacos Mexicanos',
-        type: 'Cena',
-        image: 'https://images.unsplash.com/photo-1615818449536-f26c1e1fe0f0?crop=entropy&cs=tinysrgb&fit=crop&w=400&h=300'
-      }
-    ])
-    
-    // Computed properties
-    const votedRecipesCount = computed(() => {
-      return Object.keys(votes.value).length
-    })
-    
-    const totalVotes = computed(() => {
-      return Object.values(votes.value).reduce((acc, recipeVotes) => acc + recipeVotes.length, 0)
-    })
-    
-    const participationPercentage = computed(() => {
-      const totalPossibleVotes = allRecipes.value.length * familyMembers.value.length
-      if (totalPossibleVotes === 0) return 0
-      return Math.round((totalVotes.value / totalPossibleVotes) * 100)
-    })
-    
-    // Methods
-    const getVoteCount = (recipeId) => {
-      return votes.value[recipeId]?.length || 0
+    } else {
+      const newCode = Math.random().toString(36).substring(2, 10).toUpperCase()
+      await supabase
+        .from('profiles')
+        .update({ family_code: newCode })
+        .eq('id', authStore.user?.id)
+
+      familyCode.value = newCode
+      familyMembers.value = [{
+        id: authStore.user?.id,
+        name: profile.full_name,
+        initials: profile.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U',
+        role: 'admin',
+        color: colors[0],
+        isOnline: true,
+        hasVoted: false,
+        votesCount: 0
+      }]
     }
-    
-    const getVotePercentage = (recipeId) => {
-      const count = getVoteCount(recipeId)
-      if (familyMembers.value.length === 0) return 0
-      return Math.round((count / familyMembers.value.length) * 100)
-    }
-    
-    const hasVoted = (recipeId, memberId) => {
-      return votes.value[recipeId]?.includes(memberId) || false
-    }
-    
-    const handleVote = (recipeId, memberId) => {
-      const currentVotes = votes.value[recipeId] || []
-      
-      if (currentVotes.includes(memberId)) {
-        // Remove vote
-        votes.value[recipeId] = currentVotes.filter(id => id !== memberId)
-      } else {
-        // Add vote
-        votes.value[recipeId] = [...currentVotes, memberId]
-      }
-      
-      // Force reactivity
-      votes.value = { ...votes.value }
-    }
-    
-    const toggleCurrentUserVote = (recipeId) => {
-      handleVote(recipeId, currentUserId.value)
-    }
-    
-    const openAddMemberModal = () => {
-      showAddMemberModal.value = true
-      newMemberName.value = ''
-      nextTick(() => {
-        if (memberInput.value) {
-          memberInput.value.focus()
-        }
+
+    // Cargar recetas
+    const { data: recipes } = await supabase
+      .from('recipes')
+      .select('id, title, image_url')
+      .eq('is_public', true)
+      .limit(20)
+    allRecipes.value = recipes || []
+
+    // Cargar votos
+    const weekStart = getWeekStart()
+    const { data: votes } = await supabase
+      .from('family_votes')
+      .select('recipe_id, votes')
+      .eq('week_start', weekStart)
+
+    if (votes) {
+      const votesMap = {}
+      votes.forEach(v => {
+        votesMap[v.recipe_id] = v.votes || []
       })
+      votesData.value = votesMap
     }
-    
-    const closeAddMemberModal = () => {
-      showAddMemberModal.value = false
-      newMemberName.value = ''
-    }
-    
-    const addFamilyMember = () => {
-      const name = newMemberName.value.trim()
-      if (!name) return
-      
-      const initials = name.split(' ')
-        .map(n => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-      
-      const colorIndex = familyMembers.value.length % colors.length
-      const color = colors[colorIndex]
-      
-      const newMember = {
-        id: Date.now().toString(),
-        name: name,
-        initials,
-        color
-      }
-      
-      familyMembers.value.push(newMember)
-      closeAddMemberModal()
-      
-      alert(`✅ ${name} agregado a la familia`)
-    }
-    
-    const removeMember = (id, name) => {
-      if (familyMembers.value.length <= 1) return
-      
-      if (confirm(`¿Estás seguro de que quieres eliminar a ${name} de la familia?`)) {
-        familyMembers.value = familyMembers.value.filter(member => member.id !== id)
-        
-        // Also remove their votes
-        Object.keys(votes.value).forEach(recipeId => {
-          votes.value[recipeId] = votes.value[recipeId].filter(memberId => memberId !== id)
-        })
-        
-        // Force reactivity
-        votes.value = { ...votes.value }
-        
-        alert(`${name} eliminado de la familia`)
-      }
-    }
-    
-    const handleImageError = (event) => {
-      event.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZjFmNWYxIi8+CjxwYXRoIGQ9Ik0xMDAgN0g1MFY1MEgxMDBWN0oiIGZpbGw9IiNlMWU4ZTAiLz4KPHBhdGggZD0iTTM1MCAyNTBIMzAwVjIwMEgzNTBWMjUwWiIgZmlsbD0iI2UxZThlMCIvPgo8cGF0aCBkPSJNMTUwIDEwMEgxMDBWNTBIMTUwVjEwMFoiIGZpbGw9IiNlMWU4ZTAiLz4KPHBhdGggZD0iTTIwMCAxNTBIMTUwVjEwMEgyMDBWMTUwWiIgZmlsbD0iI2UxZThlMCIvPgo8L3N2Zz4='
-    }
-    
-    // Layout functions
-    const toggleMobileMenu = () => {
-      isMobileMenuOpen.value = !isMobileMenuOpen.value
-    }
-    
-    const closeMobileMenu = () => {
-      isMobileMenuOpen.value = false
-    }
-    
-    const handleLogout = async () => {
-      console.log('Logout')
-      router.push('/login')
-    }
-    
-    return {
-      isMobileMenuOpen,
-      showAddMemberModal,
-      newMemberName,
-      memberInput,
-      currentUserId,
-      familyMembers,
-      allRecipes,
-      votedRecipesCount,
-      totalVotes,
-      participationPercentage,
-      getVoteCount,
-      getVotePercentage,
-      hasVoted,
-      handleVote,
-      toggleCurrentUserVote,
-      openAddMemberModal,
-      closeAddMemberModal,
-      addFamilyMember,
-      removeMember,
-      handleImageError,
-      toggleMobileMenu,
-      closeMobileMenu,
-      handleLogout
-    }
+
+    // Actualizar estado de votación de miembros
+    familyMembers.value = familyMembers.value.map(member => {
+      let votesCount = 0
+      Object.values(votesData.value).forEach(recipeVotes => {
+        if (recipeVotes.includes(member.id)) votesCount++
+      })
+      return { ...member, hasVoted: votesCount > 0, votesCount }
+    })
+
+  } catch (error) {
+    console.error('Error cargando familia:', error)
+    showNotification('Error al cargar datos', 'mdi:alert-circle')
   }
 }
+
+// Add family member
+const addFamilyMember = async () => {
+  if (!memberEmail.value) return
+
+  try {
+    const { data: user, error } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', memberEmail.value)
+      .single()
+
+    if (error || !user) {
+      showNotification('Usuario no encontrado', 'mdi:alert-circle')
+      return
+    }
+
+    await supabase
+      .from('profiles')
+      .update({ family_code: familyCode.value })
+      .eq('id', user.id)
+
+    await loadFamilyData()
+    closeAddMemberModal()
+    showNotification('Miembro invitado exitosamente')
+  } catch (error) {
+    showNotification('Error al invitar miembro', 'mdi:alert-circle')
+  }
+}
+
+// Remove member
+const removeMember = async (memberId, memberName) => {
+  if (!confirm(`¿Eliminar a ${memberName} de la familia?`)) return
+
+  try {
+    await supabase
+      .from('profiles')
+      .update({ family_code: null })
+      .eq('id', memberId)
+
+    await loadFamilyData()
+    showNotification(`${memberName} ha sido eliminado`)
+  } catch (error) {
+    showNotification('Error al eliminar miembro', 'mdi:alert-circle')
+  }
+}
+
+// Copy family code
+const copyFamilyCode = () => {
+  navigator.clipboard.writeText(familyCode.value)
+  showNotification('Código copiado al portapapeles')
+}
+
+// Regenerate family code
+const regenerateFamilyCode = async () => {
+  if (!confirm('¿Cambiar el código de familia? Los miembros actuales seguirán en el grupo.')) return
+
+  const newCode = Math.random().toString(36).substring(2, 10).toUpperCase()
+  
+  try {
+    await supabase
+      .from('profiles')
+      .update({ family_code: newCode })
+      .eq('family_code', familyCode.value)
+
+    familyCode.value = newCode
+    showNotification('Código regenerado')
+  } catch (error) {
+    showNotification('Error al regenerar código', 'mdi:alert-circle')
+  }
+}
+
+// Modal
+const openAddMemberModal = () => {
+  memberEmail.value = ''
+  showAddMemberModal.value = true
+}
+const closeAddMemberModal = () => { showAddMemberModal.value = false }
+
+// Layout
+const toggleMobileMenu = () => { isMobileMenuOpen.value = !isMobileMenuOpen.value }
+const closeMobileMenu = () => { isMobileMenuOpen.value = false }
+const handleLogout = async () => { await authStore.logout(); router.push('/login') }
+
+onMounted(() => {
+  if (authStore.isAuthenticated) loadFamilyData()
+})
 </script>
