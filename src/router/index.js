@@ -65,6 +65,17 @@ const routes = [
     name: 'familiar dashboard',
     component: () => import('@/views/FamiliarDashboardView.vue'),
     meta: { requiresAuth: true, requiresFamily: true }
+  }, {
+    path: '/crear-receta',
+    name: 'crear-receta',
+    component: () => import('@/views/CrearRecetaView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/receta/:id',
+    name: 'ver-receta',
+    component: () => import('@/views/VerRecetaView.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/:pathMatch(.*)*',
@@ -82,21 +93,21 @@ const router = createRouter({
 // Guardia de navegación con roles
 router.beforeEach(async (to, from, next) => {
   console.log(`🛡️ Navegando a: ${to.name}`)
-  
+
   const authStore = useAuthStore()
-  
+
   // Si no hemos inicializado la autenticación, hazlo
   if (!authStore.user && !authStore.isLoading) {
     await authStore.initAuth()
   }
-  
+
   // Verificar si la ruta requiere autenticación
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     console.log('❌ No autenticado, redirigiendo a login')
     next('/login')
     return
   }
-  
+
   // Verificar si está autenticado y trata de ir a login/register
   if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
     console.log('✅ Ya autenticado, redirigiendo según rol')
@@ -107,7 +118,7 @@ router.beforeEach(async (to, from, next) => {
     }
     return
   }
-  
+
   // Verificar permisos de admin
   if (to.meta.requiresAdmin && authStore.userRole !== 'admin') {
     console.log('❌ Acceso denegado: Se requiere rol de admin')
@@ -115,7 +126,7 @@ router.beforeEach(async (to, from, next) => {
     next('/familiar-dashboard')
     return
   }
-  
+
   // Verificar permisos de familiar (si se especifica)
   if (to.meta.requiresFamily && authStore.userRole !== 'familiar') {
     console.log('❌ Acceso denegado: Se requiere rol de familiar')
@@ -123,7 +134,7 @@ router.beforeEach(async (to, from, next) => {
     next('/home')
     return
   }
-  
+
   // Todo bien, permite la navegación
   console.log('✅ Navegación permitida')
   next()
