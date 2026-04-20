@@ -101,7 +101,8 @@
 
                 <!-- Previsualización - VERSIÓN CORREGIDA -->
                 <div v-if="form.image_preview" class="mt-3">
-                  <img :src="form.image_preview" class="w-full h-48 object-cover rounded-xl border">
+                  <img :src="form.image_preview" class="w-full h-48 object-cover rounded-xl border" @load="onImageLoad"
+                    @error="onImageError" />
                   <div class="flex gap-2 mt-2">
                     <button type="button" @click="regenerateImage" class="text-blue-500 text-sm hover:text-blue-700">
                       🔄 Regenerar
@@ -317,7 +318,8 @@ export default {
         youtube_embed_id: null,
         youtube_preview: false,
         additional_notes: '',
-        utensils_needed: []
+        utensils_needed: [],
+        loadingImage: false
       }
     }
   },
@@ -338,14 +340,17 @@ export default {
       this.showToast = true
       setTimeout(() => this.showToast = false, 3000)
     },
-    clearImage() {
-      this.form.image_url = '';
-      this.form.image_preview = null;
+    onImageLoad() {
+      console.log('✅ Imagen cargada correctamente');
+      this.toast('✅ Imagen lista');
     },
-    handleImageError(event) {
-      // Solo cambia la fuente de la imagen para la vista previa, NO la URL guardada
-      event.target.src = this.defaultImage;
-      this.toast('⚠️ La imagen no pudo cargarse, pero la URL se guardó correctamente');
+
+    onImageError() {
+      console.error('❌ Error cargando la imagen');
+      this.toast('❌ No se pudo cargar la imagen');
+
+      // opcional: limpiar preview
+      this.form.image_preview = null;
     },
     async loadRecipe() {
       this.recipeId = this.$route.params.id
@@ -416,18 +421,6 @@ export default {
         this.loading = false
       }
     },
-    async regenerateImage() {
-      // Agregar un seed diferente para obtener una imagen distinta
-      const newSeed = Date.now()
-      if (this.form.image_url && this.form.image_url.includes('pollinations.ai')) {
-        const newUrl = this.form.image_url.replace(/seed=\d+/, `seed=${newSeed}`)
-        this.form.image_preview = newUrl
-        this.form.image_url = newUrl
-        this.toast('🔄 Imagen regenerada')
-      } else {
-        this.generateImageWithAI()
-      }
-    },
     // Función auxiliar para esperar (delay)
     delay(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
@@ -443,42 +436,19 @@ export default {
         this.toast('⚠️ La imagen no pudo cargarse, pero la URL se guardó correctamente');
       }
     },
-    // Reemplaza el método generateImageWithAI con este:
     async generateImageWithAI() {
-      try {
-        this.toast('🎨 Generando imagen con IA...');
-
-        if (!this.form.title) {
-          this.toast('❌ Escribe el título primero');
-          return;
-        }
-
-        // Generar un seed único
-        const seed = Date.now();
-        const prompt = `${this.form.title} comida dominicana plato tradicional`;
-        const encodedPrompt = encodeURIComponent(prompt);
-
-        // URL ORIGINAL (se guarda en la base de datos)
-        const originalUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=768&nologo=true&seed=${seed}`;
-
-        // URL con PROXY (solo para previsualización)
-        // const proxiedUrl = `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`;
-        const proxiedUrl = originalUrl;
-        console.log('📸 URL de imagen generada:', originalUrl);
-        // Guardar la URL original en el campo image_url
-        this.form.image_url = originalUrl;
-
-        // Usar la URL con proxy para la previsualización
-        this.form.image_preview = proxiedUrl;
-
-        this.toast('✅ Imagen generada correctamente');
-
-      } catch (error) {
-        console.error('Error:', error);
-        this.toast('❌ Error al generar imagen');
+      if (!this.form.title) {
+        this.toast('❌ Escribe el título primero');
+        return;
       }
-    },
 
+      const seed = encodeURIComponent(this.form.title) + Date.now();
+      const imageUrl = `https://picsum.photos/seed/${seed}/800/600`;
+
+      this.form.image_url = imageUrl;
+      this.form.image_preview = imageUrl;
+      this.toast('✅ Imagen generada');
+    },
     // Modifica el método handleImageError para que maneje mejor los errores:
     handleImageError(event) {
       console.warn('Error cargando imagen de previsualización');
