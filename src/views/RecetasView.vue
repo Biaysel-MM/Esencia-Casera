@@ -227,7 +227,7 @@ const debouncedSearch = () => {
 }
 
 const goToRecipeDetail = (id) => {
-  router.push(`/receta/${id}`)
+  router.push(`/recetas/${id}`)  // ✅ CORRECTO (con S)
 }
 
 const goToCreateRecipe = () => {

@@ -68,23 +68,6 @@
             </button>
           </p>
         </div>
-
-        <!-- Demo Credentials Card -->
-        <div class="mt-6 rounded-xl bg-[rgba(93,162,113,0.05)] p-4 border border-[rgba(93,162,113,0.2)]">
-          <p class="mb-3 text-center text-xs font-semibold uppercase tracking-wide text-[#6C7A6C]">Cuentas de demostración</p>
-          <div class="grid gap-2 text-xs">
-            <div class="rounded-lg bg-[rgba(93,162,113,0.1)] p-2.5">
-              <p class="font-semibold text-[#5DA271]">Administrador</p>
-              <p class="text-[#2C2C2C]">jose@gmail.com</p>
-              <p class="text-[#6C7A6C]">12345678</p>
-            </div>
-            <div class="rounded-lg bg-[rgba(139,177,116,0.1)] p-2.5">
-              <p class="font-semibold text-[#8BB174]">Familiar</p>
-              <p class="text-[#2C2C2C]">maria@gmail.com</p>
-              <p class="text-[#6C7A6C]">12345678</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>

@@ -8,7 +8,13 @@
 
       <main class="pt-17.5 p-6">
         <!-- Botón volver atrás -->
-        <div class="max-w-6xl mx-auto my-4 px-5 flex justify-end">
+        <div class="max-w-6xl mx-auto my-4 px-5 flex justify-end gap-4">
+          <!-- Botón Editar (solo para el creador o admin) -->
+          <button v-if="canEdit" @click="goToEdit"
+            class="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-white bg-[#4A8B5C] hover:bg-[#3D734D]">
+            <Icon icon="mdi:pencil" class="text-xl" />
+            <span>Editar</span>
+          </button>
           <button @click="$router.back()"
             class="flex items-center gap-2 transition-colors bg-[#4A8B5C] text-white px-4 py-2 rounded-lg hover:bg-[#3D734D]">
             <Icon icon="mdi:arrow-left" class="text-xl" />
@@ -44,17 +50,17 @@
             <!-- Contenido -->
             <div class="p-6 md:p-8">
               <!-- Título y autor -->
-              <div class="flex justify-between items-start flex-wrap gap-4">
-                <div>
-                  <h1 class="text-3xl md:text-4xl font-bold mb-2 text-[#1E2A1E]">{{ receta.title }}</h1>
-                  <p class="text-lg text-[#5A6E5A]">{{ receta.description }}</p>
-                </div>
-                <div class="flex items-center gap-3 p-3 rounded-xl bg-[#E8F0E5]">
-                  <img :src="receta.author_avatar || defaultAvatar" class="w-12 h-12 rounded-full object-cover"
+              <div>
+                <h1 class="text-3xl md:text-4xl font-bold mb-2 text-[#1E2A1E]">{{ receta.title }}</h1>
+                <p class="text-lg text-[#5A6E5A] mb-4">{{ receta.description }}</p>
+
+                <!-- Tarjeta del autor (Nuevo diseño) -->
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-[#E8F0E5] w-fit">
+                  <img :src="receta.author_avatar || defaultAvatar" class="w-12 h-12 rounded-full object-cover ring-2 ring-white"
                     @error="handleAvatarError">
                   <div>
-                    <p class="font-semibold text-[#1E2A1E]">{{ receta.author_name ||
-                      authStore.userName || 'Chef Comunidad' }}</p>
+                    <p class="text-xs text-[#5A6E5A] uppercase tracking-wide">Creado por</p>
+                    <p class="font-semibold text-[#1E2A1E]">{{ receta.author_name || authStore.userName || 'Chef Comunidad' }}</p>
                   </div>
                 </div>
               </div>
@@ -84,7 +90,7 @@
 
               <!-- Tags -->
               <div class="flex flex-wrap gap-2 mt-6">
-                <span v-for="tag in receta.tags" :key="tag" 
+                <span v-for="tag in receta.tags" :key="tag"
                   class="px-3 py-1 rounded-full text-sm bg-[#C5E0B4] text-[#1E2A1E]">
                   #{{ tag }}
                 </span>
@@ -122,7 +128,8 @@
                   </h2>
                   <div class="space-y-6">
                     <div v-for="(step, idx) in receta.steps" :key="idx" class="flex gap-4">
-                      <div class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-white bg-[#4A8B5C]">
+                      <div
+                        class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-white bg-[#4A8B5C]">
                         {{ step.step_number || idx + 1 }}
                       </div>
                       <div class="flex-1">
@@ -194,12 +201,11 @@
                   <textarea v-model="newCommentText" placeholder="Escribe tu comentario..." rows="3"
                     class="w-full p-3 rounded-lg border border-[#E2E8E2] focus:outline-none focus:ring-2 focus:ring-[#4A8B5C] resize-none bg-white text-[#1E2A1E]"></textarea>
                   <div class="flex justify-end gap-2 mt-3">
-                    <button @click="showCommentForm = false" 
+                    <button @click="showCommentForm = false"
                       class="px-4 py-2 rounded-lg border border-[#E2E8E2] bg-transparent text-[#1E2A1E] transition-colors">
                       Cancelar
                     </button>
-                    <button @click="addComment" 
-                      class="px-4 py-2 rounded-lg text-white transition-colors bg-[#4A8B5C]">
+                    <button @click="addComment" class="px-4 py-2 rounded-lg text-white transition-colors bg-[#4A8B5C]">
                       Publicar
                     </button>
                   </div>
@@ -318,6 +324,11 @@ export default {
   computed: {
     authStore() {
       return useAuthStore()
+    },
+    canEdit() {
+      if (!this.receta) return false
+      // El creador o admin pueden editar
+      return this.receta.created_by === this.authStore.user?.id || this.authStore.userRole === 'admin'
     }
   },
   methods: {
@@ -329,6 +340,9 @@ export default {
     getCategoryLabel(cat) {
       const labels = { desayuno: 'Desayuno', almuerzo: 'Almuerzo', cena: 'Cena', postre: 'Postre', snack: 'Snack' }
       return labels[cat] || cat
+    },
+    goToEdit() {
+      this.$router.push(`/recetas/editar/${this.receta.id}`)
     },
     formatDate(dateString) {
       const date = new Date(dateString)

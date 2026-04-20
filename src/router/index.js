@@ -40,7 +40,25 @@ const routes = [
     path: '/recetas',
     name: 'recetas',
     component: () => import('@/views/RecetasView.vue'),
-    meta: { requiresAuth: true, requiresAdmin: true }
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/recetas/:id',  // CAMBIADO: antes era '/receta/:id'
+    name: 'ver-receta',
+    component: () => import('@/views/VerRecetaView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/recetas/crear',  // CAMBIADO: antes era '/crear-receta'
+    name: 'crear-receta',
+    component: () => import('@/views/CrearRecetaView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/recetas/editar/:id',  // NUEVA RUTA PARA EDITAR
+    name: 'editar-receta',
+    component: () => import('@/views/EditarRecetaView.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/favoritas',
@@ -65,17 +83,6 @@ const routes = [
     name: 'familiar dashboard',
     component: () => import('@/views/FamiliarDashboardView.vue'),
     meta: { requiresAuth: true, requiresFamily: true }
-  }, {
-    path: '/crear-receta',
-    name: 'crear-receta',
-    component: () => import('@/views/CrearRecetaView.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/receta/:id',
-    name: 'ver-receta',
-    component: () => import('@/views/VerRecetaView.vue'),
-    meta: { requiresAuth: true }
   },
   {
     path: '/:pathMatch(.*)*',

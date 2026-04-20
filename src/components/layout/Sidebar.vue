@@ -40,10 +40,10 @@
         <li class="mb-1">
           <router-link :to="userRole === 'admin' ? '/home' : '/familiar-dashboard'"
             class="relative flex items-center gap-3 px-5 py-3.5 text-[#2C2C2C] no-underline transition-all duration-200 hover:bg-[#D8EBD0]"
-            :class="{ 'bg-linear-to-r from-[rgba(93,162,113,0.1)] to-[rgba(93,162,113,0.05)] text-[#5DA271] border-r-3 border-r-[#5DA271]': $route.path === (userRole === 'admin' ? '/home' : '/familiar-dashboard') }"
+            :class="isActive(userRole === 'admin' ? '/home' : '/familiar-dashboard')"
             @click="closeSidebarOnMobile">
             <span class="iconify w-6 text-center text-[22px] text-[#6C7A6C]"
-              :class="{ 'text-[#5DA271]': $route.path === (userRole === 'admin' ? '/home' : '/familiar-dashboard') }"
+              :class="{ 'text-[#5DA271]': isActivePath(userRole === 'admin' ? '/home' : '/familiar-dashboard') }"
               data-icon="mdi:home"></span>
             <span class="flex-1 text-sm font-medium">Inicio</span>
           </router-link>
@@ -53,10 +53,10 @@
         <li v-if="userRole === 'admin'" class="mb-1">
           <router-link to="/planificador"
             class="relative flex items-center gap-3 px-5 py-3.5 text-[#2C2C2C] no-underline transition-all duration-200 hover:bg-[#D8EBD0]"
-            :class="{ 'bg-linear-to-r from-[rgba(93,162,113,0.1)] to-[rgba(93,162,113,0.05)] text-[#5DA271] border-r-3 border-r-[#5DA271]': $route.path === '/planificador' }"
+            :class="isActive('/planificador')"
             @click="closeSidebarOnMobile">
             <span class="iconify w-6 text-center text-[22px] text-[#6C7A6C]"
-              :class="{ 'text-[#5DA271]': $route.path === '/planificador' }" data-icon="mdi:calendar"></span>
+              :class="{ 'text-[#5DA271]': isActivePath('/planificador') }" data-icon="mdi:calendar"></span>
             <span class="flex-1 text-sm font-medium">Planificador</span>
           </router-link>
         </li>
@@ -64,24 +64,22 @@
         <li v-if="userRole === 'admin'" class="mb-1">
           <router-link to="/lista-compras"
             class="relative flex items-center gap-3 px-5 py-3.5 text-[#2C2C2C] no-underline transition-all duration-200 hover:bg-[#D8EBD0]"
-            :class="{ 'bg-linear-to-r from-[rgba(93,162,113,0.1)] to-[rgba(93,162,113,0.05)] text-[#5DA271] border-r-3 border-r-[#5DA271]': $route.path === '/lista-compras' }"
+            :class="isActive('/lista-compras')"
             @click="closeSidebarOnMobile">
             <span class="iconify w-6 text-center text-[22px] text-[#6C7A6C]"
-              :class="{ 'text-[#5DA271]': $route.path === '/lista-compras' }" data-icon="mdi:cart"></span>
+              :class="{ 'text-[#5DA271]': isActivePath('/lista-compras') }" data-icon="mdi:cart"></span>
             <span class="flex-1 text-sm font-medium">Lista de Compras</span>
           </router-link>
         </li>
 
-        <li v-if="userRole === 'admin'" class="mb-1">
+        <!-- Para ambos roles -->
+        <li class="mb-1">
           <router-link to="/recetas"
             class="relative flex items-center gap-3 px-5 py-3.5 text-[#2C2C2C] no-underline transition-all duration-200 hover:bg-[#D8EBD0]"
-            :class="{
-              'bg-linear-to-r from-[rgba(93,162,113,0.1)] to-[rgba(93,162,113,0.05)] text-[#5DA271] border-r-3 border-r-[#5DA271]':
-                $route.path === '/recetas' || $route.path.startsWith('/receta/') || $route.path === '/crear-receta'
-            }" @click="closeSidebarOnMobile">
+            :class="isActive('/recetas', true)"
+            @click="closeSidebarOnMobile">
             <span class="iconify w-6 text-center text-[22px] text-[#6C7A6C]"
-              :class="{ 'text-[#5DA271]': $route.path === '/recetas' || $route.path.startsWith('/receta/') || $route.path === '/crear-receta' }"
-              data-icon="mdi:book-open"></span>
+              :class="{ 'text-[#5DA271]': isActivePath('/recetas', true) }" data-icon="mdi:book-open"></span>
             <span class="flex-1 text-sm font-medium">Recetas</span>
           </router-link>
         </li>
@@ -90,10 +88,10 @@
         <li class="mb-1">
           <router-link to="/favoritas"
             class="relative flex items-center gap-3 px-5 py-3.5 text-[#2C2C2C] no-underline transition-all duration-200 hover:bg-[#D8EBD0]"
-            :class="{ 'bg-linear-to-r from-[rgba(93,162,113,0.1)] to-[rgba(93,162,113,0.05)] text-[#5DA271] border-r-3 border-r-[#5DA271]': $route.path === '/favoritas' }"
+            :class="isActive('/favoritas')"
             @click="closeSidebarOnMobile">
             <span class="iconify w-6 text-center text-[22px] text-[#6C7A6C]"
-              :class="{ 'text-[#5DA271]': $route.path === '/favoritas' }" data-icon="mdi:heart"></span>
+              :class="{ 'text-[#5DA271]': isActivePath('/favoritas') }" data-icon="mdi:heart"></span>
             <span class="flex-1 text-sm font-medium">Favoritas</span>
           </router-link>
         </li>
@@ -102,10 +100,10 @@
         <li v-if="userRole === 'admin'" class="mb-1">
           <router-link to="/familia"
             class="relative flex items-center gap-3 px-5 py-3.5 text-[#2C2C2C] no-underline transition-all duration-200 hover:bg-[#D8EBD0]"
-            :class="{ 'bg-linear-to-r from-[rgba(93,162,113,0.1)] to-[rgba(93,162,113,0.05)] text-[#5DA271] border-r-3 border-r-[#5DA271]': $route.path === '/familia' }"
+            :class="isActive('/familia')"
             @click="closeSidebarOnMobile">
             <span class="iconify w-6 text-center text-[22px] text-[#6C7A6C]"
-              :class="{ 'text-[#5DA271]': $route.path === '/familia' }" data-icon="mdi:account-group"></span>
+              :class="{ 'text-[#5DA271]': isActivePath('/familia') }" data-icon="mdi:account-group"></span>
             <span class="flex-1 text-sm font-medium">Familia</span>
           </router-link>
         </li>
@@ -114,10 +112,10 @@
         <li class="mb-1">
           <router-link to="/configuracion"
             class="relative flex items-center gap-3 px-5 py-3.5 text-[#2C2C2C] no-underline transition-all duration-200 hover:bg-[#D8EBD0]"
-            :class="{ 'bg-linear-to-r from-[rgba(93,162,113,0.1)] to-[rgba(93,162,113,0.05)] text-[#5DA271] border-r-3 border-r-[#5DA271]': $route.path === '/configuracion' }"
+            :class="isActive('/configuracion')"
             @click="closeSidebarOnMobile">
             <span class="iconify w-6 text-center text-[22px] text-[#6C7A6C]"
-              :class="{ 'text-[#5DA271]': $route.path === '/configuracion' }" data-icon="mdi:cog"></span>
+              :class="{ 'text-[#5DA271]': isActivePath('/configuracion') }" data-icon="mdi:cog"></span>
             <span class="flex-1 text-sm font-medium">Configuración</span>
           </router-link>
         </li>
@@ -138,7 +136,7 @@
 
 <script>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
 
@@ -153,9 +151,30 @@ export default {
   emits: ['close'],
   setup(props, { emit }) {
     const router = useRouter()
+    const route = useRoute()
     const authStore = useAuthStore()
 
     const { userName, userRole } = storeToRefs(authStore)
+
+    // Función para verificar si una ruta está activa (incluyendo rutas anidadas)
+    const isActivePath = (path, includeChildren = false) => {
+      if (includeChildren) {
+        // Para rutas como /recetas, también activa en /receta/123
+        return route.path === path || route.path.startsWith(path + '/')
+      }
+      return route.path === path
+    }
+
+    // Función que devuelve las clases CSS para el router-link
+    const isActive = (path, includeChildren = false) => {
+      const isActiveRoute = includeChildren 
+        ? (route.path === path || route.path.startsWith(path + '/'))
+        : route.path === path
+      
+      return isActiveRoute 
+        ? 'bg-linear-to-r from-[rgba(93,162,113,0.1)] to-[rgba(93,162,113,0.05)] text-[#5DA271] border-r-3 border-r-[#5DA271]'
+        : ''
+    }
 
     const closeSidebar = () => {
       emit('close')
@@ -171,9 +190,7 @@ export default {
       try {
         await authStore.logout()
         router.push('/login')
-        setTimeout(() => {
-          window.location.reload()
-        }, 100)
+        // No es necesario recargar la página, el router ya maneja la navegación
       } catch (error) {
         console.error('Logout error:', error)
       }
@@ -182,6 +199,8 @@ export default {
     return {
       userName,
       userRole,
+      isActive,
+      isActivePath,
       closeSidebar,
       closeSidebarOnMobile,
       handleLogout

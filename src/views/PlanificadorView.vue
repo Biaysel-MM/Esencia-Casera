@@ -502,18 +502,157 @@ export default {
 
     const getCurrentPlannerId = async () => {
       const weekStartStr = currentWeekStart.value.toISOString().split('T')[0]
-      const { data, error } = await supabase
+
+      // Validar que la fecha sea correcta (año 2024-2030)
+      if (weekStartStr.startsWith('2626')) {
+        console.error('Fecha incorrecta detectada:', weekStartStr)
+        // Recalcular la fecha
+        const today = new Date()
+        const day = today.getDay()
+        const diff = day === 0 ? -6 : -(day - 1)
+        const monday = new Date(today)
+        monday.setDate(today.getDate() + diff)
+        weekStartStr = monday.toISOString().split('T')[0]
+      }
+
+      const { data: planners, error } = await supabase
         .from('weekly_planner')
         .select('id')
         .eq('user_id', authStore.user?.id)
         .eq('week_start', weekStartStr)
-        .single()
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error obteniendo planificador:', error)
         return null
       }
-      return data?.id || null
+
+      if (!planners || planners.length === 0) {
+        // Crear nuevo planner
+        const weekEnd = new Date(currentWeekStart.value)
+        weekEnd.setDate(weekEnd.getDate() + 6)
+        const { data: newPlanner, error: createError } = await supabase
+          .from('weekly_planner')
+          .insert({
+            user_id: authStore.user?.id,
+            week_start: weekStartStr,
+            week_end: weekEnd.toISOString().split('T')[0],
+            preferences: {}
+          })
+          .select()
+          .single()
+
+        if (createError) throw createError
+        return newPlanner.id
+      }
+
+      // Si hay múltiples, usar el primero
+      return planners[0].id
+    }
+
+    const saveAllMeals = async () => {
+      try {
+        // Calcular la fecha correcta de la semana actual
+        const today = new Date()
+        const day = today.getDay()
+        const diff = day === 0 ? -6 : -(day - 1)
+        const monday = new Date(today)
+        monday.setDate(today.getDate() + diff)
+        monday.setHours(0, 0, 0, 0)
+
+        const weekStartStr = monday.toISOString().split('T')[0]
+        const weekEnd = new Date(monday)
+        weekEnd.setDate(monday.getDate() + 6)
+        const weekEndStr = weekEnd.toISOString().split('T')[0]
+
+        console.log('Guardando planner para semana:', weekStartStr)
+        console.log('Usuario ID:', authStore.user?.id)
+
+        // Buscar o crear planner
+        let { data: planner, error: plannerError } = await supabase
+          .from('weekly_planner')
+          .select('id')
+          .eq('user_id', authStore.user?.id)
+          .eq('week_start', weekStartStr)
+          .maybeSingle()
+
+        if (plannerError) {
+          console.error('Error buscando planner:', plannerError)
+          showNotification('error', 'Error', 'Error al buscar planner')
+          return
+        }
+
+        if (!planner) {
+          console.log('Creando nuevo planner para semana:', weekStartStr)
+          const { data: newPlanner, error: createError } = await supabase
+            .from('weekly_planner')
+            .insert({
+              user_id: authStore.user?.id,
+              week_start: weekStartStr,
+              week_end: weekEndStr,
+              preferences: {}
+            })
+            .select()
+            .single()
+
+          if (createError) {
+            console.error('Error creando planner:', createError)
+            showNotification('error', 'Error', 'No se pudo crear el planner')
+            return
+          }
+          planner = newPlanner
+          console.log('Planner creado:', planner.id)
+        } else {
+          console.log('Planner existente:', planner.id)
+        }
+
+        // Eliminar todas las comidas existentes
+        const { error: deleteError } = await supabase
+          .from('planned_meals')
+          .delete()
+          .eq('planner_id', planner.id)
+
+        if (deleteError) {
+          console.error('Error eliminando comidas:', deleteError)
+        }
+
+        // Insertar las comidas actuales
+        const mealsToInsert = []
+
+        for (const meal of weekMeals.value) {
+          const dayData = weekDays.value.find(d => d.name === meal.day)
+          const mealTypeData = mealTypes.find(m => m.key === meal.mealType)
+
+          if (dayData && mealTypeData && meal.recipe_id) {
+            mealsToInsert.push({
+              planner_id: planner.id,
+              day_of_week: dayData.dayOfWeek,
+              meal_type: mealTypeData.dbType,
+              recipe_id: meal.recipe_id
+            })
+          }
+        }
+
+        console.log('Comidas a insertar:', mealsToInsert.length)
+
+        if (mealsToInsert.length > 0) {
+          const { error: insertError } = await supabase
+            .from('planned_meals')
+            .insert(mealsToInsert)
+
+          if (insertError) {
+            console.error('Error insertando comidas:', insertError)
+            showNotification('error', 'Error', 'No se pudieron guardar las comidas')
+            return
+          }
+        }
+
+        console.log('Comidas guardadas exitosamente:', mealsToInsert.length)
+        showNotification('success', 'Guardado', 'Menú guardado correctamente')
+
+      } catch (error) {
+        console.error('Error en saveAllMeals:', error)
+        showNotification('error', 'Error', 'No se pudo guardar el menú')
+      }
     }
 
     const loadWeekData = async () => {
@@ -614,12 +753,6 @@ export default {
 
     const selectRecipe = async (recipe) => {
       try {
-        const plannerId = await getCurrentPlannerId()
-        if (!plannerId) {
-          showNotification('error', 'Error', 'No se encontró el planificador')
-          return
-        }
-
         const dayData = weekDays.value.find(d => d.name === selectedDay.value)
         const mealTypeData = mealTypes.find(m => m.key === selectedMeal.value)
 
@@ -628,19 +761,54 @@ export default {
           return
         }
 
-        // Eliminar si existe
+        // Obtener o crear el planner para la semana actual
+        const today = new Date()
+        const day = today.getDay()
+        const diff = day === 0 ? -6 : -(day - 1)
+        const monday = new Date(today)
+        monday.setDate(today.getDate() + diff)
+        const weekStartStr = monday.toISOString().split('T')[0]
+        const weekEnd = new Date(monday)
+        weekEnd.setDate(monday.getDate() + 6)
+        const weekEndStr = weekEnd.toISOString().split('T')[0]
+
+        // Buscar planner existente
+        let { data: planner, error: plannerError } = await supabase
+          .from('weekly_planner')
+          .select('id')
+          .eq('user_id', authStore.user?.id)
+          .eq('week_start', weekStartStr)
+          .maybeSingle()
+
+        if (!planner) {
+          const { data: newPlanner, error: createError } = await supabase
+            .from('weekly_planner')
+            .insert({
+              user_id: authStore.user?.id,
+              week_start: weekStartStr,
+              week_end: weekEndStr,
+              preferences: {}
+            })
+            .select()
+            .single()
+
+          if (createError) throw createError
+          planner = newPlanner
+        }
+
+        // Eliminar comida existente en ese día y tipo de comida
         await supabase
           .from('planned_meals')
           .delete()
-          .eq('planner_id', plannerId)
+          .eq('planner_id', planner.id)
           .eq('day_of_week', dayData.dayOfWeek)
           .eq('meal_type', mealTypeData.dbType)
 
-        // Insertar nueva
+        // Insertar nueva comida
         const { error: insertError } = await supabase
           .from('planned_meals')
           .insert({
-            planner_id: plannerId,
+            planner_id: planner.id,
             day_of_week: dayData.dayOfWeek,
             meal_type: mealTypeData.dbType,
             recipe_id: recipe.id
@@ -666,15 +834,14 @@ export default {
           category: recipe.category
         })
 
-        showNotification('success', 'Éxito', `${recipe.title} agregado al planificador`)
+        showNotification('success', 'Éxito', `${recipe.title} agregado al planificador y guardado`)
         closeRecipeSelection()
 
       } catch (error) {
         console.error('Error seleccionando receta:', error)
-        showNotification('error', 'Error', 'No se pudo agregar la receta')
+        showNotification('error', 'Error', 'No se pudo agregar la receta: ' + error.message)
       }
     }
-
     const removeMeal = async (day, mealKey) => {
       try {
         const meal = weekMeals.value.find(m => m.day === day && m.mealType === mealKey)

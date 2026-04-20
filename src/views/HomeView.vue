@@ -660,7 +660,7 @@ export default {
 
     // Navegación a detalle de receta
     const goToRecipeDetail = (id) => {
-      router.push(`/receta/${id}`)
+      router.push(`/recetas/${id}`)
     }
 
     // ========== LOAD TODAY'S MEALS ==========

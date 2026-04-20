@@ -1,14 +1,11 @@
 <template>
-  <div class="min-h-screen bg-gray-50" :class="{ 'overflow-hidden': isMobileMenuOpen }">
+  <div class="min-h-screen bg-gray-50">
     <Sidebar :is-mobile-open="isMobileMenuOpen" @close="closeMobileMenu" />
-
     <div class="md:ml-65">
       <Header @toggle-mobile-menu="toggleMobileMenu" @logout="handleLogout" />
-
-      <main class="pt-17.5 p-6">
+      <main class="pt-25 p-6">
         <div class="max-w-7xl mx-auto">
-          <!-- Welcome Section -->
-          <div class="bg-lienar-to-br from-emerald-50 to-emerald-100/30 rounded-2xl p-6 mb-8">
+          <div class="bg-linear-to-br from-emerald-50 to-emerald-100/30 rounded-2xl p-6 mb-8">
             <div class="flex items-center gap-5">
               <div class="w-16 h-16 rounded-2xl bg-emerald-600 flex items-center justify-center text-white text-xl font-semibold">
                 {{ userInitials }}
@@ -20,44 +17,29 @@
             </div>
           </div>
 
-          <!-- Stats Cards -->
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
-              <span class="iconify w-8 h-8 text-emerald-600 mx-auto mb-2" data-icon="mdi:account-group"></span>
-              <p class="text-2xl font-bold text-gray-900">{{ familyMembers.length }}</p>
-              <p class="text-xs text-gray-500">Miembros</p>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
-              <span class="iconify w-8 h-8 text-emerald-600 mx-auto mb-2" data-icon="mdi:vote"></span>
-              <p class="text-2xl font-bold text-gray-900">{{ totalVotes }}</p>
-              <p class="text-xs text-gray-500">Votos emitidos</p>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
-              <span class="iconify w-8 h-8 text-emerald-600 mx-auto mb-2" data-icon="mdi:food"></span>
-              <p class="text-2xl font-bold text-gray-900">{{ votedRecipesCount }}</p>
-              <p class="text-xs text-gray-500">Recetas votadas</p>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
-              <span class="iconify w-8 h-8 text-emerald-600 mx-auto mb-2" data-icon="mdi:star"></span>
-              <p class="text-2xl font-bold text-gray-900">{{ participationPercentage }}%</p>
-              <p class="text-xs text-gray-500">Participación</p>
-            </div>
-          </div>
-
-          <!-- Weekly Planner Preview -->
+          <!-- Weekly Menu -->
           <div class="bg-white rounded-2xl shadow-sm p-6 mb-8">
-            <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                <span class="iconify w-5 h-5 text-emerald-600" data-icon="mdi:calendar"></span>
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                  <span class="iconify w-5 h-5 text-emerald-600" data-icon="mdi:calendar"></span>
+                </div>
+                <div>
+                  <h2 class="text-lg font-semibold text-gray-900">Menú de la Semana</h2>
+                  <p class="text-sm text-gray-500">{{ weekRange }}</p>
+                </div>
               </div>
-              <div>
-                <h2 class="text-lg font-semibold text-gray-900">Menú de la Semana</h2>
-                <p class="text-sm text-gray-500">{{ weekRange }}</p>
-              </div>
+              <button @click="refreshWeek" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-sm hover:bg-emerald-700">
+                Refrescar
+              </button>
             </div>
 
-            <div class="overflow-x-auto pb-2">
-              <div class="flex gap-4 min-w-max">
+            <div v-if="loading" class="flex justify-center py-12">
+              <div class="h-10 w-10 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600"></div>
+            </div>
+
+            <div v-else class="overflow-x-auto pb-2">
+              <div class="flex gap-4 min-w-max justify-center">
                 <div v-for="day in weekDays" :key="day.name" class="w-36">
                   <div class="text-center mb-3">
                     <p class="font-semibold text-gray-900">{{ day.name }}</p>
@@ -69,10 +51,10 @@
                         <span class="iconify w-3 h-3 text-emerald-600" :data-icon="meal.icon"></span>
                         <p class="text-xs text-gray-500">{{ meal.label }}</p>
                       </div>
-                      <div v-if="getMealForDay(day.name, meal.key)" class="mt-1">
-                        <img :src="getMealForDay(day.name, meal.key).image_url || defaultImage" 
+                      <div v-if="getMealForDay(day.fullName, meal.key)" class="mt-1">
+                        <img :src="getMealForDay(day.fullName, meal.key).image_url || defaultImage" 
                              class="w-full h-16 object-cover rounded-lg mb-1">
-                        <p class="text-xs font-medium text-gray-700 truncate">{{ getMealForDay(day.name, meal.key).title }}</p>
+                        <p class="text-xs font-medium text-gray-700 truncate">{{ getMealForDay(day.fullName, meal.key).title }}</p>
                       </div>
                       <div v-else class="h-20 flex items-center justify-center">
                         <span class="text-xs text-gray-400">—</span>
@@ -84,142 +66,116 @@
             </div>
           </div>
 
-          <!-- Voting Section -->
+          <!-- Active Surveys -->
           <div class="bg-white rounded-2xl shadow-sm p-6 mb-8">
-            <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                  <span class="iconify w-5 h-5 text-emerald-600" data-icon="mdi:vote"></span>
-                </div>
-                <div>
-                  <h2 class="text-lg font-semibold text-gray-900">Votación Semanal</h2>
-                  <p class="text-sm text-gray-500">Vota por tus recetas favoritas</p>
-                </div>
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                <span class="iconify w-5 h-5 text-emerald-600" data-icon="mdi:vote"></span>
               </div>
-              <div class="flex items-center gap-2 text-sm bg-gray-100 rounded-xl px-3 py-1">
-                <span class="iconify w-4 h-4 text-emerald-600" data-icon="mdi:calendar-week"></span>
-                <span>{{ weekRange }}</span>
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900">Votaciones Activas</h2>
+                <p class="text-sm text-gray-500">Participa para decidir el menú</p>
               </div>
             </div>
 
-            <!-- Voting Stats per member -->
-            <div class="mb-6 p-4 bg-gray-50 rounded-xl">
-              <h3 class="text-sm font-semibold text-gray-700 mb-3">Estado de votación por miembro</h3>
-              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                <div v-for="member in familyMembers" :key="member.id" class="flex items-center gap-2">
-                  <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" :class="member.color">
-                    {{ member.initials }}
-                  </div>
-                  <div class="flex-1">
-                    <p class="text-xs font-medium">{{ member.name }}</p>
-                    <p class="text-xs" :class="member.hasVoted ? 'text-emerald-600' : 'text-gray-400'">
-                      {{ member.hasVoted ? `${member.votesCount} votos` : 'Sin votar' }}
-                    </p>
-                  </div>
-                  <span class="iconify w-4 h-4" :class="member.hasVoted ? 'text-emerald-500' : 'text-gray-300'" 
-                        :data-icon="member.hasVoted ? 'mdi:check-circle' : 'mdi:clock-outline'"></span>
-                </div>
-              </div>
+            <div v-if="loadingSurveys" class="flex justify-center py-8">
+              <div class="h-8 w-8 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600"></div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              <div v-for="recipe in availableRecipes" :key="recipe.id" 
-                   class="border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1">
-                <div class="relative h-36 overflow-hidden">
-                  <img :src="recipe.image_url || defaultImage" :alt="recipe.title" class="w-full h-full object-cover">
-                  <div class="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-emerald-600 text-white text-xs">
-                    {{ getCategoryLabel(recipe.category) }}
-                  </div>
-                  <div class="absolute top-2 right-2 bg-black/50 rounded-full px-2 py-0.5 text-white text-xs flex items-center gap-1">
-                    <span class="iconify w-3 h-3" data-icon="mdi:thumb-up"></span>
-                    {{ getVoteCount(recipe.id) }}
-                  </div>
+            <div v-else-if="activeSurveys.length === 0" class="text-center py-8 text-gray-400">
+              <span class="iconify w-12 h-12 mx-auto mb-2" data-icon="mdi:vote-outline"></span>
+              <p>No hay votaciones activas</p>
+            </div>
+
+            <div v-for="survey in activeSurveys" :key="survey.id" class="border border-gray-200 rounded-xl p-5 mb-4">
+              <div class="mb-4">
+                <h3 class="font-semibold text-gray-900">{{ survey.title }}</h3>
+                <p class="text-sm text-gray-500">{{ survey.description }}</p>
+                <div class="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                  <span class="flex items-center gap-1">
+                    <span class="iconify w-3 h-3" data-icon="mdi:calendar"></span>
+                    Finaliza: {{ formatDate(survey.end_date) }}
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="iconify w-3 h-3" data-icon="mdi:account-group"></span>
+                    {{ survey.totalVotes }}/{{ familyMembers.length }} participantes
+                  </span>
                 </div>
-                <div class="p-4">
-                  <h3 class="font-semibold text-gray-900 mb-2 line-clamp-1">{{ recipe.title }}</h3>
-                  <div class="flex items-center gap-2 text-xs text-gray-500 mb-3">
-                    <span class="iconify w-3 h-3" data-icon="mdi:clock-outline"></span>
-                    <span>{{ recipe.total_time }} min</span>
-                    <span class="iconify w-3 h-3 ml-1" data-icon="mdi:account-group-outline"></span>
-                    <span>{{ recipe.servings }} porc.</span>
-                  </div>
-                  
-                  <!-- Who voted for this recipe -->
-                  <div class="flex flex-wrap gap-1 mb-3">
-                    <div v-for="member in familyMembers" :key="member.id"
-                         @click="toggleVote(recipe.id, member.id)"
-                         class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white cursor-pointer transition-all"
-                         :class="[member.color, hasVoted(recipe.id, member.id) ? 'ring-2 ring-offset-1 ring-emerald-500 scale-110' : 'opacity-50']"
-                         :title="member.name">
-                      {{ member.initials }}
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div v-for="option in survey.options" :key="option.id"
+                     @click="vote(survey.id, option.id)"
+                     class="bg-white border rounded-xl overflow-hidden cursor-pointer transition-all hover:shadow-md"
+                     :class="hasVoted(survey.id, option.id) ? 'border-emerald-300 bg-emerald-50/30 opacity-75' : 'border-gray-200 hover:border-emerald-200'">
+                  <div class="flex gap-3 p-3">
+                    <img :src="option.image_url || defaultImage" class="w-16 h-16 rounded-lg object-cover">
+                    <div class="flex-1">
+                      <p class="font-medium text-gray-900">{{ option.title }}</p>
+                      <p class="text-xs text-gray-400">{{ option.total_time }} min · {{ option.servings }} porc.</p>
+                      <div class="flex items-center gap-2 mt-2">
+                        <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div class="h-full bg-emerald-500 rounded-full transition-all" :style="{ width: getOptionPercentage(option.votes, familyMembers.length) + '%' }"></div>
+                        </div>
+                        <span class="text-xs font-medium text-gray-600">{{ option.votes }} votos</span>
+                      </div>
                     </div>
                   </div>
-
-                  <button @click="toggleCurrentUserVote(recipe.id)"
-                    class="w-full py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-1"
-                    :class="hasVoted(recipe.id, currentUserId) 
-                      ? 'bg-emerald-600 text-white' 
-                      : 'border border-gray-200 text-gray-700 hover:bg-emerald-50'">
-                    <span class="iconify w-4 h-4" :data-icon="hasVoted(recipe.id, currentUserId) ? 'mdi:check' : 'mdi:thumb-up'"></span>
-                    {{ hasVoted(recipe.id, currentUserId) ? 'Ya votaste' : 'Votar' }}
-                  </button>
+                  <div v-if="hasVoted(survey.id, option.id)" class="px-3 pb-2 text-right">
+                    <span class="text-xs text-emerald-600 flex items-center gap-1 justify-end">
+                      <span class="iconify w-3 h-3" data-icon="mdi:check-circle"></span>
+                      Tu voto
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div v-if="availableRecipes.length === 0" class="text-center py-8 text-gray-400">
-              <span class="iconify w-12 h-12 mx-auto mb-2" data-icon="mdi:food-off"></span>
-              <p>No hay recetas disponibles para votar</p>
             </div>
           </div>
 
-          <!-- Favorites Section -->
+          <!-- My Favorites -->
           <div class="bg-white rounded-2xl shadow-sm p-6">
             <div class="flex items-center gap-3 mb-6">
               <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
                 <span class="iconify w-5 h-5 text-emerald-600" data-icon="mdi:heart"></span>
               </div>
               <div>
-                <h2 class="text-lg font-semibold text-gray-900">Recetas Favoritas de la Familia</h2>
-                <p class="text-sm text-gray-500">Recetas más votadas esta semana</p>
+                <h2 class="text-lg font-semibold text-gray-900">Mis Recetas Favoritas</h2>
+                <p class="text-sm text-gray-500">{{ myFavorites.length }} recetas guardadas</p>
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              <div v-for="recipe in topVotedRecipes" :key="recipe.id"
-                   class="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-all cursor-pointer"
-                   @click="goToRecipe(recipe.id)">
+            <div v-if="loadingFavorites" class="flex justify-center py-8">
+              <div class="h-8 w-8 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600"></div>
+            </div>
+
+            <div v-else-if="myFavorites.length === 0" class="text-center py-8 text-gray-400">
+              <span class="iconify w-12 h-12 mx-auto mb-2" data-icon="mdi:heart-outline"></span>
+              <p>No tienes recetas favoritas</p>
+              <button @click="goToRecipes" class="mt-2 text-emerald-600 hover:underline cursor-pointer">Explorar recetas</button>
+            </div>
+
+            <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div v-for="recipe in myFavorites" :key="recipe.id"
+                   @click="goToRecipe(recipe.id)"
+                   class="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-all cursor-pointer">
                 <div class="relative h-28 overflow-hidden">
                   <img :src="recipe.image_url || defaultImage" class="w-full h-full object-cover">
-                  <div class="absolute bottom-1 right-1 bg-black/60 rounded-full px-2 py-0.5 text-white text-xs flex items-center gap-1">
-                    <span class="iconify w-3 h-3" data-icon="mdi:thumb-up"></span>
-                    {{ recipe.voteCount }}
+                  <div class="absolute top-2 right-2 bg-white/90 rounded-full p-1">
+                    <span class="iconify w-4 h-4 text-red-500" data-icon="mdi:heart"></span>
                   </div>
                 </div>
                 <div class="p-3">
                   <p class="text-sm font-medium text-gray-900 line-clamp-1">{{ recipe.title }}</p>
-                  <div class="flex items-center gap-1 mt-1">
-                    <div v-for="voter in recipe.voters" :key="voter.id" 
-                         class="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
-                         :class="voter.color" :title="voter.name">
-                      {{ voter.initials }}
-                    </div>
-                  </div>
+                  <p class="text-xs text-gray-400 mt-1">{{ recipe.total_time }} min · {{ recipe.servings }} porc.</p>
                 </div>
               </div>
-            </div>
-
-            <div v-if="topVotedRecipes.length === 0" class="text-center py-8 text-gray-400">
-              <span class="iconify w-12 h-12 mx-auto mb-2" data-icon="mdi:heart-outline"></span>
-              <p>Aún no hay recetas votadas esta semana</p>
             </div>
           </div>
         </div>
       </main>
     </div>
 
-    <!-- Toast -->
-    <div v-if="showToast" class="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-2">
+    <div v-if="showToast" class="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-slide-in-right">
       <span class="iconify w-5 h-5" :data-icon="toastIcon"></span>
       <span>{{ toastMessage }}</span>
     </div>
@@ -237,31 +193,30 @@ import Header from '@/components/layout/Header.vue'
 const router = useRouter()
 const authStore = useAuthStore()
 
-// Layout
 const isMobileMenuOpen = ref(false)
 const defaultImage = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop'
 
-// Data
 const loading = ref(true)
+const loadingSurveys = ref(true)
+const loadingFavorites = ref(true)
 const weekMeals = ref([])
-const availableRecipes = ref([])
 const familyMembers = ref([])
-const votes = ref({})
+const activeSurveys = ref([])
+const myFavorites = ref([])
+const userVotes = ref({})
 const currentUserId = ref(null)
-const weekStart = ref('')
-const weekEnd = ref('')
+const familyCode = ref('')
+const weekStartDate = ref('')
+const weekEndDate = ref('')
 
-// Colors
-const colors = ['bg-emerald-600', 'bg-emerald-500', 'bg-teal-600', 'bg-green-600', 'bg-emerald-700', 'bg-teal-500']
+const colors = ['bg-emerald-600', 'bg-emerald-500', 'bg-teal-600', 'bg-green-600', 'bg-emerald-700']
 
-// Meal types with icons
 const mealTypes = [
   { key: 'desayuno', label: 'Desayuno', icon: 'mdi:weather-sunset-up' },
   { key: 'almuerzo', label: 'Almuerzo', icon: 'mdi:food' },
   { key: 'cena', label: 'Cena', icon: 'mdi:weather-night' }
 ]
 
-// Week days
 const weekDays = ref([
   { name: 'Lun', fullName: 'Lunes', date: '' },
   { name: 'Mar', fullName: 'Martes', date: '' },
@@ -272,7 +227,6 @@ const weekDays = ref([
   { name: 'Dom', fullName: 'Domingo', date: '' }
 ])
 
-// Toast
 const showToast = ref(false)
 const toastMessage = ref('')
 const toastIcon = ref('mdi:check-circle')
@@ -283,7 +237,6 @@ const showNotification = (msg, icon = 'mdi:check-circle') => {
   setTimeout(() => showToast.value = false, 3000)
 }
 
-// Computed
 const userName = computed(() => authStore.userName)
 const userInitials = computed(() => {
   const name = userName.value || 'U'
@@ -291,156 +244,98 @@ const userInitials = computed(() => {
 })
 
 const weekRange = computed(() => {
-  if (!weekStart.value || !weekEnd.value) return 'Cargando...'
-  const start = new Date(weekStart.value).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-  const end = new Date(weekEnd.value).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+  if (!weekStartDate.value || !weekEndDate.value) return 'Cargando...'
+  const start = new Date(weekStartDate.value).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+  const end = new Date(weekEndDate.value).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
   return `${start} - ${end}`
 })
 
-const totalVotes = computed(() => Object.values(votes.value).reduce((acc, arr) => acc + arr.length, 0))
-const votedRecipesCount = computed(() => Object.keys(votes.value).length)
-
-const participationPercentage = computed(() => {
-  const totalPossible = availableRecipes.value.length * familyMembers.value.length
-  if (totalPossible === 0) return 0
-  return Math.round((totalVotes.value / totalPossible) * 100)
-})
-
-const topVotedRecipes = computed(() => {
-  return [...availableRecipes.value]
-    .map(recipe => ({
-      ...recipe,
-      voteCount: getVoteCount(recipe.id),
-      voters: getVotersForRecipe(recipe.id)
-    }))
-    .filter(r => r.voteCount > 0)
-    .sort((a, b) => b.voteCount - a.voteCount)
-    .slice(0, 8)
-})
-
-// Methods
-const getCategoryLabel = (cat) => {
-  const labels = { desayuno: 'Desayuno', almuerzo: 'Almuerzo', cena: 'Cena', postre: 'Postre', snack: 'Snack' }
-  return labels[cat] || cat
+const formatDate = (dateStr) => {
+  if (!dateStr) return ''
+  return new Date(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
 }
 
-const getWeekDates = () => {
-  const today = new Date()
-  const day = today.getDay()
-  const diff = today.getDate() - day + (day === 0 ? -6 : 1)
-  const start = new Date(today.setDate(diff))
-  const end = new Date(start)
-  end.setDate(start.getDate() + 6)
-  return {
-    start: start.toISOString().split('T')[0],
-    end: end.toISOString().split('T')[0]
-  }
+const getOptionPercentage = (votes, total) => {
+  if (total === 0) return 0
+  return Math.round((votes / total) * 100)
+}
+
+const hasVoted = (surveyId, optionId) => {
+  return userVotes.value[surveyId] === optionId
 }
 
 const getMealForDay = (dayName, mealType) => {
-  const dayMap = { Lun: 'Lunes', Mar: 'Martes', Mié: 'Miércoles', Jue: 'Jueves', Vie: 'Viernes', Sáb: 'Sábado', Dom: 'Domingo' }
-  const fullDay = dayMap[dayName]
-  return weekMeals.value.find(m => m.day === fullDay && m.meal_type === mealType)
+  return weekMeals.value.find(m => m.day === dayName && m.meal_type === mealType)
 }
 
-const getVoteCount = (recipeId) => votes.value[recipeId]?.length || 0
-const hasVoted = (recipeId, memberId) => votes.value[recipeId]?.includes(memberId) || false
+const vote = async (surveyId, optionId) => {
+  if (userVotes.value[surveyId]) {
+    const { error: deleteError } = await supabase
+      .from('survey_votes')
+      .delete()
+      .eq('survey_id', surveyId)
+      .eq('user_id', currentUserId.value)
 
-const getVotersForRecipe = (recipeId) => {
-  const voterIds = votes.value[recipeId] || []
-  return familyMembers.value
-    .filter(m => voterIds.includes(m.id))
-    .map(m => ({ id: m.id, name: m.name, initials: m.initials, color: m.color }))
-}
-
-const toggleVote = async (recipeId, memberId) => {
-  const currentVotes = votes.value[recipeId] || []
-  
-  let newVotes
-  if (currentVotes.includes(memberId)) {
-    newVotes = currentVotes.filter(id => id !== memberId)
-  } else {
-    newVotes = [...currentVotes, memberId]
-  }
-  
-  votes.value = { ...votes.value, [recipeId]: newVotes }
-  
-  // Actualizar estado de votación de miembros
-  updateMemberVoteStatus()
-  
-  // Guardar en Supabase
-  try {
-    const { error } = await supabase
-      .from('family_votes')
-      .upsert({
-        family_id: authStore.user?.id,
-        recipe_id: recipeId,
-        week_start: weekStart.value,
-        votes: newVotes,
-        created_by: currentUserId.value
-      }, { onConflict: 'family_id,recipe_id,week_start' })
-    
-    if (error) throw error
-    
-    const action = currentVotes.includes(memberId) ? 'eliminado' : 'registrado'
-    showNotification(`Voto ${action} correctamente`)
-  } catch (error) {
-    console.error('Error guardando voto:', error)
-    showNotification('Error al guardar el voto', 'mdi:alert-circle')
-  }
-}
-
-const toggleCurrentUserVote = (recipeId) => {
-  toggleVote(recipeId, currentUserId.value)
-}
-
-const updateMemberVoteStatus = () => {
-  familyMembers.value = familyMembers.value.map(member => {
-    let votesCount = 0
-    Object.values(votes.value).forEach(recipeVotes => {
-      if (recipeVotes.includes(member.id)) votesCount++
-    })
-    return {
-      ...member,
-      hasVoted: votesCount > 0,
-      votesCount
+    if (deleteError) {
+      showNotification('Error al eliminar voto', 'mdi:alert-circle')
+      return
     }
-  })
+
+    const { error: updateError } = await supabase.rpc('decrement_votes', { option_id: optionId })
+    if (updateError) console.error('Error decrementing votes:', updateError)
+
+    delete userVotes.value[surveyId]
+    showNotification('Voto eliminado', 'mdi:close-circle')
+    await loadSurveys()
+    await loadUserVotes()
+    return
+  }
+
+  const { error } = await supabase
+    .from('survey_votes')
+    .insert({
+      survey_id: surveyId,
+      option_id: optionId,
+      user_id: currentUserId.value
+    })
+
+  if (error) {
+    console.error('Error voting:', error)
+    showNotification('Error al votar', 'mdi:alert-circle')
+    return
+  }
+
+  const { error: updateError } = await supabase.rpc('increment_votes', { option_id: optionId })
+  if (updateError) console.error('Error updating votes:', updateError)
+
+  userVotes.value[surveyId] = optionId
+  showNotification('¡Voto registrado!')
+  await loadSurveys()
+  await loadUserVotes()
 }
 
-const goToRecipe = (recipeId) => {
-  router.push(`/receta/${recipeId}`)
-}
-
-// Load data
 const loadFamilyData = async () => {
   try {
-    // Obtener fechas de la semana
-    const dates = getWeekDates()
-    weekStart.value = dates.start
-    weekEnd.value = dates.end
+    loading.value = true
     
-    // Actualizar fechas en weekDays
-    const startDate = new Date(weekStart.value)
-    weekDays.value.forEach((day, idx) => {
-      const date = new Date(startDate)
-      date.setDate(startDate.getDate() + idx)
-      day.date = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-    })
-    
-    // Obtener familia del usuario
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('family_code')
       .eq('id', authStore.user?.id)
       .single()
 
+    if (profileError) throw profileError
+    
     if (profile?.family_code) {
-      // Obtener miembros de la familia
-      const { data: members } = await supabase
+      familyCode.value = profile.family_code
+      currentUserId.value = authStore.user?.id
+
+      const { data: members, error: membersError } = await supabase
         .from('profiles')
         .select('id, full_name, role')
-        .eq('family_code', profile.family_code)
+        .eq('family_code', familyCode.value)
+
+      if (membersError) throw membersError
 
       if (members) {
         familyMembers.value = members.map((m, idx) => ({
@@ -448,95 +343,268 @@ const loadFamilyData = async () => {
           name: m.full_name,
           initials: m.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U',
           role: m.role,
-          color: colors[idx % colors.length],
-          hasVoted: false,
-          votesCount: 0
+          color: colors[idx % colors.length]
         }))
-        
-        currentUserId.value = authStore.user?.id
       }
-    } else {
-      // Usuario sin familia, solo él mismo
-      familyMembers.value = [{
-        id: authStore.user?.id,
-        name: userName.value,
-        initials: userInitials.value,
-        role: 'admin',
-        color: colors[0],
-        hasVoted: false,
-        votesCount: 0
-      }]
-      currentUserId.value = authStore.user?.id
+
+      await loadWeeklyPlanner()
+      await loadSurveys()
+      await loadUserVotes()
+      await loadFavorites()
     }
-
-    // Cargar recetas disponibles
-    const { data: recipes } = await supabase
-      .from('recipes')
-      .select('id, title, category, total_time, servings, image_url')
-      .eq('is_public', true)
-      .order('created_at', { ascending: false })
-      .limit(12)
-
-    availableRecipes.value = recipes || []
-
-    // Cargar votos existentes
-    const { data: existingVotes } = await supabase
-      .from('family_votes')
-      .select('recipe_id, votes')
-      .eq('week_start', weekStart.value)
-
-    if (existingVotes) {
-      const votesMap = {}
-      existingVotes.forEach(v => {
-        votesMap[v.recipe_id] = v.votes || []
-      })
-      votes.value = votesMap
-    }
-
-    // Actualizar estado de votación de miembros
-    updateMemberVoteStatus()
-
-    // Cargar planner semanal
-    const { data: planner } = await supabase
-      .from('weekly_planner')
-      .select(`
-        id,
-        planned_meals (
-          day_of_week,
-          meal_type,
-          recipe:recipes (id, title, image_url)
-        )
-      `)
-      .eq('user_id', authStore.user?.id)
-      .eq('week_start', weekStart.value)
-      .maybeSingle()
-
-    if (planner?.planned_meals) {
-      const dayMap = { 0: 'Lunes', 1: 'Martes', 2: 'Miércoles', 3: 'Jueves', 4: 'Viernes', 5: 'Sábado', 6: 'Domingo' }
-      weekMeals.value = planner.planned_meals.map(meal => ({
-        day: dayMap[meal.day_of_week],
-        meal_type: meal.meal_type,
-        title: meal.recipe?.title,
-        image_url: meal.recipe?.image_url
-      }))
-    }
-
   } catch (error) {
-    console.error('Error cargando datos familiares:', error)
+    console.error('Error loading family data:', error)
     showNotification('Error al cargar datos', 'mdi:alert-circle')
   } finally {
     loading.value = false
   }
 }
 
-// Layout
+const loadWeeklyPlanner = async () => {
+  try {
+    const today = new Date()
+    const day = today.getDay()
+    const diff = day === 0 ? -6 : -(day - 1)
+    const monday = new Date(today)
+    monday.setDate(today.getDate() + diff)
+    monday.setHours(0, 0, 0, 0)
+    
+    const weekStartStr = monday.toISOString().split('T')[0]
+    const sunday = new Date(monday)
+    sunday.setDate(monday.getDate() + 6)
+    
+    weekStartDate.value = weekStartStr
+    weekEndDate.value = sunday.toISOString().split('T')[0]
+    
+    weekDays.value.forEach((day, idx) => {
+      const dateObj = new Date(monday)
+      dateObj.setDate(monday.getDate() + idx)
+      day.date = dateObj.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+    })
+    
+    console.log('🔍 Buscando planner para semana:', weekStartStr)
+
+    // BUSCAR TODOS LOS PLANNERS DE LA SEMANA (sin filtrar por usuario)
+    const { data: planners, error: plannerError } = await supabase
+      .from('weekly_planner')
+      .select(`
+        id,
+        user_id,
+        planned_meals (
+          id,
+          day_of_week,
+          meal_type,
+          recipe:recipes (
+            id,
+            title,
+            image_url,
+            total_time,
+            servings
+          )
+        )
+      `)
+      .eq('week_start', weekStartStr)
+
+    if (plannerError) {
+      console.error('Error buscando planner:', plannerError)
+      weekMeals.value = []
+      return
+    }
+
+    console.log('📊 Planners encontrados:', planners?.length || 0)
+
+    if (!planners || planners.length === 0) {
+      console.log('❌ No hay planner para la semana:', weekStartStr)
+      weekMeals.value = []
+      return
+    }
+
+    // Usar el primer planner que tenga comidas
+    let selectedPlanner = planners.find(p => p.planned_meals && p.planned_meals.length > 0)
+    if (!selectedPlanner && planners.length > 0) {
+      selectedPlanner = planners[0]
+    }
+    
+    if (!selectedPlanner) {
+      console.log('❌ No se encontró planner con comidas')
+      weekMeals.value = []
+      return
+    }
+
+    console.log('✅ Usando planner ID:', selectedPlanner.id)
+    console.log('📋 Comidas en planner:', selectedPlanner.planned_meals?.length || 0)
+
+    if (selectedPlanner.planned_meals && selectedPlanner.planned_meals.length > 0) {
+      const dayMap = { 0: 'Lunes', 1: 'Martes', 2: 'Miércoles', 3: 'Jueves', 4: 'Viernes', 5: 'Sábado', 6: 'Domingo' }
+      weekMeals.value = selectedPlanner.planned_meals.map(meal => ({
+        id: meal.id,
+        day: dayMap[meal.day_of_week],
+        day_of_week: meal.day_of_week,
+        meal_type: meal.meal_type,
+        title: meal.recipe?.title,
+        image_url: meal.recipe?.image_url,
+        total_time: meal.recipe?.total_time,
+        servings: meal.recipe?.servings,
+        recipe_id: meal.recipe?.id
+      }))
+      console.log('🍽️ Comidas cargadas:', weekMeals.value.length)
+    } else {
+      weekMeals.value = []
+    }
+  } catch (error) {
+    console.error('Error en loadWeeklyPlanner:', error)
+    weekMeals.value = []
+  }
+}
+
+const refreshWeek = () => {
+  loadWeeklyPlanner()
+  showNotification('Menú actualizado', 'mdi:refresh')
+}
+
+const loadUserVotes = async () => {
+  try {
+    if (!currentUserId.value) return
+    
+    const { data: votes, error } = await supabase
+      .from('survey_votes')
+      .select('survey_id, option_id')
+      .eq('user_id', currentUserId.value)
+
+    if (error) throw error
+
+    if (votes) {
+      const votesMap = {}
+      votes.forEach(v => { votesMap[v.survey_id] = v.option_id })
+      userVotes.value = votesMap
+      console.log('Votos cargados:', votesMap)
+    }
+  } catch (error) {
+    console.error('Error loading user votes:', error)
+  }
+}
+
+const loadSurveys = async () => {
+  try {
+    loadingSurveys.value = true
+    const today = new Date().toISOString().split('T')[0]
+
+    const { data: surveys, error } = await supabase
+      .from('family_surveys')
+      .select('*')
+      .eq('family_code', familyCode.value)
+      .eq('is_active', true)
+      .gte('end_date', today)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    if (surveys) {
+      for (const survey of surveys) {
+        const { data: options, error: optionsError } = await supabase
+          .from('survey_options')
+          .select(`
+            id,
+            votes,
+            recipe:recipes (
+              id,
+              title,
+              image_url,
+              total_time,
+              servings
+            )
+          `)
+          .eq('survey_id', survey.id)
+
+        if (optionsError) throw optionsError
+
+        survey.options = options?.map(o => ({
+          id: o.id,
+          votes: o.votes || 0,
+          title: o.recipe?.title || 'Receta',
+          image_url: o.recipe?.image_url,
+          total_time: o.recipe?.total_time,
+          servings: o.recipe?.servings
+        })) || []
+
+        const { count, error: countError } = await supabase
+          .from('survey_votes')
+          .select('*', { count: 'exact', head: true })
+          .eq('survey_id', survey.id)
+
+        if (countError) throw countError
+
+        survey.totalVotes = count || 0
+      }
+      activeSurveys.value = surveys
+    }
+  } catch (error) {
+    console.error('Error loading surveys:', error)
+  } finally {
+    loadingSurveys.value = false
+  }
+}
+
+const loadFavorites = async () => {
+  try {
+    loadingFavorites.value = true
+
+    const { data: favorites, error } = await supabase
+      .from('favorites')
+      .select(`
+        id,
+        recipe:recipes (
+          id,
+          title,
+          total_time,
+          servings,
+          image_url
+        )
+      `)
+      .eq('user_id', currentUserId.value)
+      .order('added_at', { ascending: false })
+
+    if (error) throw error
+
+    myFavorites.value = favorites
+      .filter(f => f.recipe)
+      .map(f => ({
+        id: f.recipe.id,
+        title: f.recipe.title,
+        total_time: f.recipe.total_time,
+        servings: f.recipe.servings,
+        image_url: f.recipe.image_url,
+        favorite_id: f.id
+      }))
+
+  } catch (error) {
+    console.error('Error loading favorites:', error)
+  } finally {
+    loadingFavorites.value = false
+  }
+}
+
+const goToRecipe = (id) => router.push(`/receta/${id}`)
+const goToRecipes = () => router.push('/recetas')
+
 const toggleMobileMenu = () => { isMobileMenuOpen.value = !isMobileMenuOpen.value }
 const closeMobileMenu = () => { isMobileMenuOpen.value = false }
-const handleLogout = async () => { await authStore.logout(); router.push('/login') }
+const handleLogout = async () => { 
+  await authStore.logout() 
+  router.push('/login') 
+}
 
-onMounted(async () => {
+onMounted(() => {
   if (authStore.isAuthenticated) {
-    await loadFamilyData()
+    loadFamilyData()
   }
 })
 </script>
+
+<style scoped>
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in-right { animation: slide-in-right 0.3s ease; }
+</style>
