@@ -1,190 +1,152 @@
 
-RESUMEN DEL PROYECTO ESENCIA CASERA
+RESUMEN DEL PROYECTO ESENCIA CASERA (ACTUALIZADO)
 Esencia Casera es una aplicación web Vue.js integral de planificación y gestión culinaria diseñada para familias y cocineros domésticos. El sistema permite a los usuarios registrar todos los ingredientes disponibles en su despensa y, mediante algoritmos inteligentes, genera automáticamente recetas personalizadas que pueden preparar con lo que ya tienen en casa. La aplicación incluye un planificador semanal interactivo, sugerencias basadas en condiciones climáticas, sistema de votación familiar para decidir menús, gestión de lista de compras automatizada y seguimiento de fechas de vencimiento de ingredientes.
 
 La plataforma se destaca por su guía paso a paso con imágenes para cada receta, facilitando el proceso culinario incluso para principiantes. Con roles diferenciados (administrador y familiares), soporta dinámicas familiares colaborativas donde todos pueden votar por las comidas de la semana. La integración completa con Supabase asegura persistencia de datos en tiempo real, mientras que la interfaz intuitiva y visualmente atractiva mantiene una experiencia de usuario fluida y accesible para toda la familia.
 
-Esencia Casera/
-├── .vscode/
-├── node_modules/
-├── public/
-├── src/
-│   ├── assets/
-│   │   ├── css/
-│   │   │   └── global.css
-│   │   └── images/
-│   ├── components/
-│   │   ├── ui/
-│   │   └── layout/
-│   │   │   └── Header.vue
-│   │   │   ├── Sidebar.vue
-│   ├── views/
-│   │   │   └── ConfiguracionView.vue
-│   │   │   ├── FamiliarDashboardView.vue
-│   │   │   ├── FamiliarView.vue
-│   │   │   ├── FavoritasView.vue
-│   │   │   ├── HomeView.vue
-│   │   │   ├── ListaComprasView.vue
-│   │   │   ├── LoginView.vue
-│   │   │   ├── NotFoundView.vue
-│   │   │   ├── PlanificadorView.vue
-│   │   │   ├── RecetasView.vue
-│   │   │   ├── RegisterView.vue
-│   ├── router/
-│   │   └── index.js
-│   ├── stores/
-│   │   └── auth.js
-│   ├── main.js
-│   ├── supabase.js
-│   └── App.vue
-├── .gitignore
-├── index.html
-├── package-lock.json
-├── package.json
-├── README.md
-└── vite.config.js
-
-
-Resumen de la Base de Datos "Esencia Casera"
+Resumen de la Base de Datos "Esencia Casera" (ACTUALIZADO)
 Tablas Principales y sus Relaciones
+
 1. Tabla Central: profiles
 Propósito: Perfiles de usuarios con autenticación completa
 Campos clave: id (UUID), full_name, role, family_code
 Relaciones: Referenciada por casi todas las otras tablas como user_id o created_by
+
 2. Catálogo de Ingredientes (ingredients)
 Propósito: Catálogo maestro de ingredientes disponibles
 Categorías: verduras, frutas, proteínas, granos, lácteos, condimentos, bebidas, otros
 Relaciones: Referenciada por recipe_ingredients, user_pantry, shopping_list_items
-3. Sistema de Recetas (recipes + recipe_ingredients)
+
+3. Sistema de Recetas (recipes + recipe_ingredients + comentarios_de_la_receta)
 recipes: Almacena recetas con pasos en formato JSONB, categorías, tiempo de preparación
+
 recipe_ingredients: Tabla de unión que relaciona recetas con ingredientes y sus cantidades
+comentarios_de_la_receta: Sistema de comentarios en recetas con:
+Me gusta (like/unlike en comentarios)
+respuestas_de_comentarios (respuestas anidadas a comentarios)
 Características: Calificaciones, tags, visibilidad pública/privada
-4. Gestión Personal (user_pantry + shopping_lists)
-user_pantry: Despensa personal de cada usuario con fechas de caducidad
-shopping_lists + shopping_list_items: Listas de compras con seguimiento de estado
-5. Planificación Semanal (weekly_planner + planned_meals)
+
+4. Gestión Personal (user_pantry + shopping_lists + despensa_del_usuario)
+user_pantry / despensa_del_usuario: Despensa personal de cada usuario con fechas de caducidad
+shopping_lists + shopping_list_items / articulos_de_la_lista_de_compras: Listas de compras con seguimiento de estado
+Vista: vista_de_ingredientes_que_caduca (ingredientes próximos a vencer) — IRRESTRICTO
+
+5. Planificación Semanal (weekly_planner + planned_meals + comidas_planificadas)
 weekly_planner: Planificador semanal por usuario
-planned_meals: Comidas específicas asignadas a días y tipos (desayuno, almuerzo, cena)
-6. Funcionalidades Sociales (families + family_votes)
+planned_meals / comidas_planificadas: Comidas específicas asignadas a días y tipos (desayuno, almuerzo, cena)
+Vista: vista_de_las_comidas_de_hoy — IRRESTRICTO
+Backup temporal: reserva_de_comidas_planificadas_temporales — IRRESTRICTO
+
+6. Funcionalidades Sociales y Colaborativas (families + encuestas familiares + votos familiares)
 families: Grupos familiares con código único
-family_votes: Sistema de votación familiar para recetas semanales
-7. Interacción Usuario (favorites + cooking_history)
-favorites: Recetas marcadas como favoritas
-cooking_history: Historial de recetas preparadas con calificaciones
+encuestas familiares: Sistema de encuestas para decisión familiar
+votos familiares / family_votes: Votación familiar para recetas semanales
+opciones_de_encuesta: Opciones disponibles en cada encuesta
+votos_de_la_encuesta: Registro de votos emitidos
+familias: Gestión de núcleos familiares
+
+7. Interacción Usuario (favorites + cooking_history + favoritos + historia de la cocina)
+favorites / favoritos: Recetas marcadas como favoritas
+recetas favoritas del usuario: Relación usuario-recetas favoritas
+cooking_history / historia de la cocina: Historial de recetas preparadas con calificaciones
+Backup temporal: copia_de_seguridad_de_favoritos_temporales — IRRESTRICTO
+
 8. Sistema de Notificaciones (notifications)
 Propósito: Notificaciones personalizadas por usuario
 Tipos: expiry (caducidad), recipe, shopping, family, weather, system
-9. Sugerencias Inteligentes (weather_suggestions)
-Propósito: Sugerencias de recetas basadas en condiciones climáticas
 
-Relaciones Principales
+9. Sugerencias Inteligentes (weather_suggestions + sugerencias meteorológicas + planificador_semanal)
+weather_suggestions / sugerencias meteorológicas: Sugerencias de recetas basadas en condiciones climáticas
+planificador_semanal: Herramienta de planificación de menús por semana
 
+10. Vistas de Acceso Irrestricto (RLS desactivado)
+Vista	Propósito
+vista_de_recetas_disponibles	Recetas que se pueden preparar con despensa actual
+vista_de_ingredientes_que_caduca	Ingredientes próximos a caducar
+vista_de_las_comidas_de_hoy	Comidas planificadas para el día actual
+copia_de_seguridad_del_historial_de_coccion_temporal	Backup temporal del historial de cocción
+copia_de_seguridad_de_favoritos_temporales	Backup temporal de favoritos
+reserva_de_comidas_planificadas_temporales	Backup temporal de comidas planificadas
+
+Relaciones Principales Actualizadas
 profiles (usuarios)
     │
     ├── recipes (creadas por usuario)
-    │    └── recipe_ingredients (ingredientes por receta)
-    │         └── ingredients (catálogo)
+    │    ├── recipe_ingredients (ingredientes por receta)
+    │    │    └── ingredients (catálogo)
+    │    └── comentarios_de_la_receta
+    │         ├── me gusta (likes en comentarios)
+    │         └── respuestas_de_comentarios
     │
-    ├── user_pantry (despensa personal)
+    ├── user_pantry / despensa_del_usuario
     │    └── ingredients
     │
-    ├── weekly_planner (planificación semanal)
-    │    └── planned_meals (comidas específicas)
+    ├── weekly_planner / planificador_semanal
+    │    └── planned_meals / comidas_planificadas
     │         └── recipes
     │
-    ├── favorites (recetas favoritas)
-    │    └── recipes
+    ├── favorites / favoritos
+    │    └── recetas favoritas del usuario
     │
     ├── shopping_lists (listas de compras)
-    │    └── shopping_list_items
+    │    └── shopping_list_items / articulos_de_la_lista_de_compras
     │         └── ingredients
     │
-    ├── families (grupos familiares)
-    │    └── family_votes (votaciones)
+    ├── families / familias
+    │    ├── encuestas familiares
+    │    │    ├── opciones_de_encuesta
+    │    │    └── votos_de_la_encuesta
+    │    └── family_votes / votos familiares
     │         └── recipes
     │
-    ├── weather_suggestions (sugerencias clima)
+    ├── weather_suggestions / sugerencias meteorológicas
     │    └── recipes
     │
-    ├── notifications (alertas)
+    ├── notifications
     │
-    └── cooking_history (historial)
+    └── cooking_history / historia de la cocina
          └── recipes
 
-Vistas Importantes
-available_recipes_view: Recetas que se pueden preparar con ingredientes en despensa
-expiring_ingredients_view: Ingredientes próximos a caducar
-todays_meals_view: Comidas planificadas para hoy
+
+
+Vistas Importantes (Actualizadas)
+Vista	Acceso	Descripción
+available_recipes_view / vista_de_recetas_disponibles	IRRESTRICTO	Recetas preparables con ingredientes en despensa
+expiring_ingredients_view / vista_de_ingredientes_que_caduca	IRRESTRICTO	Ingredientes próximos a caducar
+todays_meals_view / vista_de_las_comidas_de_hoy	IRRESTRICTO	Comidas planificadas para hoy
+Backups Temporales (IRRESTRICTO)
+copia_de_seguridad_del_historial_de_coccion_temporal
+copia_de_seguridad_de_favoritos_temporales
+reserva_de_comidas_planificadas_temporales
 Características Clave
 Seguridad (RLS)
 Políticas de Row Level Security en todas las tablas
 Usuarios solo ven/modifican sus propios datos
 Excepciones: ingredients (todos pueden ver, solo admins modificar)
+Vistas IRRESTRICTO: Acceso público sin RLS para vistas funcionales y backups temporales
+
 Funcionalidades Avanzadas
 Generación automática de menús: generate_weekly_menu()
 Gestión de despensa: add_to_pantry()
 Sugerencias por clima: get_weather_suggestions()
 Datos de prueba automáticos: initialize_user_test_data()
+Sistema de likes en comentarios
+Respuestas anidadas a comentarios
+Encuestas familiares con opciones y votación
 Estructura Técnica
 UUIDs como claves primarias en todas las tablas
 Timestamps automáticos: created_at, updated_at
 Índices optimizados para búsquedas frecuentes
 Triggers para mantener consistencia
-Flujo Principal de Datos
+
+Flujo Principal de Datos (Actualizado)
 Usuario se registra → Se crea perfil automáticamente
 Datos de prueba se inicializan automáticamente (despensa, planificador, etc.)
-Usuario gestiona despensa → Sistema sugiere recetas disponibles
+Usuario gestiona despensa → Sistema sugiere recetas disponibles (vista_de_recetas_disponibles)
 Planificación semanal → Generación automática o manual de menús
+Familia vota mediante encuestas → votos_familiares y opciones_de_encuesta
 Compra ingredientes → Listas de compras integradas con despensa
-Cocina recetas → Se registra en historial, se actualizan calificaciones
-Casos de Uso Soportados
-Búsqueda de recetas por ingredientes disponibles
-Planificación de comidas semanales
-Gestión de inventario con alertas de caducidad
-Listas de compras inteligentes
-Votación familiar para menús semanales
-Sugerencias contextuales basadas en clima
-Seguimiento de hábitos de cocina
-
-Esta base de datos está diseñada para ser escalable, segura y fácil de mantener, con un enfoque en la experiencia del usuario y la gestión eficiente de recursos en el hogar.
-
-
-nuevas tablas creadas en la base de dato: Editor de tablas
-esquerna público
-Nueva tabla
-Tablas de búsqueda
-vista_de_recetas_disponibles
-IRRESTRICTO
-Me gusta de los comentarios
-respuestas_de_comentarios
-historia de la cocina
-vista_de_ingredientes_que_caduca
-IRRESTRICTO
-familias
-encuestas familiares
-votos familiares
-favoritos
-ingredientes
-notificaciones
-comidas_planificadas
-perfiles
-comentarios_de_la_receta
-ingredientes de la receta
-recetas
-articulos_de_la_lista_de_compras
-listas de compras
-opciones_de_encuesta
-votos de la encuesta
-copia de seguridad del historial de cocción temporal
-IRRESTRICTO
-copia de seguridad de favoritos temporales
-IRRESTRICTO
-reserva de comidas planificadas temporales
-IRRESTRICTO
-Vista de las comidas de hoy
-IBRESTRICTO
-recetas favoritas del usuario
-despensa_del_usuario
-sugerencias meteorológicas
-planificador_semanal 
+Cocina recetas → Se registra en historia_de_la_cocina, se actualizan calificaciones
+Comentarios y respuestas → Interacción social en recetas con sistema de "me gusta"
+Backups temporales → Copias de seguridad automáticas con acceso irrestricto
 
