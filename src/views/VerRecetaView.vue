@@ -56,8 +56,8 @@
 
                 <!-- Tarjeta del autor (Nuevo diseño) -->
                 <div class="flex items-center gap-3 p-3 rounded-xl bg-[#E8F0E5] w-fit">
-                  <img :src="receta.author_avatar || defaultAvatar" class="w-12 h-12 rounded-full object-cover ring-2 ring-white"
-                    @error="handleAvatarError">
+                  <img :src="receta.author_avatar || defaultAvatar"
+                    class="w-12 h-12 rounded-full object-cover ring-2 ring-white" @error="handleAvatarError">
                   <div>
                     <p class="text-xs text-[#5A6E5A] uppercase tracking-wide">Creado por</p>
                     <p class="font-semibold text-[#1E2A1E]">{{ receta.author_name || authStore.userName || 'Chef Comunidad' }}</p>
@@ -114,7 +114,13 @@
                         <p class="font-medium text-[#1E2A1E]">{{ ingredient.name }}</p>
                       </div>
                       <p class="font-semibold text-[#4A8B5C]">
-                        {{ ingredient.quantity }} {{ ingredient.unit }}
+                        {{ ingredient.quantity }}
+                        <span v-if="ingredient.unit && ingredient.unit !== ''">
+                          {{ ingredient.unit }}
+                        </span>
+                        <span v-else>
+                          unidades
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -138,12 +144,14 @@
                           <Icon icon="mdi:clock-outline" class="text-sm" />
                           {{ step.time_estimate || 5 }} min
                         </p>
+                        <!-- ESTA ES LA PARTE DE LA IMAGEN DEL PASO -->
                         <img v-if="step.image" :src="step.image" class="mt-2 rounded-lg w-full h-40 object-cover"
                           @error="handleStepImageError">
                       </div>
                     </div>
                   </div>
                 </div>
+
               </div>
 
               <!-- Utensilios -->
@@ -327,7 +335,6 @@ export default {
     },
     canEdit() {
       if (!this.receta) return false
-      // El creador o admin pueden editar
       return this.receta.created_by === this.authStore.user?.id || this.authStore.userRole === 'admin'
     }
   },
@@ -359,6 +366,8 @@ export default {
     },
     async loadRecipe() {
       const id = this.$route.params.id
+      if (!id) return
+
       this.loading = true
 
       try {
@@ -366,10 +375,16 @@ export default {
           .from('recipes')
           .select('*')
           .eq('id', id)
-          .single()
+          .maybeSingle()
 
         if (error) throw error
 
+        if (!recipe) {
+          this.receta = null
+          return
+        }
+
+        // CORREGIDO: Asegurar que la unidad se trae correctamente
         const { data: ingredients } = await supabase
           .from('recipe_ingredients')
           .select(`quantity, unit, ingredient:ingredients(name)`)
@@ -397,6 +412,7 @@ export default {
           .eq('recipe_id', id)
           .maybeSingle()
 
+        // CORREGIDO: Asegurar que la unidad siempre tenga un valor
         this.receta = {
           ...recipe,
           steps: recipe.steps || [],
@@ -405,7 +421,7 @@ export default {
           ingredients: ingredients?.map(i => ({
             name: i.ingredient?.name,
             quantity: i.quantity,
-            unit: i.unit
+            unit: i.unit || 'unidades'  // ← FALTA ESTA PARTE: si no hay unidad, pone "unidades"
           })) || [],
           youtube_embed_id: recipe.youtube_url?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/)?.[1] || null,
           total_ingredients: total,
@@ -449,13 +465,13 @@ export default {
       const commentsWithReplies = []
       for (const comment of commentsData || []) {
         const { data: replies } = await supabase
-          .from('comment_replies')
+          .from('respuestas_de_comentarios')
           .select('*')
           .eq('comment_id', comment.id)
           .order('created_at', { ascending: true })
 
         const { data: like } = await supabase
-          .from('comment_likes')
+          .from('me_gusta_de_los_comentarios')
           .select('id')
           .eq('comment_id', comment.id)
           .eq('user_id', this.authStore.user?.id)
@@ -502,7 +518,7 @@ export default {
 
         if (comment.isLiked) {
           await supabase
-            .from('comment_likes')
+            .from('me_gusta_de_los_comentarios')
             .delete()
             .eq('comment_id', commentId)
             .eq('user_id', this.authStore.user?.id)
@@ -510,7 +526,7 @@ export default {
           comment.likes--
         } else {
           await supabase
-            .from('comment_likes')
+            .from('me_gusta_de_los_comentarios')
             .insert({ comment_id: commentId, user_id: this.authStore.user?.id })
           comment.isLiked = true
           comment.likes++
@@ -532,7 +548,7 @@ export default {
 
       try {
         const { data, error } = await supabase
-          .from('recipe_comments')
+          .from('comentarios_de_la_receta')
           .insert({
             recipe_id: this.receta.id,
             user_id: this.authStore.user?.id,
@@ -564,7 +580,7 @@ export default {
 
       try {
         const { error } = await supabase
-          .from('comment_replies')
+          .from('respuestas_de_comentarios')
           .insert({
             comment_id: commentId,
             user_id: this.authStore.user?.id,
@@ -596,10 +612,33 @@ export default {
       this.$router.push('/login')
     }
   },
-  mounted() {
-    if (this.authStore.isAuthenticated) {
-      this.loadRecipe()
+  // ESTO ES CLAVE: Recargar cuando el componente se monta o cuando la ruta cambia
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      vm.loadRecipe()
+    })
+  },
+  beforeRouteUpdate(to, from, next) {
+    this.loadRecipe()
+    next()
+  }, watch: {
+    'receta.steps': {
+      deep: true,
+      handler(steps) {
+        console.log('Steps actualizados:', steps);
+      }
+    },
+    '$route.params.id': {
+      immediate: true,
+      handler() {
+        if (this.authStore.isAuthenticated) {
+          this.loadRecipe();
+        }
+      }
     }
+  },
+  mounted() {
+    this.loadRecipe()
   }
 }
 </script>

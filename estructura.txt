@@ -149,5 +149,42 @@ Seguimiento de hábitos de cocina
 Esta base de datos está diseñada para ser escalable, segura y fácil de mantener, con un enfoque en la experiencia del usuario y la gestión eficiente de recursos en el hogar.
 
 
-
+nuevas tablas creadas en la base de dato: Editor de tablas
+esquerna público
+Nueva tabla
+Tablas de búsqueda
+vista_de_recetas_disponibles
+IRRESTRICTO
+Me gusta de los comentarios
+respuestas_de_comentarios
+historia de la cocina
+vista_de_ingredientes_que_caduca
+IRRESTRICTO
+familias
+encuestas familiares
+votos familiares
+favoritos
+ingredientes
+notificaciones
+comidas_planificadas
+perfiles
+comentarios_de_la_receta
+ingredientes de la receta
+recetas
+articulos_de_la_lista_de_compras
+listas de compras
+opciones_de_encuesta
+votos de la encuesta
+copia de seguridad del historial de cocción temporal
+IRRESTRICTO
+copia de seguridad de favoritos temporales
+IRRESTRICTO
+reserva de comidas planificadas temporales
+IRRESTRICTO
+Vista de las comidas de hoy
+IBRESTRICTO
+recetas favoritas del usuario
+despensa_del_usuario
+sugerencias meteorológicas
+planificador_semanal 
 

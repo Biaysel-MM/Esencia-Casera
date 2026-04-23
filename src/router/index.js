@@ -43,7 +43,7 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/recetas/:id',  // CAMBIADO: antes era '/receta/:id'
+    path: '/recetas/:id',
     name: 'ver-receta',
     component: () => import('@/views/VerRecetaView.vue'),
     meta: { requiresAuth: true }

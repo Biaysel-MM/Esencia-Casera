@@ -231,7 +231,7 @@ const goToRecipeDetail = (id) => {
 }
 
 const goToCreateRecipe = () => {
-  router.push('/crear-receta')
+  router.push('/recetas/crear') 
 }
 
 const toggleMobileMenu = () => { isMobileMenuOpen.value = !isMobileMenuOpen.value }

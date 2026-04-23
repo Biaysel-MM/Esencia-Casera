@@ -1,4 +1,3 @@
-<!-- src/views/CrearRecetaView.vue - Versión Rediseñada con Tailwind CSS -->
 <template>
   <div class="min-h-screen bg-gray-50">
     <Sidebar :is-mobile-open="isMobileMenuOpen" @close="closeMobileMenu" />
@@ -7,7 +6,6 @@
       <Header @toggle-mobile-menu="toggleMobileMenu" @logout="handleLogout" />
 
       <main class="pt-17.5 p-6">
-        <!-- Botón volver atrás -->
         <div class="max-w-4xl mx-auto my-4 flex justify-end">
           <button @click="$router.back()"
             class="flex items-center gap-2 transition-colors bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-600">
@@ -17,7 +15,6 @@
         </div>
 
         <div class="max-w-4xl mx-auto">
-          <!-- Header -->
           <div class="mb-8 flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
               <span class="iconify w-6 h-6 text-emerald-600" data-icon="mdi:plus-circle"></span>
@@ -28,7 +25,7 @@
             </div>
           </div>
 
-          <form @submit.prevent="submitRecipe" class="space-y-6">
+          <div class="space-y-6">
             <!-- Información básica -->
             <div class="bg-white rounded-2xl shadow-sm p-6 space-y-5">
               <h2 class="text-lg font-semibold flex items-center gap-2 text-gray-900">
@@ -83,7 +80,7 @@
                 </div>
               </div>
 
-              <!-- Imagen principal con previsualización -->
+              <!-- Imagen principal -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Imagen principal</label>
                 <div class="flex flex-wrap gap-3">
@@ -94,16 +91,9 @@
                     Subir archivo
                     <input type="file" accept="image/*" @change="uploadImage" class="hidden">
                   </label>
-                  <button type="button" @click="generateImageWithAI" 
-                    class="px-4 py-3 rounded-xl bg-purple-600 text-white hover:bg-purple-700">
-                    <span class="iconify inline mr-2" data-icon="mdi:robot"></span>
-                    Generar con IA
-                  </button>
                 </div>
-                
-                <!-- Previsualización -->
                 <div v-if="form.image_preview" class="mt-3">
-                  <img :src="form.image_preview" class="w-32 h-32 object-cover rounded-xl border">
+                  <img :src="form.image_preview" class="w-full h-48 object-cover rounded-xl border" />
                   <button type="button" @click="clearImage" class="text-red-500 text-sm mt-1">Eliminar</button>
                 </div>
               </div>
@@ -126,7 +116,7 @@
               </div>
             </div>
 
-            <!-- Ingredientes - Modal estilo HomeView -->
+            <!-- Ingredientes -->
             <div class="bg-white rounded-2xl shadow-sm p-6 space-y-5">
               <div class="flex justify-between items-center">
                 <h2 class="text-lg font-semibold flex items-center gap-2 text-gray-900">
@@ -140,9 +130,7 @@
               </div>
 
               <div v-if="form.ingredients.length === 0" class="text-center py-8 text-gray-400">
-                <span class="iconify w-12 h-12 mx-auto mb-2" data-icon="mdi:food-outline"></span>
                 <p>No hay ingredientes agregados</p>
-                <p class="text-sm">Haz clic en "Buscar ingrediente" para agregar</p>
               </div>
 
               <div v-else class="space-y-3">
@@ -158,12 +146,20 @@
                   <div class="w-28">
                     <select v-model="ing.unit" class="w-full px-3 py-2 rounded-lg border border-gray-200">
                       <option value="unidades">unidades</option>
+                      <option value="unidad">unidad</option>
                       <option value="gramos">gramos</option>
+                      <option value="gramo">gramo</option>
                       <option value="kg">kg</option>
                       <option value="ml">ml</option>
                       <option value="tazas">tazas</option>
+                      <option value="taza">taza</option>
                       <option value="cucharadas">cucharadas</option>
+                      <option value="cucharada">cucharada</option>
                       <option value="cucharaditas">cucharaditas</option>
+                      <option value="cucharadita">cucharadita</option>
+                      <option value="libra">libra</option>
+                      <option value="diente">diente</option>
+                      <option value="rama">rama</option>
                     </select>
                   </div>
                   <button type="button" @click="removeIngredient(idx)" class="text-red-500 p-2 hover:text-red-700">
@@ -173,39 +169,42 @@
               </div>
             </div>
 
-            <!-- Pasos de preparación -->
+            <!-- Pasos -->
             <div class="bg-white rounded-2xl shadow-sm p-6 space-y-5">
               <div class="flex justify-between items-center">
                 <h2 class="text-lg font-semibold flex items-center gap-2 text-gray-900">
-                  <span class="iconify w-5 h-5 text-emerald-600" data-icon="mdi:format-list-numbered"></span>
                   Pasos de preparación
                 </h2>
-                <button type="button" @click="addStep" class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm hover:bg-emerald-700">
-                  <span class="iconify inline mr-1" data-icon="mdi:plus"></span> Agregar paso
+                <button type="button" @click="addStep" class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm">
+                  Agregar paso
                 </button>
               </div>
-
               <div v-for="(step, idx) in form.steps" :key="idx" class="flex gap-3 p-3 bg-gray-50 rounded-xl">
-                <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold shrink-0">{{ idx + 1 }}</div>
+                <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold shrink-0">
+                  {{ idx + 1 }}
+                </div>
                 <div class="flex-1 space-y-2">
                   <textarea v-model="step.description" rows="2" placeholder="Describe el paso..."
                     class="w-full px-3 py-2 rounded-lg border border-gray-200"></textarea>
                   <div class="flex flex-wrap gap-2">
-                    <input v-model="step.image" placeholder="URL de imagen (opcional)" class="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm">
+                    <input v-model="step.image" placeholder="URL de imagen (opcional)"
+                      class="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm">
                     <label class="cursor-pointer px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white hover:bg-gray-50">
                       <span class="iconify inline mr-1" data-icon="mdi:folder-upload"></span> Subir
                       <input type="file" accept="image/*" @change="uploadStepImage($event, idx)" class="hidden">
                     </label>
                     <div class="flex items-center gap-1">
                       <span class="iconify text-gray-400" data-icon="mdi:clock-outline"></span>
-                      <input v-model="step.time_estimate" type="number" placeholder="min" class="w-20 px-3 py-2 rounded-lg border border-gray-200 text-sm">
+                      <input v-model="step.time_estimate" type="number" placeholder="min"
+                        class="w-20 px-3 py-2 rounded-lg border border-gray-200 text-sm">
                     </div>
                   </div>
                   <div v-if="step.image_preview" class="mt-2">
-                    <img :src="step.image_preview" class="w-32 h-24 object-cover rounded-lg border">
+                    <img :src="step.image_preview" class="w-32 h-24 object-cover rounded-lg border" />
+                    <button type="button" @click="clearStepImage(idx)" class="text-red-500 text-xs mt-1">Eliminar</button>
                   </div>
                 </div>
-                <button type="button" @click="removeStep(idx)" class="text-red-500 p-2 hover:text-red-700">
+                <button type="button" @click="removeStep(idx)" class="text-red-500 p-2">
                   <span class="iconify w-5 h-5" data-icon="mdi:trash-can-outline"></span>
                 </button>
               </div>
@@ -214,14 +213,11 @@
             <!-- Extras -->
             <div class="bg-white rounded-2xl shadow-sm p-6 space-y-5">
               <h2 class="text-lg font-semibold text-gray-900">Extras (opcional)</h2>
-              
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">URL de YouTube</label>
                 <input v-model="form.youtube_url" placeholder="https://youtube.com/watch?v=..." 
                   class="w-full px-4 py-3 rounded-xl border border-gray-200">
-                <div v-if="form.youtube_preview" class="mt-2 text-sm text-emerald-600">
-                  ✅ ID del video: {{ form.youtube_embed_id }}
-                </div>
               </div>
 
               <div>
@@ -250,50 +246,36 @@
             <!-- Botones finales -->
             <div class="flex gap-4 justify-end">
               <button type="button" @click="cancel" class="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50">Cancelar</button>
-              <button type="submit" :disabled="submitting"
+              <button type="button" @click="submitRecipe" :disabled="submitting"
                 class="px-6 py-3 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50">
                 {{ submitting ? 'Publicando...' : 'Publicar receta' }}
               </button>
             </div>
-          </form>
+          </div>
         </div>
       </main>
     </div>
 
-    <!-- Modal de búsqueda de ingredientes (estilo HomeView) -->
+    <!-- Modal de ingredientes -->
     <div v-if="showIngredientModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-1000 p-4" @click="showIngredientModal = false">
-      <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-hidden shadow-2xl" @click.stop>
-        <div class="p-5 border-b border-gray-100 flex justify-between items-center">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900">Buscar ingrediente</h3>
-            <p class="text-sm text-gray-500">Selecciona un ingrediente para agregar a tu receta</p>
-          </div>
+      <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-hidden" @click.stop>
+        <div class="p-5 border-b flex justify-between items-center">
+          <h3 class="text-lg font-semibold">Buscar ingrediente</h3>
           <button @click="showIngredientModal = false" class="text-gray-400 hover:text-gray-600">
-            <span class="iconify w-6 h-6" data-icon="mdi:close"></span>
+            <Icon icon="mdi:close" class="w-6 h-6" />
           </button>
         </div>
         <div class="p-5">
           <div class="relative mb-4">
-            <span class="iconify absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" data-icon="mdi:magnify"></span>
+            <Icon icon="mdi:magnify" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input type="text" v-model="ingredientSearch" placeholder="Buscar ingrediente..."
-              class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100">
+              class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200">
           </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
-            <div v-for="ing in filteredIngredients" :key="ing.id"
-              @click="selectIngredient(ing)"
-              class="relative rounded-xl border border-gray-200 p-3 flex flex-col items-center gap-2 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200 hover:border-emerald-600 bg-white">
-              <div class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
-                <img :src="ing.image_url || defaultImage" :alt="ing.name" class="w-full h-full object-cover">
-              </div>
-              <div class="font-medium text-sm text-center text-gray-900">{{ ing.name }}</div>
-              <button class="absolute top-2 right-2 w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center hover:bg-emerald-700">
-                <span class="iconify w-4 h-4" data-icon="mdi:plus"></span>
-              </button>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
+            <div v-for="ing in filteredIngredients" :key="ing.id" @click="selectIngredient(ing)"
+              class="border rounded-xl p-3 cursor-pointer hover:border-emerald-600 hover:shadow-lg transition-all">
+              <div class="font-medium text-sm text-center">{{ ing.name }}</div>
             </div>
-          </div>
-          <div v-if="filteredIngredients.length === 0" class="text-center py-8 text-gray-400">
-            <span class="iconify w-12 h-12 mx-auto mb-2" data-icon="mdi:food-off"></span>
-            <p>No se encontraron ingredientes</p>
           </div>
         </div>
       </div>
@@ -340,7 +322,7 @@ export default {
         image_preview: null,
         tags: [],
         ingredients: [],
-        steps: [{ description: '', image: '', image_preview: null, time_estimate: 5 }],
+        steps: [],
         youtube_url: '',
         youtube_embed_id: null,
         youtube_preview: false,
@@ -367,7 +349,7 @@ export default {
       setTimeout(() => this.showToast = false, 3000)
     },
     async loadIngredients() {
-      const { data } = await supabase.from('ingredients').select('id, name, image_url').order('name')
+      const { data } = await supabase.from('ingredients').select('id, name').order('name')
       this.allIngredients = data || []
     },
     openIngredientModal() {
@@ -399,10 +381,15 @@ export default {
       this.form.ingredients.splice(idx, 1)
     },
     addStep() {
-      this.form.steps.push({ description: '', image: '', image_preview: null, time_estimate: 5 })
+      this.form.steps.push({ description: '', image: null, image_preview: null, time_estimate: 5 })
     },
     removeStep(idx) {
       this.form.steps.splice(idx, 1)
+    },
+    clearStepImage(idx) {
+      this.form.steps[idx].image = null
+      this.form.steps[idx].image_preview = null
+      this.toast('🗑️ Imagen del paso eliminada')
     },
     addUtensil() {
       if (this.newUtensil && !this.form.utensils_needed.includes(this.newUtensil)) {
@@ -420,6 +407,7 @@ export default {
         reader.onload = (e) => {
           this.form.image_preview = e.target.result
           this.form.image_url = e.target.result
+          this.toast('✅ Imagen cargada')
         }
         reader.readAsDataURL(file)
       }
@@ -435,15 +423,10 @@ export default {
         reader.onload = (e) => {
           this.form.steps[stepIdx].image_preview = e.target.result
           this.form.steps[stepIdx].image = e.target.result
+          this.toast('✅ Imagen del paso cargada')
         }
         reader.readAsDataURL(file)
       }
-    },
-    generateImageWithAI() {
-      const randomId = Math.floor(Math.random() * 100)
-      this.form.image_url = `https://picsum.photos/id/${randomId}/800/600`
-      this.form.image_preview = this.form.image_url
-      this.toast('🎨 Imagen de prueba generada (puedes cambiarla)')
     },
     async submitRecipe() {
       if (!this.form.title || !this.form.description || !this.form.total_time || !this.form.servings) {
@@ -462,11 +445,7 @@ export default {
         let youtubeEmbedId = null
         if (this.form.youtube_url) {
           const match = this.form.youtube_url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/)
-          if (match) {
-            youtubeEmbedId = match[1]
-            this.form.youtube_embed_id = youtubeEmbedId
-            this.form.youtube_preview = true
-          }
+          if (match) youtubeEmbedId = match[1]
         }
 
         const steps = this.form.steps.map((step, idx) => ({
@@ -482,6 +461,9 @@ export default {
           category: this.form.category,
           difficulty: this.form.difficulty,
           total_time: parseInt(this.form.total_time),
+          prep_time: parseInt(this.form.total_time) || 0,
+          cook_time: parseInt(this.form.total_time) || 0,
+          total_time: parseInt(this.form.total_time) || 0,
           servings: parseInt(this.form.servings),
           calories_per_serving: this.form.calories ? parseInt(this.form.calories) : null,
           image_url: this.form.image_url || null,
@@ -519,7 +501,7 @@ export default {
             } else {
               const { data: newIng } = await supabase
                 .from('ingredients')
-                .insert({ name: ing.name, category: 'otros', default_unit: ing.unit })
+                .insert({ name: ing.name })
                 .select()
                 .single()
               ingredientId = newIng.id
@@ -530,7 +512,7 @@ export default {
             recipe_id: recipe.id,
             ingredient_id: ingredientId,
             quantity: parseFloat(ing.quantity),
-            unit: ing.unit
+            unit: ing.unit || 'unidades'
           })
         }
 
@@ -556,6 +538,18 @@ export default {
     async handleLogout() {
       await this.authStore.logout()
       this.$router.push('/login')
+    }
+  },
+  watch: {
+    'form.image_url': {
+      handler(newUrl) {
+        if (newUrl && newUrl.trim() !== '') {
+          this.form.image_preview = newUrl
+        } else {
+          this.form.image_preview = null
+        }
+      },
+      immediate: true
     }
   },
   mounted() {
