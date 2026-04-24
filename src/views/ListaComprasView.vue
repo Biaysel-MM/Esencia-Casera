@@ -258,7 +258,7 @@
     </div>
 
     <!-- Toast -->
-    <div v-if="showToast" class="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
+    <div v-if="showToast" class="fixed top-5 right-5 z-1000 bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
       <span class="iconify w-5 h-5" :data-icon="toastIcon"></span>
       <span>{{ toastMessage }}</span>
     </div>

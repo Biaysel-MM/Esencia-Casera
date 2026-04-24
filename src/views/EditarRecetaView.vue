@@ -323,7 +323,7 @@
 
     <!-- Toast -->
     <div v-if="showToast"
-      class="fixed top-5 right-3 sm:right-5 z-50 bg-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-lg text-sm sm:text-base">
+      class="fixed top-5 right-3 sm:right-5 z-1000 bg-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-lg text-sm sm:text-base">
       {{ toastMessage }}
     </div>
   </div>
