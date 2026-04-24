@@ -2,8 +2,8 @@
   <header class="fixed top-0 left-65 right-0 z-900 flex h-17.5 items-center justify-between border-b border-[rgba(0,0,0,0.08)] bg-white px-6 shadow-[0_2px_10px_rgba(0,0,0,0.05)] transition-all duration-300 ease-in-out max-lg:left-0 max-lg:right-0 max-lg:h-16 max-lg:px-4">
     <div class="flex items-center gap-5">
       <!-- Hamburger Menu Button -->
-      <button class="hidden h-10 w-10 cursor-pointer items-center justify-center rounded-2.5 text-[#2C2C2C] transition-all duration-200 hover:scale-105 hover:bg-[#D8EBD0] max-lg:flex" @click="toggleMobileMenu">
-        <span class="iconify text-2.5" data-icon="mdi:menu"></span>
+      <button class="hidden h-10 w-10 cursor-pointer items-center justify-center rounded-2.5 text-[#2C2C2C] transition-all duration-200 hover:scale-105 hover:bg-[#D8EBD0] max-lg:flex rounded-lg" @click="toggleMobileMenu">
+        <i class="iconify text-xl" data-icon="mdi:menu"></i>
       </button>
 
       <!-- Search Bar -->

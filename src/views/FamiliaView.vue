@@ -5,50 +5,50 @@
     <div class="md:ml-65">
       <Header @toggle-mobile-menu="toggleMobileMenu" @logout="handleLogout" />
 
-      <main class="pt-25 p-6">
+      <main class="pt-20 sm:pt-22 md:pt-25 p-3 sm:p-4 md:p-6">
         <div class="max-w-6xl mx-auto">
           <!-- Header -->
-          <div class="flex justify-between items-center flex-wrap gap-4 mb-8">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
-                <span class="iconify w-6 h-6 text-emerald-600" data-icon="mdi:account-group"></span>
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div class="flex items-center gap-3 sm:gap-4">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+                <span class="iconify w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" data-icon="mdi:account-group"></span>
               </div>
               <div>
-                <h1 class="text-2xl font-semibold text-gray-900">Gestión Familiar</h1>
-                <p class="text-sm text-gray-500">Administra tu grupo familiar y las votaciones</p>
+                <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Gestión Familiar</h1>
+                <p class="text-xs sm:text-sm text-gray-500">Administra tu grupo familiar y las votaciones</p>
               </div>
             </div>
             <button @click="openCreateSurveyModal"
-              class="px-5 py-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-2 cursor-pointer transition-all">
-              <span class="iconify w-5 h-5" data-icon="mdi:plus-circle"></span>
+              class="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-2 cursor-pointer transition-all text-sm sm:text-base w-full sm:w-auto justify-center">
+              <span class="iconify w-4 h-4 sm:w-5 sm:h-5" data-icon="mdi:plus-circle"></span>
               Nueva votación
             </button>
           </div>
 
           <!-- Family Code Card -->
-          <div class="bg-white rounded-2xl shadow-sm p-6 mb-8">
-            <div class="flex items-center justify-between flex-wrap gap-4">
+          <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 mb-6 sm:mb-8">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                  <span class="iconify w-5 h-5 text-emerald-600" data-icon="mdi:pound"></span>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                  <span class="iconify w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" data-icon="mdi:pound"></span>
                 </div>
                 <div>
-                  <h2 class="text-lg font-semibold text-gray-900">Código de Familia</h2>
-                  <p class="text-sm text-gray-500">Comparte este código con tus familiares para que se unan</p>
+                  <h2 class="text-base sm:text-lg font-semibold text-gray-900">Código de Familia</h2>
+                  <p class="text-xs sm:text-sm text-gray-500">Comparte este código con tus familiares</p>
                 </div>
               </div>
-              <div class="flex items-center gap-3">
-                <div class="px-4 py-2 bg-gray-100 rounded-xl font-mono text-lg font-bold text-emerald-600">
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full md:w-auto">
+                <div class="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-100 rounded-xl font-mono text-base sm:text-lg font-bold text-emerald-600 text-center">
                   {{ familyCode }}
                 </div>
                 <button @click="copyFamilyCode"
-                  class="px-4 py-2 rounded-xl border border-emerald-200 text-emerald-600 hover:bg-emerald-50 flex items-center gap-2 cursor-pointer transition-all">
-                  <span class="iconify w-5 h-5" data-icon="mdi:content-copy"></span>
+                  class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-emerald-200 text-emerald-600 hover:bg-emerald-50 flex items-center justify-center gap-2 cursor-pointer transition-all text-sm">
+                  <span class="iconify w-4 h-4 sm:w-5 sm:h-5" data-icon="mdi:content-copy"></span>
                   Copiar
                 </button>
                 <button @click="regenerateFamilyCode"
-                  class="px-4 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 flex items-center gap-2 cursor-pointer transition-all">
-                  <span class="iconify w-5 h-5" data-icon="mdi:refresh"></span>
+                  class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 flex items-center justify-center gap-2 cursor-pointer transition-all text-sm">
+                  <span class="iconify w-4 h-4 sm:w-5 sm:h-5" data-icon="mdi:refresh"></span>
                   Regenerar
                 </button>
               </div>
@@ -56,35 +56,35 @@
           </div>
 
           <!-- Family Members -->
-          <div class="bg-white rounded-2xl shadow-sm p-6 mb-8">
-            <h2 class="text-lg font-semibold text-gray-900 mb-5">Miembros de la familia</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 mb-6 sm:mb-8">
+            <h2 class="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-5">Miembros de la familia</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
               <div v-for="member in familyMembers" :key="member.id"
                 class="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-semibold"
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-white font-semibold text-sm sm:text-base"
                   :class="member.color">
                   {{ member.initials }}
                 </div>
-                <div class="flex-1">
-                  <p class="font-medium text-gray-900">{{ member.name }}</p>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm sm:text-base font-medium text-gray-900 truncate">{{ member.name }}</p>
                   <p class="text-xs text-gray-400">{{ member.role === 'admin' ? 'Administrador' : 'Familiar' }}</p>
                 </div>
                 <button v-if="member.id !== currentUserId && familyMembers.length > 1"
                   @click="removeMember(member.id, member.name)"
-                  class="text-red-400 hover:text-red-600 cursor-pointer transition-all">
-                  <span class="iconify w-5 h-5" data-icon="mdi:delete-outline"></span>
+                  class="text-red-400 hover:text-red-600 cursor-pointer transition-all shrink-0">
+                  <span class="iconify w-4 h-4 sm:w-5 sm:h-5" data-icon="mdi:delete-outline"></span>
                 </button>
               </div>
             </div>
           </div>
 
           <!-- Active Surveys -->
-          <div class="bg-white rounded-2xl shadow-sm p-6 mb-8">
-            <div class="flex items-center gap-3 mb-5">
-              <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                <span class="iconify w-5 h-5 text-emerald-600" data-icon="mdi:vote"></span>
+          <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 mb-6 sm:mb-8">
+            <div class="flex items-center gap-3 mb-4 sm:mb-5">
+              <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                <span class="iconify w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" data-icon="mdi:vote"></span>
               </div>
-              <h2 class="text-lg font-semibold text-gray-900">Votaciones Activas</h2>
+              <h2 class="text-base sm:text-lg font-semibold text-gray-900">Votaciones Activas</h2>
             </div>
 
             <div v-if="loadingSurveys" class="flex justify-center py-8">
@@ -92,17 +92,17 @@
             </div>
 
             <div v-else-if="activeSurveys.length === 0" class="text-center py-8 text-gray-400">
-              <span class="iconify w-12 h-12 mx-auto mb-2" data-icon="mdi:vote-outline"></span>
-              <p>No hay votaciones activas</p>
-              <button @click="openCreateSurveyModal" class="mt-2 text-emerald-600 hover:underline cursor-pointer">Crear una nueva</button>
+              <span class="iconify w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2" data-icon="mdi:vote-outline"></span>
+              <p class="text-sm sm:text-base">No hay votaciones activas</p>
+              <button @click="openCreateSurveyModal" class="mt-2 text-emerald-600 hover:underline cursor-pointer text-sm">Crear una nueva</button>
             </div>
 
-            <div v-for="survey in activeSurveys" :key="survey.id" class="border border-gray-200 rounded-xl p-5 mb-4">
-              <div class="flex justify-between items-start mb-3">
-                <div>
-                  <h3 class="font-semibold text-gray-900">{{ survey.title }}</h3>
+            <div v-for="survey in activeSurveys" :key="survey.id" class="border border-gray-200 rounded-xl p-4 sm:p-5 mb-4">
+              <div class="flex flex-col sm:flex-row justify-between items-start gap-3 mb-3">
+                <div class="flex-1">
+                  <h3 class="text-base sm:text-lg font-semibold text-gray-900">{{ survey.title }}</h3>
                   <p class="text-sm text-gray-500">{{ survey.description }}</p>
-                  <div class="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                  <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-2 text-xs text-gray-400">
                     <span class="flex items-center gap-1">
                       <span class="iconify w-3 h-3" data-icon="mdi:food"></span>
                       {{ getMealLabel(survey.meal_type) }}
@@ -117,36 +117,36 @@
                     </span>
                   </div>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex gap-2 shrink-0">
                   <button @click="editSurvey(survey)"
                     class="text-gray-400 hover:text-emerald-600 cursor-pointer transition-all">
-                    <span class="iconify w-5 h-5" data-icon="mdi:pencil"></span>
+                    <span class="iconify w-4 h-4 sm:w-5 sm:h-5" data-icon="mdi:pencil"></span>
                   </button>
                   <button @click="deleteSurvey(survey.id)"
                     class="text-gray-400 hover:text-red-500 cursor-pointer transition-all">
-                    <span class="iconify w-5 h-5" data-icon="mdi:delete"></span>
+                    <span class="iconify w-4 h-4 sm:w-5 sm:h-5" data-icon="mdi:delete"></span>
                   </button>
                 </div>
               </div>
 
               <!-- Options / Recipes -->
               <div class="mt-4 space-y-3">
-                <div v-for="option in survey.options" :key="option.id" class="flex items-center justify-between">
-                  <div class="flex items-center gap-3 flex-1">
-                    <img :src="option.image_url || defaultImage" class="w-10 h-10 rounded-lg object-cover">
-                    <div>
-                      <p class="text-sm font-medium text-gray-900">{{ option.title }}</p>
+                <div v-for="option in survey.options" :key="option.id" class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
+                  <div class="flex items-center gap-3 flex-1 min-w-0">
+                    <img :src="option.image_url || defaultImage" class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover shrink-0">
+                    <div class="min-w-0">
+                      <p class="text-sm sm:text-base font-medium text-gray-900 truncate">{{ option.title }}</p>
                       <p class="text-xs text-gray-400">{{ option.total_time }} min · {{ option.servings }} porc.</p>
                     </div>
                   </div>
-                  <div class="flex items-center gap-3">
-                    <div class="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                    <div class="flex-1 sm:w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div class="h-full bg-emerald-500 rounded-full"
                         :style="{ width: getOptionPercentage(option.votes, familyMembers.length) + '%' }"></div>
                     </div>
-                    <span class="text-sm font-medium w-12">{{ option.votes || 0 }} votos</span>
-                    <button @click="removeOption(option.id)" class="text-gray-400 hover:text-red-500">
-                      <span class="iconify w-4 h-4" data-icon="mdi:close"></span>
+                    <span class="text-xs sm:text-sm font-medium w-12 text-center">{{ option.votes || 0 }} votos</span>
+                    <button @click="removeOption(option.id)" class="text-gray-400 hover:text-red-500 shrink-0">
+                      <span class="iconify w-3 h-3 sm:w-4 sm:h-4" data-icon="mdi:close"></span>
                     </button>
                   </div>
                 </div>
@@ -155,11 +155,11 @@
               <!-- Participación familiar -->
               <div class="mt-4 pt-3 border-t border-gray-100">
                 <p class="text-xs font-medium text-gray-500 mb-2">👥 Participación familiar:</p>
-                <div class="flex flex-wrap gap-2">
+                <div class="flex flex-wrap gap-1.5 sm:gap-2">
                   <div v-for="member in familyMembers" :key="member.id"
-                    class="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs"
+                    class="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs"
                     :class="hasMemberVoted(survey.id, member.id) ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'">
-                    <span class="iconify w-3 h-3"
+                    <span class="iconify w-2.5 h-2.5 sm:w-3 sm:h-3"
                       :data-icon="hasMemberVoted(survey.id, member.id) ? 'mdi:check-circle' : 'mdi:clock-outline'"></span>
                     <span>{{ member.initials }}</span>
                   </div>
@@ -167,20 +167,20 @@
               </div>
 
               <button @click="openAddOptionModal(survey.id)"
-                class="mt-3 text-sm text-emerald-600 hover:underline flex items-center gap-1 cursor-pointer">
-                <span class="iconify w-4 h-4" data-icon="mdi:plus"></span>
+                class="mt-3 text-xs sm:text-sm text-emerald-600 hover:underline flex items-center gap-1 cursor-pointer">
+                <span class="iconify w-3 h-3 sm:w-4 sm:h-4" data-icon="mdi:plus"></span>
                 Agregar receta
               </button>
             </div>
           </div>
 
           <!-- Past Surveys -->
-          <div class="bg-white rounded-2xl shadow-sm p-6">
-            <div class="flex items-center gap-3 mb-5">
-              <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-                <span class="iconify w-5 h-5 text-gray-500" data-icon="mdi:history"></span>
+          <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
+            <div class="flex items-center gap-3 mb-4 sm:mb-5">
+              <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+                <span class="iconify w-4 h-4 sm:w-5 sm:h-5 text-gray-500" data-icon="mdi:history"></span>
               </div>
-              <h2 class="text-lg font-semibold text-gray-900">Votaciones Pasadas</h2>
+              <h2 class="text-base sm:text-lg font-semibold text-gray-900">Votaciones Pasadas</h2>
             </div>
 
             <div v-if="loadingPast" class="flex justify-center py-6">
@@ -188,20 +188,20 @@
             </div>
 
             <div v-else-if="pastSurveys.length === 0" class="text-center py-6 text-gray-400">
-              <p>No hay votaciones pasadas</p>
+              <p class="text-sm sm:text-base">No hay votaciones pasadas</p>
             </div>
 
-            <div v-for="survey in pastSurveys" :key="survey.id" class="border border-gray-200 rounded-xl p-4 mb-3">
-              <div class="flex justify-between items-start">
-                <div>
-                  <h3 class="font-semibold text-gray-900">{{ survey.title }}</h3>
-                  <p class="text-sm text-gray-500">{{ survey.description }}</p>
+            <div v-for="survey in pastSurveys" :key="survey.id" class="border border-gray-200 rounded-xl p-3 sm:p-4 mb-3">
+              <div class="flex flex-col sm:flex-row justify-between items-start gap-3">
+                <div class="flex-1">
+                  <h3 class="text-sm sm:text-base font-semibold text-gray-900">{{ survey.title }}</h3>
+                  <p class="text-xs sm:text-sm text-gray-500">{{ survey.description }}</p>
                   <div class="text-xs text-gray-400 mt-1">
                     Finalizó el {{ formatDate(survey.end_date) }}
                   </div>
                 </div>
                 <div v-if="survey.winner"
-                  class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium">
+                  class="px-2 sm:px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium shrink-0">
                   Ganador: {{ survey.winner.title }}
                 </div>
               </div>
@@ -212,27 +212,27 @@
     </div>
 
     <!-- Create Survey Modal -->
-    <div v-if="showCreateModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-1000 p-4"
+    <div v-if="showCreateModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-1000 p-3 sm:p-4"
       @click="closeCreateModal">
-      <div class="bg-white rounded-2xl max-w-md w-full" @click.stop>
-        <div class="p-5 border-b border-gray-100">
-          <h3 class="text-lg font-semibold text-gray-900">Nueva Votación</h3>
+      <div class="bg-white rounded-2xl max-w-md w-full mx-3 sm:mx-0" @click.stop>
+        <div class="p-4 sm:p-5 border-b border-gray-100">
+          <h3 class="text-base sm:text-lg font-semibold text-gray-900">Nueva Votación</h3>
         </div>
-        <div class="p-5 space-y-4">
+        <div class="p-4 sm:p-5 space-y-3 sm:space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Título</label>
             <input v-model="newSurvey.title"
-              class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+              class="w-full px-3 sm:px-4 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 text-sm sm:text-base">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Descripción</label>
             <textarea v-model="newSurvey.description" rows="2"
-              class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"></textarea>
+              class="w-full px-3 sm:px-4 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 text-sm sm:text-base"></textarea>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de comida</label>
+            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Tipo de comida</label>
             <select v-model="newSurvey.meal_type"
-              class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+              class="w-full px-3 sm:px-4 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 text-sm sm:text-base">
               <option value="any">Cualquiera</option>
               <option value="desayuno">Desayuno</option>
               <option value="almuerzo">Almuerzo</option>
@@ -241,45 +241,45 @@
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha inicio</label>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Fecha inicio</label>
               <input type="date" v-model="newSurvey.start_date"
-                class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+                class="w-full px-3 sm:px-4 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 text-sm sm:text-base">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha fin</label>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Fecha fin</label>
               <input type="date" v-model="newSurvey.end_date"
-                class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+                class="w-full px-3 sm:px-4 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 text-sm sm:text-base">
             </div>
           </div>
           <div class="flex gap-3 pt-3">
             <button @click="closeCreateModal"
-              class="flex-1 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 cursor-pointer transition-all">Cancelar</button>
+              class="flex-1 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 cursor-pointer transition-all text-sm sm:text-base">Cancelar</button>
             <button @click="createSurvey"
-              class="flex-1 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer transition-all">Crear</button>
+              class="flex-1 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer transition-all text-sm sm:text-base">Crear</button>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Add Option Modal -->
-    <div v-if="showAddOptionModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-1000 p-4"
+    <div v-if="showAddOptionModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-1000 p-3 sm:p-4"
       @click="closeAddOptionModal">
-      <div class="bg-white rounded-2xl max-w-md w-full" @click.stop>
-        <div class="p-5 border-b border-gray-100">
-          <h3 class="text-lg font-semibold text-gray-900">Agregar receta</h3>
+      <div class="bg-white rounded-2xl max-w-md w-full mx-3 sm:mx-0" @click.stop>
+        <div class="p-4 sm:p-5 border-b border-gray-100">
+          <h3 class="text-base sm:text-lg font-semibold text-gray-900">Agregar receta</h3>
         </div>
-        <div class="p-5">
+        <div class="p-4 sm:p-5">
           <div class="relative mb-4">
-            <span class="iconify absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" data-icon="mdi:magnify"></span>
+            <span class="iconify absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" data-icon="mdi:magnify"></span>
             <input v-model="recipeSearch" placeholder="Buscar receta..."
-              class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+              class="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 text-sm sm:text-base">
           </div>
           <div class="max-h-64 overflow-y-auto space-y-2">
             <div v-for="recipe in filteredRecipes" :key="recipe.id" @click="addOption(recipe)"
               class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-all">
-              <img :src="recipe.image_url || defaultImage" class="w-10 h-10 rounded-lg object-cover">
-              <div>
-                <p class="text-sm font-medium text-gray-900">{{ recipe.title }}</p>
+              <img :src="recipe.image_url || defaultImage" class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover">
+              <div class="min-w-0">
+                <p class="text-sm sm:text-base font-medium text-gray-900 truncate">{{ recipe.title }}</p>
                 <p class="text-xs text-gray-400">{{ recipe.total_time }} min · {{ recipe.servings }} porc.</p>
               </div>
             </div>
@@ -290,8 +290,8 @@
 
     <!-- Toast -->
     <div v-if="showToast"
-      class="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-slide-in-right">
-      <span class="iconify w-5 h-5" :data-icon="toastIcon"></span>
+      class="fixed top-5 right-3 sm:right-5 z-50 bg-emerald-600 text-white px-4 sm:px-5 py-2 sm:py-3 rounded-xl shadow-lg flex items-center gap-2 animate-slide-in-right text-sm sm:text-base">
+      <span class="iconify w-4 h-4 sm:w-5 sm:h-5" :data-icon="toastIcon"></span>
       <span>{{ toastMessage }}</span>
     </div>
   </div>

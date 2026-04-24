@@ -9,7 +9,7 @@
       <main class="pt-25 p-6">
         <div class="max-w-350 mx-auto">
           <!-- Header con botón Crear Receta -->
-          <div class="flex justify-between items-center mb-8">
+          <div class="flex justify-between items-start mb-8 flex-col lg:flex-row gap-4 ">
             <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
                 <span class="iconify w-6 h-6 text-emerald-600" data-icon="mdi:book-open"></span>

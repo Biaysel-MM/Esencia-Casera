@@ -12,44 +12,44 @@
 
       <!-- Scrollable Content -->
       <main class="pt-17.5 min-h-[calc(100vh-70px)] overflow-y-auto bg-[#F4F9F4]">
-        <div class="max-w-350 mx-auto w-full p-4 md:p-6 lg:p-8">
-          <div class="flex flex-col gap-6">
+        <div class="max-w-350 mx-auto w-full p-3 sm:p-4 md:p-6 lg:p-8">
+          <div class="flex flex-col gap-4 sm:gap-5 md:gap-6">
             <!-- Welcome Section -->
-            <div class="rounded-2xl border p-6 bg-linear-to-br from-[rgba(93,162,113,0.2)] to-[rgba(168,213,186,0.2)] border-[#E2E8E2]">
-              <div class="flex items-center gap-5 max-md:flex-col max-md:text-center">
-                <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#5DA271] text-xl font-semibold text-white">
+            <div class="rounded-2xl border p-4 sm:p-5 md:p-6 bg-linear-to-br from-[rgba(93,162,113,0.2)] to-[rgba(168,213,186,0.2)] border-[#E2E8E2]">
+              <div class="flex items-center gap-4 sm:gap-5 max-md:flex-col max-md:text-center">
+                <div class="flex h-14 w-14 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-[#5DA271] text-lg sm:text-xl font-semibold text-white">
                   {{ userInitials }}
                 </div>
                 <div>
-                  <h1 class="mb-1 text-[28px] font-semibold text-[#2C2C2C] max-md:text-2xl">¡Hola {{ userName }}! 👋</h1>
-                  <p class="text-base text-[#6C7A6C]">Tienes <strong>{{ pantryItems.length }}</strong> ingredientes en tu despensa</p>
+                  <h1 class="mb-1 text-2xl sm:text-[28px] font-semibold text-[#2C2C2C]">¡Hola {{ userName }}! 👋</h1>
+                  <p class="text-sm sm:text-base text-[#6C7A6C]">Tienes <strong>{{ pantryItems.length }}</strong> ingredientes en tu despensa</p>
                 </div>
               </div>
             </div>
 
             <!-- Daily Meals Section -->
-            <section class="rounded-2xl p-6 shadow-sm border bg-white border-[#E2E8E2]">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <h2 class="text-xl font-semibold text-[#1E2A1E]">Comidas del día</h2>
+            <section class="rounded-2xl p-4 sm:p-5 md:p-6 shadow-sm border bg-white border-[#E2E8E2]">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5 md:mb-6">
+                <h2 class="text-lg sm:text-xl font-semibold text-[#1E2A1E]">Comidas del día</h2>
                 <button @click="openGenerateMenuModal"
-                  class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-200 font-medium text-sm border-[#E2E8E2] text-[#4A8B5C] bg-transparent">
-                  <span class="iconify w-5 h-5" data-icon="mdi:sparkles"></span>
+                  class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border transition-all duration-200 font-medium text-xs sm:text-sm border-[#E2E8E2] text-[#4A8B5C] bg-transparent w-full sm:w-auto justify-center">
+                  <span class="iconify w-4 h-4 sm:w-5 sm:h-5" data-icon="mdi:sparkles"></span>
                   Generar nuevo menú
                 </button>
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
                 <div v-if="loadingStates.meals" class="col-span-full flex flex-col items-center justify-center py-12 text-[#5A6E5A]">
                   <div class="w-10 h-10 border-4 rounded-full animate-spin mb-4 border-[#E2E8E2] border-t-[#4A8B5C]"></div>
-                  <p>Cargando comidas...</p>
+                  <p class="text-sm sm:text-base">Cargando comidas...</p>
                 </div>
 
                 <div v-else-if="todayMeals.length === 0" class="col-span-full flex flex-col items-center justify-center py-12 text-[#5A6E5A]">
-                  <span class="iconify w-12 h-12 mb-4" data-icon="mdi:food-outline"></span>
-                  <p>No hay comidas planificadas para hoy</p>
+                  <span class="iconify w-10 h-10 sm:w-12 sm:h-12 mb-4" data-icon="mdi:food-outline"></span>
+                  <p class="text-sm sm:text-base">No hay comidas planificadas para hoy</p>
                   <button @click="openGenerateMenuModal"
-                    class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-medium transition-colors duration-200 bg-[#4A8B5C]">
-                    <span class="iconify w-5 h-5" data-icon="mdi:sparkles"></span>
+                    class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium transition-colors duration-200 bg-[#4A8B5C]">
+                    <span class="iconify w-4 h-4 sm:w-5 sm:h-5" data-icon="mdi:sparkles"></span>
                     Generar menú automático
                   </button>
                 </div>
@@ -58,60 +58,60 @@
                   <div v-for="meal in todayMeals" :key="meal.id"
                     class="group cursor-pointer overflow-hidden rounded-2xl border border-[rgba(0,0,0,0.08)] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#5DA271] hover:shadow-[0_12px_24px_rgba(0,0,0,0.1)]"
                     @click="goToRecipeDetail(meal.recipe_id)">
-                    <div class="relative h-48 overflow-hidden">
+                    <div class="relative h-40 sm:h-44 md:h-48 overflow-hidden">
                       <img :src="meal.image_url || defaultImage" :alt="meal.title"
                         class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         @error="handleImageError" />
                       <div class="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
 
-                      <div class="absolute left-3 top-3">
-                        <span class="rounded-lg bg-[#5DA271] px-3 py-1.5 text-xs font-medium text-white">
+                      <div class="absolute left-2 sm:left-3 top-2 sm:top-3">
+                        <span class="rounded-lg bg-[#5DA271] px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-white">
                           {{ getCategoryLabel(meal.category) }}
                         </span>
                       </div>
 
-                      <div class="absolute bottom-3 right-3">
-                        <div class="flex items-center gap-1 rounded-lg bg-black/50 px-2 py-1 text-white text-xs">
-                          <span class="iconify w-3 h-3" data-icon="mdi:calendar"></span>
+                      <div class="absolute bottom-2 sm:bottom-3 right-2 sm:right-3">
+                        <div class="flex items-center gap-1 rounded-lg bg-black/50 px-1.5 sm:px-2 py-0.5 sm:py-1 text-white text-[10px] sm:text-xs">
+                          <span class="iconify w-2.5 h-2.5 sm:w-3 sm:h-3" data-icon="mdi:calendar"></span>
                           <span>Planificado</span>
                         </div>
                       </div>
 
-                      <div class="absolute bottom-3 left-3 flex gap-1">
+                      <div class="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 flex gap-1">
                         <span v-for="(tag, idx) in (meal.tags || []).slice(0, 2)" :key="idx"
-                          class="rounded px-2 py-0.5 text-[10px] font-medium bg-white/90 text-[#2C2C2C]">
+                          class="rounded px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-medium bg-white/90 text-[#2C2C2C]">
                           {{ tag }}
                         </span>
                       </div>
                     </div>
 
-                    <div class="p-5">
-                      <h3 class="mb-3 text-lg font-semibold text-[#2C2C2C] line-clamp-1">{{ meal.title }}</h3>
+                    <div class="p-3 sm:p-4 md:p-5">
+                      <h3 class="mb-2 sm:mb-3 text-base sm:text-lg font-semibold text-[#2C2C2C] line-clamp-1">{{ meal.title }}</h3>
 
-                      <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-1.5 text-sm text-[#6C7A6C]">
-                          <span class="iconify h-4 w-4 text-[#5DA271]" data-icon="mdi:clock-outline"></span>
+                      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div class="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-[#6C7A6C]">
+                          <span class="iconify h-3 w-3 sm:h-4 sm:w-4 text-[#5DA271]" data-icon="mdi:clock-outline"></span>
                           <span>{{ meal.total_time }} min</span>
                         </div>
-                        <div class="flex items-center gap-1.5 text-sm text-[#6C7A6C]">
-                          <span class="iconify h-4 w-4 text-[#5DA271]" data-icon="mdi:account-group-outline"></span>
-                          <span>{{ meal.servings }} porciones</span>
+                        <div class="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-[#6C7A6C]">
+                          <span class="iconify h-3 w-3 sm:h-4 sm:w-4 text-[#5DA271]" data-icon="mdi:account-group-outline"></span>
+                          <span>{{ meal.servings }} porc.</span>
                         </div>
-                        <div class="flex items-center gap-1.5 text-sm text-[#6C7A6C]">
-                          <span class="iconify h-4 w-4 text-red-500" data-icon="mdi:fire"></span>
+                        <div class="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-[#6C7A6C]">
+                          <span class="iconify h-3 w-3 sm:h-4 sm:w-4 text-red-500" data-icon="mdi:fire"></span>
                           <span>{{ meal.calories_per_serving || '--' }} kcal</span>
                         </div>
                       </div>
 
                       <div class="flex gap-2">
                         <button @click.stop="goToRecipeDetail(meal.recipe_id)"
-                          class="flex-1 rounded-xl bg-[#5DA271] py-2.5 text-sm font-medium text-white transition-all duration-200 hover:bg-[rgba(93,162,113,0.9)]">
+                          class="flex-1 rounded-xl bg-[#5DA271] py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white transition-all duration-200 hover:bg-[rgba(93,162,113,0.9)]">
                           Ver receta
                         </button>
                         <button @click.stop="openChangeMealModal(meal.meal_type)"
-                          class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-3 py-2.5 transition-all duration-200 hover:bg-[#D8EBD0]"
+                          class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-2 sm:px-3 py-2 sm:py-2.5 transition-all duration-200 hover:bg-[#D8EBD0]"
                           title="Cambiar comida">
-                          <span class="iconify h-4 w-4 text-[#5DA271]" data-icon="mdi:swap-horizontal"></span>
+                          <span class="iconify h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#5DA271]" data-icon="mdi:swap-horizontal"></span>
                         </button>
                       </div>
                     </div>
@@ -121,55 +121,57 @@
             </section>
 
             <!-- My Pantry -->
-            <section class="rounded-2xl p-6 shadow-sm border bg-white border-[#E2E8E2]">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <h2 class="text-xl font-semibold text-gray-900"><i class="iconify text-green-800 h-5 w-5" data-icon="mdi:food"></i> Mi Despensa</h2>
+            <section class="rounded-2xl p-4 sm:p-5 md:p-6 shadow-sm border bg-white border-[#E2E8E2]">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5 md:mb-6">
+                <h2 class="text-lg sm:text-xl font-semibold text-gray-900 flex items-center gap-2">
+                  <i class="iconify text-green-800 h-4 w-4 sm:h-5 sm:w-5" data-icon="mdi:food"></i> Mi Despensa
+                </h2>
                 <button @click="openAddIngredientModal"
-                  class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-200 font-medium text-sm border-[#E2E8E2] text-[#4A8B5C] bg-transparent">
-                  <span class="iconify w-5 h-5" data-icon="mdi:plus"></span>
+                  class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border transition-all duration-200 font-medium text-xs sm:text-sm border-[#E2E8E2] text-[#4A8B5C] bg-transparent w-full sm:w-auto justify-center">
+                  <span class="iconify w-4 h-4 sm:w-5 sm:h-5" data-icon="mdi:plus"></span>
                   Agregar ingrediente
                 </button>
               </div>
 
-              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div v-if="loadingStates.pantry && pantryItems.length === 0" class="col-span-full flex flex-col items-center justify-center py-12 text-[#5A6E5A]">
                   <div class="w-10 h-10 border-4 rounded-full animate-spin mb-4 border-[#E2E8E2] border-t-[#4A8B5C]"></div>
-                  <p>Cargando despensa...</p>
+                  <p class="text-sm sm:text-base">Cargando despensa...</p>
                 </div>
 
                 <div v-else-if="pantryItems.length === 0" class="col-span-full flex flex-col items-center justify-center py-12 text-[#5A6E5A]">
-                  <span class="iconify w-12 h-12 mb-4" data-icon="mdi:fridge-outline"></span>
-                  <p>Tu despensa está vacía</p>
+                  <span class="iconify w-10 h-10 sm:w-12 sm:h-12 mb-4" data-icon="mdi:fridge-outline"></span>
+                  <p class="text-sm sm:text-base">Tu despensa está vacía</p>
                   <button @click="openAddIngredientModal"
-                    class="mt-4 px-4 py-2 rounded-xl text-white text-sm font-medium transition-colors duration-200 bg-[#4A8B5C]">
+                    class="mt-4 px-4 py-2 rounded-xl text-white text-xs sm:text-sm font-medium transition-colors duration-200 bg-[#4A8B5C]">
                     Agregar tu primer ingrediente
                   </button>
                 </div>
 
                 <div v-else v-for="item in pantryItems" :key="item.id"
                   class="rounded-xl border overflow-hidden hover:shadow-md transition-all duration-200 bg-white border-[#E2E8E2]">
-                  <div class="relative h-32">
+                  <div class="relative h-28 sm:h-32">
                     <img :src="item.image_url || defaultImage" :alt="item.name" class="w-full h-full object-cover" @error="handleImageError">
                     <span v-if="item.expiry_status === 'danger'"
-                      class="absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-medium text-white bg-red-600">
+                      class="absolute top-2 left-2 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium text-white bg-red-600">
                       ⚠️ Pronto vence
                     </span>
                   </div>
-                  <div class="p-3">
-                    <h4 class="font-medium text-sm mb-1 line-clamp-1 text-[#1E2A1E]">{{ item.name }}</h4>
-                    <p class="text-xs mb-2 text-[#1E2A1E]">{{ item.quantity }} {{ item.unit }}</p>
-                    <div class="flex gap-1.5">
+                  <div class="p-2 sm:p-3">
+                    <h4 class="font-medium text-xs sm:text-sm mb-1 line-clamp-1 text-[#1E2A1E]">{{ item.name }}</h4>
+                    <p class="text-[11px] sm:text-xs mb-2 text-[#1E2A1E]">{{ item.quantity }} {{ item.unit }}</p>
+                    <div class="flex gap-1 sm:gap-1.5">
                       <button @click="decreaseQuantity(item)"
-                        class="w-8 h-8 rounded-lg border transition-colors duration-200 flex items-center justify-center border-[#E2E8E2] bg-white">
-                        <span class="iconify w-4 h-4 text-[#1E2A1E]" data-icon="mdi:minus"></span>
+                        class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border transition-colors duration-200 flex items-center justify-center border-[#E2E8E2] bg-white">
+                        <span class="iconify w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#1E2A1E]" data-icon="mdi:minus"></span>
                       </button>
                       <button @click="increaseQuantity(item)"
-                        class="w-8 h-8 rounded-lg border transition-colors duration-200 flex items-center justify-center border-[#E2E8E2] bg-white">
-                        <span class="iconify w-4 h-4 text-[#1E2A1E]" data-icon="mdi:plus"></span>
+                        class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border transition-colors duration-200 flex items-center justify-center border-[#E2E8E2] bg-white">
+                        <span class="iconify w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#1E2A1E]" data-icon="mdi:plus"></span>
                       </button>
                       <button @click="removeIngredient(item)"
-                        class="w-8 h-8 rounded-lg border ml-auto transition-colors duration-200 flex items-center justify-center border-[#D9534F] bg-white">
-                        <span class="iconify w-4 h-4 text-[#D9534F]" data-icon="mdi:trash-can-outline"></span>
+                        class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border ml-auto transition-colors duration-200 flex items-center justify-center border-[#D9534F] bg-white">
+                        <span class="iconify w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#D9534F]" data-icon="mdi:trash-can-outline"></span>
                       </button>
                     </div>
                   </div>
@@ -178,76 +180,76 @@
             </section>
 
             <!-- Grid Layout for Recipes and Weather -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
               <!-- Popular Recipes Section -->
-              <section class="rounded-2xl p-6 shadow-sm border bg-white border-[#E2E8E2]">
-                <div class="flex items-center justify-between mb-6">
-                  <h2 class="text-xl font-semibold text-[#1E2A1E]">Recetas Populares</h2>
+              <section class="rounded-2xl p-4 sm:p-5 md:p-6 shadow-sm border bg-white border-[#E2E8E2]">
+                <div class="flex items-center justify-between mb-4 sm:mb-5 md:mb-6">
+                  <h2 class="text-lg sm:text-xl font-semibold text-[#1E2A1E]">Recetas Populares</h2>
                   <button @click="goToRecipes"
-                    class="inline-flex items-center gap-1 text-sm font-medium transition-colors duration-200 text-[#4A8B5C]">
+                    class="inline-flex items-center gap-1 text-xs sm:text-sm font-medium transition-colors duration-200 text-[#4A8B5C]">
                     Ver todas
-                    <span class="iconify w-4 h-4" data-icon="mdi:chevron-right"></span>
+                    <span class="iconify w-3.5 h-3.5 sm:w-4 sm:h-4" data-icon="mdi:chevron-right"></span>
                   </button>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div v-if="loadingStates.popularRecipes && popularRecipes.length === 0" class="col-span-full flex flex-col items-center justify-center py-12 text-[#5A6E5A]">
                     <div class="w-10 h-10 border-4 rounded-full animate-spin mb-4 border-[#E2E8E2] border-t-[#4A8B5C]"></div>
-                    <p>Cargando recetas...</p>
+                    <p class="text-sm sm:text-base">Cargando recetas...</p>
                   </div>
 
                   <div v-else v-for="recipe in popularRecipes.slice(0, 2)" :key="recipe.id"
                     class="group cursor-pointer overflow-hidden rounded-xl border border-[rgba(0,0,0,0.08)] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#5DA271] hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]"
                     @click="goToRecipeDetail(recipe.id)">
-                    <div class="relative h-32 overflow-hidden">
+                    <div class="relative h-28 sm:h-32 overflow-hidden">
                       <img :src="recipe.image_url || defaultImage" :alt="recipe.title"
                         class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         @error="handleImageError" />
                       <div class="absolute inset-0 bg-linear-to-t from-black/50 to-transparent"></div>
 
-                      <div class="absolute left-2 top-2">
-                        <span class="rounded-md bg-[#5DA271] px-2 py-0.5 text-[10px] font-medium text-white">
+                      <div class="absolute left-1.5 sm:left-2 top-1.5 sm:top-2">
+                        <span class="rounded-md bg-[#5DA271] px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-medium text-white">
                           {{ getCategoryLabel(recipe.category) }}
                         </span>
                       </div>
 
-                      <div class="absolute bottom-2 right-2">
-                        <div class="flex items-center gap-0.5 rounded-md bg-black/50 px-1.5 py-0.5 text-white text-[10px]">
-                          <span class="iconify w-2.5 h-2.5" data-icon="mdi:star"></span>
+                      <div class="absolute bottom-1.5 sm:bottom-2 right-1.5 sm:right-2">
+                        <div class="flex items-center gap-0.5 rounded-md bg-black/50 px-1 sm:px-1.5 py-0.5 text-white text-[9px] sm:text-[10px]">
+                          <span class="iconify w-2 h-2 sm:w-2.5 sm:h-2.5" data-icon="mdi:star"></span>
                           <span>Popular</span>
                         </div>
                       </div>
 
-                      <div class="absolute bottom-2 left-2 flex gap-1">
+                      <div class="absolute bottom-1.5 sm:bottom-2 left-1.5 sm:left-2 flex gap-1">
                         <span v-for="(tag, idx) in (recipe.tags || []).slice(0, 1)" :key="idx"
-                          class="rounded px-1.5 py-0.5 text-[9px] font-medium bg-white/90 text-[#2C2C2C]">
+                          class="rounded px-1 sm:px-1.5 py-0.5 text-[8px] sm:text-[9px] font-medium bg-white/90 text-[#2C2C2C]">
                           {{ tag }}
                         </span>
                       </div>
                     </div>
 
-                    <div class="p-3">
-                      <h3 class="mb-2 text-sm font-semibold text-[#2C2C2C] line-clamp-1">{{ recipe.title }}</h3>
+                    <div class="p-2 sm:p-3">
+                      <h3 class="mb-1.5 sm:mb-2 text-xs sm:text-sm font-semibold text-[#2C2C2C] line-clamp-1">{{ recipe.title }}</h3>
 
-                      <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center gap-1 text-[11px] text-[#6C7A6C]">
-                          <span class="iconify h-3 w-3 text-[#5DA271]" data-icon="mdi:clock-outline"></span>
+                      <div class="flex flex-wrap items-center justify-between gap-1 mb-1.5 sm:mb-2">
+                        <div class="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-[11px] text-[#6C7A6C]">
+                          <span class="iconify h-2.5 w-2.5 sm:h-3 sm:w-3 text-[#5DA271]" data-icon="mdi:clock-outline"></span>
                           <span>{{ recipe.total_time }} min</span>
                         </div>
-                        <div class="flex items-center gap-1 text-[11px] text-[#6C7A6C]">
-                          <span class="iconify h-3 w-3 text-[#5DA271]" data-icon="mdi:account-group-outline"></span>
+                        <div class="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-[11px] text-[#6C7A6C]">
+                          <span class="iconify h-2.5 w-2.5 sm:h-3 sm:w-3 text-[#5DA271]" data-icon="mdi:account-group-outline"></span>
                           <span>{{ recipe.servings }} porc.</span>
                         </div>
-                        <div class="flex items-center gap-1 text-[11px] text-[#6C7A6C]">
-                          <span class="iconify h-3 w-3 text-red-500" data-icon="mdi:fire"></span>
+                        <div class="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-[11px] text-[#6C7A6C]">
+                          <span class="iconify h-2.5 w-2.5 sm:h-3 sm:w-3 text-red-500" data-icon="mdi:fire"></span>
                           <span>{{ recipe.calories_per_serving || '--' }}</span>
                         </div>
                       </div>
 
-                      <div v-if="recipe.available_ingredients !== undefined" class="mb-2">
-                        <div class="flex justify-between text-[10px] mb-1">
+                      <div v-if="recipe.available_ingredients !== undefined" class="mb-1.5 sm:mb-2">
+                        <div class="flex justify-between text-[9px] sm:text-[10px] mb-0.5 sm:mb-1">
                           <span class="text-[#6C7A6C]">Ingredientes</span>
-                          <span class="font-medium text-[#5DA271] text-[10px]">
+                          <span class="font-medium text-[#5DA271] text-[9px] sm:text-[10px]">
                             {{ recipe.available_ingredients || 0 }}/{{ recipe.total_ingredients || 0 }}
                           </span>
                         </div>
@@ -259,7 +261,7 @@
                       </div>
 
                       <button @click.stop="goToRecipeDetail(recipe.id)"
-                        class="w-full rounded-lg bg-[#5DA271] py-1.5 text-xs font-medium text-white transition-all duration-200 hover:bg-[rgba(93,162,113,0.9)]">
+                        class="w-full rounded-lg bg-[#5DA271] py-1.5 text-[11px] sm:text-xs font-medium text-white transition-all duration-200 hover:bg-[rgba(93,162,113,0.9)]">
                         Ver receta
                       </button>
                     </div>
@@ -268,78 +270,78 @@
               </section>
 
               <!-- Right Column -->
-              <div class="flex flex-col gap-6">
+              <div class="flex flex-col gap-4 sm:gap-5 md:gap-6">
                 <!-- Weather Suggestion -->
-                <section class="rounded-2xl p-6 text-white shadow-lg bg-linear-to-r from-[#4A8B5C] to-[#7BA86A]">
-                  <div class="flex items-center gap-4 mb-4">
-                    <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
-                      <span class="iconify w-8 h-8 text-white" :data-icon="weatherIcon"></span>
+                <section class="rounded-2xl p-4 sm:p-5 md:p-6 text-white shadow-lg bg-linear-to-r from-[#4A8B5C] to-[#7BA86A]">
+                  <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                      <span class="iconify w-6 h-6 sm:w-8 sm:h-8 text-white" :data-icon="weatherIcon"></span>
                     </div>
                     <div>
-                      <h3 class="font-medium text-white text-base">Sugerencia del clima</h3>
-                      <p class="text-sm text-white/90">{{ weatherSuggestion ? `${weatherSuggestion.temperature}°C - ${weatherSuggestion.condition}` : 'Cargando clima...' }}</p>
+                      <h3 class="font-medium text-white text-sm sm:text-base">Sugerencia del clima</h3>
+                      <p class="text-xs sm:text-sm text-white/90">{{ weatherSuggestion ? `${weatherSuggestion.temperature}°C - ${weatherSuggestion.condition}` : 'Cargando clima...' }}</p>
                     </div>
                   </div>
-                  <div class="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-                    <p class="text-sm mb-4 leading-relaxed flex items-start gap-1.5">
-                      <span class="iconify w-4 h-4 mt-0.5 shrink-0" data-icon="mdi:lightbulb-on-outline"></span>
+                  <div class="bg-white/10 rounded-xl p-3 sm:p-4 backdrop-blur-sm">
+                    <p class="text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed flex items-start gap-1.5">
+                      <span class="iconify w-3.5 h-3.5 sm:w-4 sm:h-4 mt-0.5 shrink-0" data-icon="mdi:lightbulb-on-outline"></span>
                       {{ weatherSuggestion?.suggestion_text || 'Cargando sugerencia...' }}
                     </p>
-                    <div class="grid grid-cols-3 gap-2 mb-4">
-                      <div class="bg-white/15 rounded-lg p-2 text-center">
-                        <span class="block text-xs text-white/80">Temperatura</span>
-                        <span class="block text-lg font-semibold">{{ weatherSuggestion?.temperature || '--' }}°C</span>
+                    <div class="grid grid-cols-3 gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+                      <div class="bg-white/15 rounded-lg p-1.5 sm:p-2 text-center">
+                        <span class="block text-[10px] sm:text-xs text-white/80">Temperatura</span>
+                        <span class="block text-base sm:text-lg font-semibold">{{ weatherSuggestion?.temperature || '--' }}°C</span>
                       </div>
-                      <div class="bg-white/15 rounded-lg p-2 text-center">
-                        <span class="block text-xs text-white/80">Humedad</span>
-                        <span class="block text-lg font-semibold">{{ weatherSuggestion?.humidity || '--' }}%</span>
+                      <div class="bg-white/15 rounded-lg p-1.5 sm:p-2 text-center">
+                        <span class="block text-[10px] sm:text-xs text-white/80">Humedad</span>
+                        <span class="block text-base sm:text-lg font-semibold">{{ weatherSuggestion?.humidity || '--' }}%</span>
                       </div>
-                      <div class="bg-white/15 rounded-lg p-2 text-center">
-                        <span class="block text-xs text-white/80">Viento</span>
-                        <span class="block text-lg font-semibold">{{ weatherSuggestion?.wind_speed || '--' }} km/h</span>
+                      <div class="bg-white/15 rounded-lg p-1.5 sm:p-2 text-center">
+                        <span class="block text-[10px] sm:text-xs text-white/80">Viento</span>
+                        <span class="block text-base sm:text-lg font-semibold">{{ weatherSuggestion?.wind_speed || '--' }} km/h</span>
                       </div>
                     </div>
                     <button v-if="weatherSuggestion?.recipe_id" @click="goToRecipeDetail(weatherSuggestion.recipe_id)"
-                      class="w-full py-3 rounded-xl text-sm font-medium hover:bg-green-50 transition-all duration-200 flex items-center justify-center gap-2 bg-white text-[#4A8B5C]">
-                      <span class="iconify w-4 h-4" data-icon="mdi:food"></span>
+                      class="w-full py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-medium hover:bg-green-50 transition-all duration-200 flex items-center justify-center gap-2 bg-white text-[#4A8B5C]">
+                      <span class="iconify w-3.5 h-3.5 sm:w-4 sm:h-4" data-icon="mdi:food"></span>
                       Ver receta sugerida
                     </button>
                   </div>
                 </section>
 
                 <!-- Notifications -->
-                <section class="rounded-2xl p-6 shadow-sm border bg-white border-[#E2E8E2]">
-                  <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-medium text-[#1E2A1E]">Notificaciones</h3>
-                    <span class="w-6 h-6 rounded-full text-white text-xs font-medium flex items-center justify-center bg-[#4A8B5C]">{{ notifications.length }}</span>
+                <section class="rounded-2xl p-4 sm:p-5 md:p-6 shadow-sm border bg-white border-[#E2E8E2]">
+                  <div class="flex items-center justify-between mb-3 sm:mb-4">
+                    <h3 class="text-sm sm:text-base font-medium text-[#1E2A1E]">Notificaciones</h3>
+                    <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full text-white text-[10px] sm:text-xs font-medium flex items-center justify-center bg-[#4A8B5C]">{{ notifications.length }}</span>
                   </div>
-                  <div class="flex flex-col gap-3">
+                  <div class="flex flex-col gap-2 sm:gap-3">
                     <div v-if="loadingStates.notifications && notifications.length === 0" class="flex flex-col items-center justify-center py-8 text-[#5A6E5A]">
                       <div class="w-8 h-8 border-3 rounded-full animate-spin mb-3 border-[#E2E8E2] border-t-[#4A8B5C]"></div>
-                      <p class="text-sm">Cargando notificaciones...</p>
+                      <p class="text-xs sm:text-sm">Cargando notificaciones...</p>
                     </div>
                     <div v-else-if="notifications.length === 0" class="flex flex-col items-center justify-center py-8 text-[#5A6E5A]">
-                      <span class="iconify w-8 h-8 mb-2" data-icon="mdi:bell-outline"></span>
-                      <p class="text-sm">No tienes notificaciones</p>
+                      <span class="iconify w-7 h-7 sm:w-8 sm:h-8 mb-2" data-icon="mdi:bell-outline"></span>
+                      <p class="text-xs sm:text-sm">No tienes notificaciones</p>
                     </div>
                     <div v-else v-for="notification in notifications.slice(0, 3)" :key="notification.id"
                       @click="handleNotification(notification)"
-                      class="flex items-start gap-3 p-3 rounded-xl transition-colors duration-200 cursor-pointer bg-[#E8F0E5]">
-                      <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" :class="{
+                      class="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl transition-colors duration-200 cursor-pointer bg-[#E8F0E5]">
+                      <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0" :class="{
                         'bg-red-100': notification.type === 'expiry',
                         'bg-green-100': notification.type === 'recipe',
                         'bg-yellow-100': notification.type === 'shopping'
                       }">
-                        <span class="iconify w-5 h-5" :class="{
+                        <span class="iconify w-4 h-4 sm:w-5 sm:h-5" :class="{
                           'text-red-600': notification.type === 'expiry',
                           'text-green-600': notification.type === 'recipe',
                           'text-yellow-600': notification.type === 'shopping'
                         }" :data-icon="getNotificationIcon(notification.type)"></span>
                       </div>
-                      <div class="flex-1">
-                        <p class="text-sm font-medium text-[#1E2A1E]">{{ notification.title }}</p>
-                        <p class="text-xs mt-0.5 text-[#5A6E5A]">{{ notification.message }}</p>
-                        <p class="text-xs mt-0.5 opacity-70 text-[#5A6E5A]">{{ formatTimeAgo(notification.created_at) }}</p>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-xs sm:text-sm font-medium text-[#1E2A1E]">{{ notification.title }}</p>
+                        <p class="text-[10px] sm:text-xs mt-0.5 text-[#5A6E5A] line-clamp-2">{{ notification.message }}</p>
+                        <p class="text-[10px] sm:text-xs mt-0.5 opacity-70 text-[#5A6E5A]">{{ formatTimeAgo(notification.created_at) }}</p>
                       </div>
                     </div>
                   </div>
@@ -352,105 +354,107 @@
     </div>
 
     <!-- Toast Notification -->
-    <div v-if="showToast" class="fixed top-5 right-5 z-9999 max-w-100 min-w-75 animate-slide-in-right text-white"
+    <div v-if="showToast" class="fixed top-5 right-3 sm:right-5 z-9999 max-w-85 sm:max-w-100 min-w-65 sm:min-w-75 animate-slide-in-right text-white"
       :class="{
         'bg-linear-to-r from-[#4A8B5C] to-[#7BA86A]': toastType === 'success',
         'bg-linear-to-r from-[#D9534F] to-[#b31534]': toastType === 'error',
         'bg-linear-to-r from-[#f59e0b] to-[#d97706]': toastType === 'warning'
       }">
-      <div class="flex items-start gap-3 p-4">
-        <span class="iconify w-6 h-6 shrink-0" :data-icon="toastIcon"></span>
-        <div>
-          <p class="font-semibold text-sm mb-1">{{ toastTitle }}</p>
-          <p class="text-xs opacity-90 leading-relaxed">{{ toastMessage }}</p>
+      <div class="flex items-start gap-2 sm:gap-3 p-3 sm:p-4">
+        <span class="iconify w-5 h-5 sm:w-6 sm:h-6 shrink-0" :data-icon="toastIcon"></span>
+        <div class="min-w-0">
+          <p class="font-semibold text-xs sm:text-sm mb-0.5 sm:mb-1">{{ toastTitle }}</p>
+          <p class="text-[10px] sm:text-xs opacity-90 leading-relaxed">{{ toastMessage }}</p>
         </div>
         <button @click="showToast = false"
-          class="w-6 h-6 rounded-lg bg-white/20 hover:bg-white/30 transition-colors duration-200 flex items-center justify-center shrink-0 ml-auto">
-          <span class="iconify w-4 h-4 text-white" data-icon="mdi:close"></span>
+          class="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-white/20 hover:bg-white/30 transition-colors duration-200 flex items-center justify-center shrink-0 ml-auto">
+          <span class="iconify w-3 h-3 sm:w-4 sm:h-4 text-white" data-icon="mdi:close"></span>
         </button>
       </div>
     </div>
 
     <!-- CHANGE MEAL MODAL -->
     <div v-if="showChangeMealModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-4 animate-fade-in"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-3 sm:p-4 animate-fade-in"
       @click="closeChangeMealModal">
-      <div class="rounded-2xl max-w-200 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in p-8 bg-white" @click.stop>
-        <button @click="closeChangeMealModal" class="absolute top-4 right-4 w-10 h-10 rounded-xl border bg-[#F4F9F4] border-[#E2E8E2]">
-          <span class="iconify w-5 h-5" data-icon="mdi:close"></span>
+      <div class="rounded-2xl max-w-200 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in p-4 sm:p-6 md:p-8 bg-white" @click.stop>
+        <button @click="closeChangeMealModal" class="absolute top-2 sm:top-4 right-2 sm:right-4 w-8 h-8 sm:w-10 sm:h-10 rounded-xl border bg-[#F4F9F4] border-[#E2E8E2] flex items-center justify-center">
+          <span class="iconify w-4 h-4 sm:w-5 sm:h-5" data-icon="mdi:close"></span>
         </button>
-        <h2 class="text-2xl font-semibold text-center mb-6">Cambiar {{ getMealTypeText(currentMealType) }}</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 max-h-100 overflow-y-auto">
+        <h2 class="text-xl sm:text-2xl font-semibold text-center mb-4 sm:mb-6">Cambiar {{ getMealTypeText(currentMealType) }}</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 max-h-80 sm:max-h-100 overflow-y-auto">
           <div v-for="meal in filteredMeals" :key="meal.id" @click="selectMeal(meal)"
-            class="rounded-xl border-2 cursor-pointer p-3" :class="{ 'border-green-600': selectedMeal?.id === meal.id }"
+            class="rounded-xl border-2 cursor-pointer p-2 sm:p-3 transition-all" :class="{ 'border-green-600': selectedMeal?.id === meal.id }"
             :style="{ borderColor: selectedMeal?.id === meal.id ? '#4A8B5C' : '#E2E8E2' }">
-            <h4 class="font-medium">{{ meal.title }}</h4>
-            <div class="flex gap-3 text-xs mt-1">
+            <h4 class="text-sm sm:text-base font-medium">{{ meal.title }}</h4>
+            <div class="flex gap-2 sm:gap-3 text-[11px] sm:text-xs mt-1">
               <span>⏱️ {{ meal.total_time }} min</span>
               <span>👥 {{ meal.servings }}</span>
             </div>
           </div>
         </div>
-        <div class="flex gap-4 justify-end">
-          <button @click="closeChangeMealModal" class="px-6 py-3 rounded-xl border border-[#E2E8E2] bg-transparent text-[#1E2A1E]">Cancelar</button>
+        <div class="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 justify-end">
+          <button @click="closeChangeMealModal" class="px-4 sm:px-6 py-2 sm:py-3 rounded-xl border border-[#E2E8E2] bg-transparent text-[#1E2A1E] text-sm sm:text-base">Cancelar</button>
           <button @click="confirmMealChange" :disabled="!selectedMeal"
-            class="px-6 py-3 rounded-xl text-white disabled:opacity-50 bg-[#4A8B5C]">Cambiar Comida</button>
+            class="px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-white disabled:opacity-50 bg-[#4A8B5C] text-sm sm:text-base">Cambiar Comida</button>
         </div>
       </div>
     </div>
 
     <!-- GENERATE MENU MODAL -->
     <div v-if="showGenerateMenuModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-4 animate-fade-in"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-3 sm:p-4 animate-fade-in"
       @click="closeGenerateMenuModal">
-      <div class="rounded-2xl max-w-200 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in p-8 bg-white" @click.stop>
-        <button @click="closeGenerateMenuModal" class="absolute top-4 right-4 w-10 h-10 rounded-xl border bg-[#F4F9F4] border-[#E2E8E2]">✕</button>
-        <h2 class="text-2xl font-semibold text-center mb-6">Generar Nuevo Menú</h2>
-        <div class="mb-6">
-          <h3 class="font-medium mb-3">Preferencias</h3>
-          <label class="flex items-center gap-2">
+      <div class="rounded-2xl max-w-200 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in p-4 sm:p-6 md:p-8 bg-white" @click.stop>
+        <button @click="closeGenerateMenuModal" class="absolute top-2 sm:top-4 right-2 sm:right-4 w-8 h-8 sm:w-10 sm:h-10 rounded-xl border bg-[#F4F9F4] border-[#E2E8E2] flex items-center justify-center">
+          <span class="iconify w-4 h-4 sm:w-5 sm:h-5" data-icon="mdi:close"></span>
+        </button>
+        <h2 class="text-xl sm:text-2xl font-semibold text-center mb-4 sm:mb-6">Generar Nuevo Menú</h2>
+        <div class="mb-4 sm:mb-6">
+          <h3 class="text-sm sm:text-base font-medium mb-2 sm:mb-3">Preferencias</h3>
+          <label class="flex items-center gap-2 text-sm sm:text-base">
             <input type="checkbox" v-model="menuPreferences.healthy"> Saludable
           </label>
-          <label class="flex items-center gap-2 mt-2">
+          <label class="flex items-center gap-2 mt-2 text-sm sm:text-base">
             <input type="checkbox" v-model="menuPreferences.quick"> Rápido (&lt;30 min)
           </label>
         </div>
-        <div class="flex gap-4 justify-end">
-          <button @click="closeGenerateMenuModal" class="px-6 py-3 rounded-xl border border-[#E2E8E2] bg-transparent text-[#1E2A1E]">Cancelar</button>
-          <button @click="generateNewMenu" class="px-6 py-3 rounded-xl text-white bg-[#8b5cf6]">Generar Menú</button>
+        <div class="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 justify-end">
+          <button @click="closeGenerateMenuModal" class="px-4 sm:px-6 py-2 sm:py-3 rounded-xl border border-[#E2E8E2] bg-transparent text-[#1E2A1E] text-sm sm:text-base">Cancelar</button>
+          <button @click="generateNewMenu" class="px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-white bg-[#8b5cf6] text-sm sm:text-base">Generar Menú</button>
         </div>
       </div>
     </div>
 
     <!-- ADD INGREDIENT MODAL -->
     <div v-if="showAddIngredientModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-4 animate-fade-in"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-3 sm:p-4 animate-fade-in"
       @click="closeAddIngredientModal">
-      <div class="rounded-2xl max-w-200 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in p-8 bg-white" @click.stop>
+      <div class="rounded-2xl max-w-200 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in p-4 sm:p-6 md:p-8 bg-white" @click.stop>
         <button @click="closeAddIngredientModal"
-          class="absolute top-4 right-4 w-10 h-10 rounded-xl border transition-all duration-200 flex items-center justify-center bg-[#F4F9F4] border-[#E2E8E2]">
-          <span class="iconify w-5 h-5 text-[#1E2A1E]" data-icon="mdi:close"></span>
+          class="absolute top-2 sm:top-4 right-2 sm:right-4 w-8 h-8 sm:w-10 sm:h-10 rounded-xl border transition-all duration-200 flex items-center justify-center bg-[#F4F9F4] border-[#E2E8E2]">
+          <span class="iconify w-4 h-4 sm:w-5 sm:h-5 text-[#1E2A1E]" data-icon="mdi:close"></span>
         </button>
 
-        <h2 class="text-2xl font-semibold text-center mb-6 text-[#1E2A1E]">Agregar Ingrediente</h2>
+        <h2 class="text-xl sm:text-2xl font-semibold text-center mb-4 sm:mb-6 text-[#1E2A1E]">Agregar Ingrediente</h2>
 
-        <div class="mb-6">
+        <div class="mb-4 sm:mb-6">
           <div class="relative">
-            <span class="iconify w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-[#5A6E5A]" data-icon="mdi:magnify"></span>
+            <span class="iconify w-4 h-4 sm:w-5 sm:h-5 absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-[#5A6E5A]" data-icon="mdi:magnify"></span>
             <input type="text" v-model="ingredientSearch" @input="filterIngredients" placeholder="Buscar ingrediente..."
-              class="w-full pl-12 pr-4 py-3.5 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200 border-[#E2E8E2] bg-white text-[#1E2A1E]">
+              class="w-full pl-9 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-3.5 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200 border-[#E2E8E2] bg-white text-[#1E2A1E] text-sm sm:text-base">
           </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-100 overflow-y-auto p-1">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 max-h-80 sm:max-h-100 overflow-y-auto p-1">
           <div v-for="ingredient in filteredIngredientList" :key="ingredient.id" @click="selectIngredient(ingredient)"
-            class="relative rounded-xl border p-4 flex flex-col items-center gap-2 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200 border-[#E2E8E2] bg-white">
-            <div class="w-20 h-20 rounded-lg overflow-hidden">
+            class="relative rounded-xl border p-2 sm:p-3 md:p-4 flex flex-col items-center gap-1.5 sm:gap-2 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200 border-[#E2E8E2] bg-white">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden">
               <img :src="ingredient.image_url || defaultImage" :alt="ingredient.name" class="w-full h-full object-cover" @error="handleImageError">
             </div>
-            <div class="font-medium text-sm text-center text-[#1E2A1E]">{{ ingredient.name }}</div>
-            <button class="absolute top-2 right-2 w-8 h-8 rounded-full text-white flex items-center justify-center transition-all duration-200 hover:scale-110 bg-[#4A8B5C]">
-              <span class="iconify w-4 h-4" data-icon="mdi:plus"></span>
+            <div class="font-medium text-xs sm:text-sm text-center text-[#1E2A1E] line-clamp-1">{{ ingredient.name }}</div>
+            <button class="absolute top-1 sm:top-2 right-1 sm:right-2 w-6 h-6 sm:w-8 sm:h-8 rounded-full text-white flex items-center justify-center transition-all duration-200 hover:scale-110 bg-[#4A8B5C]">
+              <span class="iconify w-3 h-3 sm:w-4 sm:h-4" data-icon="mdi:plus"></span>
             </button>
           </div>
         </div>
@@ -459,40 +463,40 @@
 
     <!-- INGREDIENT DETAILS MODAL -->
     <div v-if="showIngredientDetailsModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-4 animate-fade-in"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-3 sm:p-4 animate-fade-in"
       @click="closeIngredientDetailsModal">
-      <div class="rounded-2xl max-w-125 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in p-8 bg-white" @click.stop>
+      <div class="rounded-2xl max-w-125 w-full max-h-[90vh] overflow-y-auto relative animate-slide-in p-4 sm:p-6 md:p-8 bg-white" @click.stop>
         <button @click="closeIngredientDetailsModal"
-          class="absolute top-4 right-4 w-10 h-10 rounded-xl border transition-all duration-200 flex items-center justify-center bg-[#F4F9F4] border-[#E2E8E2]">
-          <span class="iconify w-5 h-5 text-[#1E2A1E]" data-icon="mdi:close"></span>
+          class="absolute top-2 sm:top-4 right-2 sm:right-4 w-8 h-8 sm:w-10 sm:h-10 rounded-xl border transition-all duration-200 flex items-center justify-center bg-[#F4F9F4] border-[#E2E8E2]">
+          <span class="iconify w-4 h-4 sm:w-5 sm:h-5 text-[#1E2A1E]" data-icon="mdi:close"></span>
         </button>
 
-        <h2 class="text-2xl font-semibold text-center mb-6 text-[#1E2A1E]">{{ selectedIngredient.name }}</h2>
+        <h2 class="text-xl sm:text-2xl font-semibold text-center mb-4 sm:mb-6 text-[#1E2A1E]">{{ selectedIngredient.name }}</h2>
 
-        <div class="w-full h-50 rounded-xl overflow-hidden mb-6">
+        <div class="w-full h-40 sm:h-50 rounded-xl overflow-hidden mb-4 sm:mb-6">
           <img :src="selectedIngredient.image_url || defaultImage" :alt="selectedIngredient.name"
             class="w-full h-full object-cover" @error="handleImageError">
         </div>
-        <div>
-          <label class="block font-medium mb-2 text-[#1E2A1E]">Categoría</label>
-          <select v-model="newIngredientData.category"
-            class="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200 border-[#E2E8E2] bg-white text-[#1E2A1E]">
-            <option value="verduras">Verduras</option>
-            <option value="frutas">Frutas</option>
-            <option value="proteínas">Proteínas</option>
-            <option value="granos">Granos</option>
-            <option value="lácteos">Lácteos</option>
-            <option value="condimentos">Condimentos</option>
-          </select>
-        </div>
-        <div class="flex flex-col gap-5 mb-8">
+        <div class="space-y-4 sm:space-y-5 mb-6 sm:mb-8">
           <div>
-            <label class="block font-medium mb-2 text-[#1E2A1E]">Cantidad</label>
-            <div class="flex gap-2">
+            <label class="block text-sm sm:text-base font-medium mb-2 text-[#1E2A1E]">Categoría</label>
+            <select v-model="newIngredientData.category"
+              class="w-full p-2.5 sm:p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200 border-[#E2E8E2] bg-white text-[#1E2A1E] text-sm sm:text-base">
+              <option value="verduras">Verduras</option>
+              <option value="frutas">Frutas</option>
+              <option value="proteínas">Proteínas</option>
+              <option value="granos">Granos</option>
+              <option value="lácteos">Lácteos</option>
+              <option value="condimentos">Condimentos</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm sm:text-base font-medium mb-2 text-[#1E2A1E]">Cantidad</label>
+            <div class="flex flex-col sm:flex-row gap-2">
               <input type="number" v-model="newIngredientData.quantity" min="1"
-                class="flex-1 p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200 border-[#E2E8E2] bg-white text-[#1E2A1E]">
+                class="flex-1 p-2.5 sm:p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200 border-[#E2E8E2] bg-white text-[#1E2A1E] text-sm sm:text-base">
               <select v-model="newIngredientData.unit"
-                class="w-30 p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200 border-[#E2E8E2] bg-white text-[#1E2A1E]">
+                class="w-full sm:w-30 p-2.5 sm:p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200 border-[#E2E8E2] bg-white text-[#1E2A1E] text-sm sm:text-base">
                 <option value="unidades">Unidades</option>
                 <option value="gramos">Gramos</option>
                 <option value="kg">Kilogramos</option>
@@ -509,28 +513,28 @@
           </div>
 
           <div>
-            <label class="block font-medium mb-2 text-[#1E2A1E]">Días hasta vencer (opcional)</label>
+            <label class="block text-sm sm:text-base font-medium mb-2 text-[#1E2A1E]">Días hasta vencer (opcional)</label>
             <div class="relative">
               <input type="number" v-model="newIngredientData.expiryDays" min="1" placeholder="Ej: 7"
-                class="w-full p-3 pr-16 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200 border-[#E2E8E2] bg-white text-[#1E2A1E]">
-              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[#5A6E5A]">días</span>
+                class="w-full p-2.5 sm:p-3 pr-16 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200 border-[#E2E8E2] bg-white text-[#1E2A1E] text-sm sm:text-base">
+              <span class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-[#5A6E5A] text-xs sm:text-sm">días</span>
             </div>
           </div>
 
           <div>
-            <label class="block font-medium mb-2 text-[#1E2A1E]">Notas adicionales (opcional)</label>
+            <label class="block text-sm sm:text-base font-medium mb-2 text-[#1E2A1E]">Notas adicionales (opcional)</label>
             <textarea v-model="newIngredientData.notes" rows="3" placeholder="Ej: Tomates orgánicos, maduros"
-              class="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200 resize-none border-[#E2E8E2] bg-white text-[#1E2A1E]"></textarea>
+              class="w-full p-2.5 sm:p-3 rounded-xl border focus:outline-none focus:ring-2 transition-all duration-200 resize-none border-[#E2E8E2] bg-white text-[#1E2A1E] text-sm sm:text-base"></textarea>
           </div>
         </div>
 
-        <div class="flex gap-4 justify-end">
+        <div class="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 justify-end">
           <button @click="closeIngredientDetailsModal"
-            class="px-6 py-3 rounded-xl border transition-colors duration-200 font-medium border-[#E2E8E2] bg-transparent text-[#1E2A1E]">
+            class="px-4 sm:px-6 py-2 sm:py-3 rounded-xl border transition-colors duration-200 font-medium border-[#E2E8E2] bg-transparent text-[#1E2A1E] text-sm sm:text-base">
             Cancelar
           </button>
           <button @click="addIngredientToPantry"
-            class="px-6 py-3 rounded-xl text-white font-medium transition-colors duration-200 bg-[#4A8B5C]">
+            class="px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-white font-medium transition-colors duration-200 bg-[#4A8B5C] text-sm sm:text-base">
             Agregar a Despensa
           </button>
         </div>

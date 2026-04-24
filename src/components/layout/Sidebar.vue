@@ -4,9 +4,9 @@
     :class="{ 'max-md:translate-x-0': isMobileOpen }">
     <!-- Close button for mobile -->
     <button v-if="isMobileOpen"
-      class="absolute right-4 top-4 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-[#2C2C2C] transition-colors hover:bg-[#D8EBD0] max-md:flex"
+      class="absolute right-4 top-6 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-[#2C2C2C] transition-colors hover:bg-[#D8EBD0] max-md:flex"
       @click="closeSidebar">
-      <span class="iconify text-2" data-icon="mdi:close"></span>
+      <span class="iconify text-xl" data-icon="mdi:close"></span>
     </button>
 
     <!-- Logo -->

@@ -26,32 +26,42 @@
                 </div>
               </div>
 
-              <div class="flex flex-wrap items-center gap-3 max-md:flex-col max-md:items-stretch">
-                <button
-                  class="flex cursor-pointer items-center gap-2 rounded-xl bg-[#5DA271] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[rgba(93,162,113,0.9)]"
-                  @click="openGenerateWeeklyModal">
-                  <span class="iconify" data-icon="mdi:sparkles"></span>
-                  Generar semana
-                </button>
-                <button
-                  class="flex cursor-pointer items-center gap-2 rounded-xl bg-[rgba(139,177,116,0.9)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[rgba(139,177,116,1)]"
-                  @click="generateShoppingList">
-                  <span class="iconify" data-icon="mdi:cart"></span>
-                  Lista de compras
-                </button>
-                <div class="ml-auto flex items-center gap-3 max-md:ml-0 max-md:justify-center">
-                  <button @click="previousWeek"
-                    class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[rgba(0,0,0,0.08)] bg-white transition-all hover:border-[#5DA271] hover:bg-[rgba(168,213,186,0.1)]">
-                    <span class="iconify h-5 w-5 text-[#2C2C2C]" data-icon="mdi:chevron-left"></span>
+              <div class="flex flex-wrap items-center gap-3 max-md:flex-col max-md:items-stretch justify-between">
+                <div class="flex gap-4 flex-col md:flex-row">
+                  <button
+                    class="flex cursor-pointer items-center gap-2 rounded-xl bg-[#5DA271] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[rgba(93,162,113,0.9)]"
+                    @click="openGenerateWeeklyModal">
+                    <span class="iconify" data-icon="mdi:sparkles"></span>
+                    Generar semana
                   </button>
-                  <span class="min-w-50 text-center font-medium text-[#2C2C2C]">{{ formatWeekRange() }}</span>
-                  <button @click="nextWeek"
-                    class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[rgba(0,0,0,0.08)] bg-white transition-all hover:border-[#5DA271] hover:bg-[rgba(168,213,186,0.1)]">
-                    <span class="iconify h-5 w-5 text-[#2C2C2C]" data-icon="mdi:chevron-right"></span>
+                  <button
+                    class="flex cursor-pointer items-center gap-2 rounded-xl bg-[rgba(139,177,116,0.9)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[rgba(139,177,116,1)]"
+                    @click="generateShoppingList">
+                    <span class="iconify" data-icon="mdi:cart"></span>
+                    Lista de compras
                   </button>
+                </div>
+                <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+                  <!-- Controles de navegación de semana -->
+                  <div class="flex items-center justify-center gap-2 sm:gap-3 order-2 sm:order-1">
+                    <button @click="previousWeek"
+                      class="flex h-9 w-9 sm:h-10 sm:w-10 cursor-pointer items-center justify-center rounded-xl border border-[rgba(0,0,0,0.08)] bg-white transition-all hover:border-[#5DA271] hover:bg-[rgba(168,213,186,0.1)]">
+                      <span class="iconify h-4 w-4 sm:h-5 sm:w-5 text-[#2C2C2C]" data-icon="mdi:chevron-left"></span>
+                    </button>
+                    <span class="min-w-40 sm:min-w-50 text-center text-sm sm:text-base font-medium text-[#2C2C2C]">
+                      {{ formatWeekRange() }}
+                    </span>
+                    <button @click="nextWeek"
+                      class="flex h-9 w-9 sm:h-10 sm:w-10 cursor-pointer items-center justify-center rounded-xl border border-[rgba(0,0,0,0.08)] bg-white transition-all hover:border-[#5DA271] hover:bg-[rgba(168,213,186,0.1)]">
+                      <span class="iconify h-4 w-4 sm:h-5 sm:w-5 text-[#2C2C2C]" data-icon="mdi:chevron-right"></span>
+                    </button>
+                  </div>
+
+                  <!-- Botón "Esta semana" -->
                   <button @click="goToCurrentWeek"
-                    class="cursor-pointer rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-4 py-2 text-sm text-[#2C2C2C] transition-all hover:border-[#5DA271] hover:bg-[rgba(168,213,186,0.1)]">Esta
-                    semana</button>
+                    class="cursor-pointer rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm text-[#2C2C2C] transition-all hover:border-[#5DA271] hover:bg-[rgba(168,213,186,0.1)] order-1 sm:order-2 w-full sm:w-auto">
+                    Esta semana
+                  </button>
                 </div>
               </div>
             </div>

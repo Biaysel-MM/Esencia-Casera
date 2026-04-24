@@ -6,18 +6,18 @@
     <div class="md:ml-65">
       <Header @toggle-mobile-menu="toggleMobileMenu" @logout="handleLogout" />
 
-      <main class="pt-17.5 p-6">
+      <main class="pt-20 p-4">
         <!-- Botón volver atrás -->
-        <div class="max-w-6xl mx-auto my-4 px-5 flex justify-end gap-4">
+        <div class="max-w-6xl mx-auto my-4 px-2 sm:px-5 flex justify-end gap-3 sm:gap-4">
           <!-- Botón Editar (solo para el creador o admin) -->
           <button v-if="canEdit" @click="goToEdit"
-            class="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-white bg-[#4A8B5C] hover:bg-[#3D734D]">
-            <Icon icon="mdi:pencil" class="text-xl" />
+            class="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors text-white bg-[#4A8B5C] hover:bg-[#3D734D] text-sm sm:text-base">
+            <Icon icon="mdi:pencil" class="text-lg sm:text-xl" />
             <span>Editar</span>
           </button>
           <button @click="$router.back()"
-            class="flex items-center gap-2 transition-colors bg-[#4A8B5C] text-white px-4 py-2 rounded-lg hover:bg-[#3D734D]">
-            <Icon icon="mdi:arrow-left" class="text-xl" />
+            class="flex items-center gap-1 sm:gap-2 transition-colors bg-[#4A8B5C] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-[#3D734D] text-sm sm:text-base">
+            <Icon icon="mdi:arrow-left" class="text-lg sm:text-xl" />
             <span>Volver</span>
           </button>
         </div>
@@ -26,94 +26,94 @@
           <div class="w-10 h-10 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
         </div>
 
-        <div v-else-if="receta" class="max-w-6xl mx-auto px-4 p-8 pt-0">
+        <div v-else-if="receta" class="max-w-6xl mx-auto px-2 sm:px-4 p-4 sm:p-8 pt-0">
           <div class="rounded-2xl shadow-xl overflow-hidden bg-white">
             <!-- Imagen principal -->
-            <div class="relative h-96 overflow-hidden">
+            <div class="relative h-56 sm:h-72 md:h-96 overflow-hidden">
               <img :src="receta.image_url || defaultImage" :alt="receta.title" class="w-full h-full object-cover"
                 @error="handleImageError">
-              <div class="absolute top-4 left-4">
-                <span class="bg-[#4A8B5C] text-white px-3 py-1 rounded-full text-sm font-semibold capitalize">
+              <div class="absolute top-3 left-3 sm:top-4 sm:left-4">
+                <span class="bg-[#4A8B5C] text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-semibold capitalize">
                   {{ getCategoryLabel(receta.category) }}
                 </span>
               </div>
-              <div class="absolute top-4 right-4">
+              <div class="absolute top-3 right-3 sm:top-4 sm:right-4">
                 <button @click="toggleFavorite"
-                  class="bg-white p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110 active:scale-95">
-                  <Icon v-if="receta.is_favorite" icon="mdi:cards-heart" class="text-2xl text-red-500" />
+                  class="bg-white p-1.5 sm:p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110 active:scale-95">
+                  <Icon v-if="receta.is_favorite" icon="mdi:cards-heart" class="text-xl sm:text-2xl text-red-500" />
                   <Icon v-else icon="mdi:heart-outline"
-                    class="text-2xl text-gray-400 hover:text-red-400 transition-colors" />
+                    class="text-xl sm:text-2xl text-gray-400 hover:text-red-400 transition-colors" />
                 </button>
               </div>
             </div>
 
             <!-- Contenido -->
-            <div class="p-6 md:p-8">
+            <div class="p-4 sm:p-6 md:p-8">
               <!-- Título y autor -->
               <div>
-                <h1 class="text-3xl md:text-4xl font-bold mb-2 text-[#1E2A1E]">{{ receta.title }}</h1>
-                <p class="text-lg text-[#5A6E5A] mb-4">{{ receta.description }}</p>
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-[#1E2A1E]">{{ receta.title }}</h1>
+                <p class="text-base sm:text-lg text-[#5A6E5A] mb-4">{{ receta.description }}</p>
 
-                <!-- Tarjeta del autor (Nuevo diseño) -->
+                <!-- Tarjeta del autor -->
                 <div class="flex items-center gap-3 p-3 rounded-xl bg-[#E8F0E5] w-fit">
                   <img :src="receta.author_avatar || defaultAvatar"
-                    class="w-12 h-12 rounded-full object-cover ring-2 ring-white" @error="handleAvatarError">
+                    class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-white" @error="handleAvatarError">
                   <div>
-                    <p class="text-xs text-[#5A6E5A] uppercase tracking-wide">Creado por</p>
-                    <p class="font-semibold text-[#1E2A1E]">{{ receta.author_name || authStore.userName || 'Chef Comunidad' }}</p>
+                    <p class="text-[10px] sm:text-xs text-[#5A6E5A] uppercase tracking-wide">Creado por</p>
+                    <p class="text-sm sm:text-base font-semibold text-[#1E2A1E]">{{ receta.author_name || authStore.userName || 'Chef Comunidad' }}</p>
                   </div>
                 </div>
               </div>
 
               <!-- Métricas rápidas -->
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 py-4 border-y border-[#E2E8E2]">
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-6 py-4 border-y border-[#E2E8E2]">
                 <div class="text-center">
-                  <p class="text-2xl font-bold text-[#4A8B5C]">{{ receta.total_time }} min</p>
-                  <p class="text-sm text-[#5A6E5A]">Tiempo total</p>
+                  <p class="text-xl sm:text-2xl font-bold text-[#4A8B5C]">{{ receta.total_time }} min</p>
+                  <p class="text-xs sm:text-sm text-[#5A6E5A]">Tiempo total</p>
                 </div>
                 <div class="text-center">
-                  <p class="text-2xl font-bold text-[#4A8B5C]">{{ receta.servings }}</p>
-                  <p class="text-sm text-[#5A6E5A]">Porciones</p>
+                  <p class="text-xl sm:text-2xl font-bold text-[#4A8B5C]">{{ receta.servings }}</p>
+                  <p class="text-xs sm:text-sm text-[#5A6E5A]">Porciones</p>
                 </div>
                 <div class="text-center">
-                  <p class="text-2xl font-bold text-[#4A8B5C]">{{ receta.calories_per_serving || '--' }}</p>
-                  <p class="text-sm text-[#5A6E5A]">Calorías</p>
+                  <p class="text-xl sm:text-2xl font-bold text-[#4A8B5C]">{{ receta.calories_per_serving || '--' }}</p>
+                  <p class="text-xs sm:text-sm text-[#5A6E5A]">Calorías</p>
                 </div>
                 <div class="text-center">
-                  <div class="flex items-center justify-center gap-1">
-                    <Icon icon="mdi:star" class="text-yellow-500 text-2xl" />
-                    <p class="text-2xl font-bold text-[#4A8B5C]">{{ receta.rating || 'Nueva' }}</p>
+                  <div class="flex items-center justify-center gap-0.5 sm:gap-1">
+                    <Icon icon="mdi:star" class="text-yellow-500 text-xl sm:text-2xl" />
+                    <p class="text-xl sm:text-2xl font-bold text-[#4A8B5C]">{{ receta.rating || 'Nueva' }}</p>
                   </div>
-                  <p class="text-sm text-[#5A6E5A]">Valoración</p>
+                  <p class="text-xs sm:text-sm text-[#5A6E5A]">Valoración</p>
                 </div>
               </div>
 
               <!-- Tags -->
-              <div class="flex flex-wrap gap-2 mt-6">
+              <div class="flex flex-wrap gap-1.5 sm:gap-2 mt-6">
                 <span v-for="tag in receta.tags" :key="tag"
-                  class="px-3 py-1 rounded-full text-sm bg-[#C5E0B4] text-[#1E2A1E]">
+                  class="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm bg-[#C5E0B4] text-[#1E2A1E]">
                   #{{ tag }}
                 </span>
               </div>
 
               <!-- Grid de ingredientes y pasos -->
-              <div class="grid md:grid-cols-2 gap-8 mt-8">
+              <div class="grid md:grid-cols-2 gap-6 sm:gap-8 mt-8">
                 <!-- Ingredientes -->
                 <div class="overflow-y-auto max-h-96">
-                  <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-[#1E2A1E]">
-                    <Icon icon="mdi:leaf" class="text-2xl text-[#4A8B5C]" />
+                  <h2 class="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2 text-[#1E2A1E]">
+                    <Icon icon="mdi:leaf" class="text-xl sm:text-2xl text-[#4A8B5C]" />
                     Ingredientes
-                    <span class="text-sm px-2 py-1 rounded text-white bg-[#7BA86A]">
+                    <span class="text-xs px-2 py-0.5 rounded text-white bg-[#7BA86A]">
                       {{ receta.available_ingredients }}/{{ receta.total_ingredients }} disponibles
                     </span>
                   </h2>
-                  <div class="space-y-3">
+                  <div class="space-y-2 sm:space-y-3">
                     <div v-for="(ingredient, idx) in receta.ingredients" :key="idx"
-                      class="flex justify-between items-start p-3 rounded-lg bg-[#E8F0E5]">
+                      class="flex justify-between items-start p-2 sm:p-3 rounded-lg bg-[#E8F0E5]">
                       <div>
-                        <p class="font-medium text-[#1E2A1E]">{{ ingredient.name }}</p>
+                        <p class="text-sm sm:text-base font-medium text-[#1E2A1E]">{{ ingredient.name }}</p>
                       </div>
-                      <p class="font-semibold text-[#4A8B5C]">
+                      <p class="text-sm sm:text-base font-semibold text-[#4A8B5C]">
                         {{ ingredient.quantity }}
                         <span v-if="ingredient.unit && ingredient.unit !== ''">
                           {{ ingredient.unit }}
@@ -128,41 +128,39 @@
 
                 <!-- Pasos -->
                 <div class="overflow-y-auto max-h-96">
-                  <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 text-[#1E2A1E]">
-                    <Icon icon="mdi:pot-steam" class="text-2xl text-[#4A8B5C]" />
+                  <h2 class="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2 text-[#1E2A1E]">
+                    <Icon icon="mdi:pot-steam" class="text-xl sm:text-2xl text-[#4A8B5C]" />
                     Preparación
                   </h2>
-                  <div class="space-y-6">
-                    <div v-for="(step, idx) in receta.steps" :key="idx" class="flex gap-4">
+                  <div class="space-y-4 sm:space-y-6">
+                    <div v-for="(step, idx) in receta.steps" :key="idx" class="flex gap-3 sm:gap-4">
                       <div
-                        class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-white bg-[#4A8B5C]">
+                        class="shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-white bg-[#4A8B5C] text-sm sm:text-base">
                         {{ step.step_number || idx + 1 }}
                       </div>
                       <div class="flex-1">
-                        <p class="text-gray-700">{{ step.description }}</p>
-                        <p class="text-sm mt-1 flex items-center gap-1 text-[#5A6E5A]">
-                          <Icon icon="mdi:clock-outline" class="text-sm" />
+                        <p class="text-sm sm:text-base text-gray-700">{{ step.description }}</p>
+                        <p class="text-xs sm:text-sm mt-1 flex items-center gap-1 text-[#5A6E5A]">
+                          <Icon icon="mdi:clock-outline" class="text-xs sm:text-sm" />
                           {{ step.time_estimate || 5 }} min
                         </p>
-                        <!-- ESTA ES LA PARTE DE LA IMAGEN DEL PASO -->
-                        <img v-if="step.image" :src="step.image" class="mt-2 rounded-lg w-full h-40 object-cover"
+                        <img v-if="step.image" :src="step.image" class="mt-2 rounded-lg w-full h-32 sm:h-40 object-cover"
                           @error="handleStepImageError">
                       </div>
                     </div>
                   </div>
                 </div>
-
               </div>
 
               <!-- Utensilios -->
-              <div v-if="receta.utensils_needed?.length" class="mt-8 p-4 rounded-xl bg-[#E8F0E5]">
-                <h3 class="font-bold mb-2 flex items-center gap-2 text-[#1E2A1E]">
-                  <Icon icon="mdi:silverware-fork-knife" class="text-xl text-[#4A8B5C]" />
+              <div v-if="receta.utensils_needed?.length" class="mt-8 p-3 sm:p-4 rounded-xl bg-[#E8F0E5]">
+                <h3 class="text-base sm:text-lg font-bold mb-2 flex items-center gap-2 text-[#1E2A1E]">
+                  <Icon icon="mdi:silverware-fork-knife" class="text-lg sm:text-xl text-[#4A8B5C]" />
                   Utensilios necesarios
                 </h3>
-                <div class="flex flex-wrap gap-2">
+                <div class="flex flex-wrap gap-1.5 sm:gap-2">
                   <span v-for="utensil in receta.utensils_needed" :key="utensil"
-                    class="px-3 py-1 rounded-full text-sm border bg-white text-[#1E2A1E] border-[#E2E8E2]">
+                    class="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm border bg-white text-[#1E2A1E] border-[#E2E8E2]">
                     {{ utensil }}
                   </span>
                 </div>
@@ -170,8 +168,8 @@
 
               <!-- Video de YouTube -->
               <div v-if="receta.youtube_embed_id" class="mt-8">
-                <h3 class="font-bold mb-3 flex items-center gap-2 text-[#1E2A1E]">
-                  <Icon icon="mdi:youtube" class="text-red-600 text-2xl" />
+                <h3 class="text-base sm:text-lg font-bold mb-3 flex items-center gap-2 text-[#1E2A1E]">
+                  <Icon icon="mdi:youtube" class="text-red-600 text-xl sm:text-2xl" />
                   Video tutorial
                 </h3>
                 <div class="relative w-full rounded-xl overflow-hidden" style="aspect-ratio: 16/9;">
@@ -183,69 +181,69 @@
 
               <!-- Comentarios -->
               <div class="mt-8">
-                <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
-                  <h3 class="text-2xl font-bold flex items-center gap-2 text-[#1E2A1E]">
-                    <Icon icon="mdi:comment-multiple-outline" class="text-2xl text-[#4A8B5C]" />
+                <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+                  <h3 class="text-xl sm:text-2xl font-bold flex items-center gap-2 text-[#1E2A1E]">
+                    <Icon icon="mdi:comment-multiple-outline" class="text-xl sm:text-2xl text-[#4A8B5C]" />
                     Comentarios ({{ comments.length }})
                   </h3>
                   <button @click="showCommentForm = !showCommentForm"
-                    class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-white bg-[#4A8B5C]">
-                    <Icon icon="mdi:plus" />
+                    class="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all duration-200 text-white bg-[#4A8B5C] text-sm sm:text-base">
+                    <Icon icon="mdi:plus" class="text-sm sm:text-base" />
                     Agregar comentario
                   </button>
                 </div>
 
                 <!-- Formulario de nuevo comentario -->
-                <div v-if="showCommentForm" class="mb-6 p-4 rounded-xl bg-[#E8F0E5]">
+                <div v-if="showCommentForm" class="mb-6 p-3 sm:p-4 rounded-xl bg-[#E8F0E5]">
                   <div class="mb-3">
-                    <label class="block text-sm mb-1 text-[#1E2A1E]">Tu calificación</label>
-                    <div class="flex gap-1">
+                    <label class="block text-xs sm:text-sm mb-1 text-[#1E2A1E]">Tu calificación</label>
+                    <div class="flex gap-0.5 sm:gap-1">
                       <button v-for="star in 5" :key="star" @click="newCommentRating = star" type="button">
                         <Icon :icon="star <= newCommentRating ? 'mdi:star' : 'mdi:star-outline'"
-                          class="text-2xl text-yellow-500" />
+                          class="text-xl sm:text-2xl text-yellow-500" />
                       </button>
                     </div>
                   </div>
                   <textarea v-model="newCommentText" placeholder="Escribe tu comentario..." rows="3"
-                    class="w-full p-3 rounded-lg border border-[#E2E8E2] focus:outline-none focus:ring-2 focus:ring-[#4A8B5C] resize-none bg-white text-[#1E2A1E]"></textarea>
+                    class="w-full p-2 sm:p-3 rounded-lg border border-[#E2E8E2] focus:outline-none focus:ring-2 focus:ring-[#4A8B5C] resize-none bg-white text-[#1E2A1E] text-sm sm:text-base"></textarea>
                   <div class="flex justify-end gap-2 mt-3">
                     <button @click="showCommentForm = false"
-                      class="px-4 py-2 rounded-lg border border-[#E2E8E2] bg-transparent text-[#1E2A1E] transition-colors">
+                      class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-[#E2E8E2] bg-transparent text-[#1E2A1E] transition-colors text-sm sm:text-base">
                       Cancelar
                     </button>
-                    <button @click="addComment" class="px-4 py-2 rounded-lg text-white transition-colors bg-[#4A8B5C]">
+                    <button @click="addComment" class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-white transition-colors bg-[#4A8B5C] text-sm sm:text-base">
                       Publicar
                     </button>
                   </div>
                 </div>
 
                 <!-- Lista de comentarios -->
-                <div class="space-y-6">
+                <div class="space-y-4 sm:space-y-6">
                   <div v-for="comment in comments" :key="comment.id" class="border-b pb-4 border-[#E2E8E2]">
-                    <div class="flex items-start gap-3">
-                      <img :src="comment.user_avatar || defaultAvatar" class="w-10 h-10 rounded-full object-cover"
+                    <div class="flex items-start gap-2 sm:gap-3">
+                      <img :src="comment.user_avatar || defaultAvatar" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                         @error="handleAvatarError">
                       <div class="flex-1">
-                        <div class="flex items-center gap-2 flex-wrap">
-                          <p class="font-semibold text-[#1E2A1E]">{{ comment.user_name || 'Usuario' }}</p>
-                          <p class="text-sm text-[#5A6E5A]">{{ formatDate(comment.created_at) }}</p>
-                          <div class="flex items-center gap-0.5">
+                        <div class="flex items-center gap-1 sm:gap-2 flex-wrap">
+                          <p class="text-sm sm:text-base font-semibold text-[#1E2A1E]">{{ comment.user_name || 'Usuario' }}</p>
+                          <p class="text-xs text-[#5A6E5A]">{{ formatDate(comment.created_at) }}</p>
+                          <div class="flex items-center gap-0 sm:gap-0.5">
                             <Icon v-for="star in 5" :key="star"
                               :icon="star <= comment.rating ? 'mdi:star' : 'mdi:star-outline'"
-                              class="text-yellow-500 text-sm" />
+                              class="text-yellow-500 text-xs sm:text-sm" />
                           </div>
                         </div>
-                        <p class="mt-1 text-[#1E2A1E]">{{ comment.text }}</p>
-                        <div class="flex items-center gap-4 mt-2">
+                        <p class="mt-1 text-sm sm:text-base text-[#1E2A1E]">{{ comment.text }}</p>
+                        <div class="flex items-center gap-3 sm:gap-4 mt-2">
                           <button @click="toggleLike(comment.id)"
-                            class="flex items-center gap-1 text-sm transition-colors hover:text-red-500"
+                            class="flex items-center gap-1 text-xs sm:text-sm transition-colors hover:text-red-500"
                             :class="comment.isLiked ? 'text-red-500' : 'text-[#5A6E5A]'">
-                            <Icon :icon="comment.isLiked ? 'mdi:heart' : 'mdi:heart-outline'" />
+                            <Icon :icon="comment.isLiked ? 'mdi:heart' : 'mdi:heart-outline'" class="text-sm sm:text-base" />
                             {{ comment.likes }} likes
                           </button>
                           <button @click="toggleReplyForm(comment.id)"
-                            class="flex items-center gap-1 text-sm transition-colors text-[#5A6E5A]">
-                            <Icon icon="mdi:reply-outline" />
+                            class="flex items-center gap-1 text-xs sm:text-sm transition-colors text-[#5A6E5A]">
+                            <Icon icon="mdi:reply-outline" class="text-sm sm:text-base" />
                             Responder
                           </button>
                         </div>
@@ -253,27 +251,27 @@
                         <!-- Formulario de respuesta -->
                         <div v-if="activeReplyId === comment.id" class="mt-3">
                           <textarea v-model="replyText" placeholder="Escribe tu respuesta..." rows="2"
-                            class="w-full p-2 rounded-lg border border-[#E2E8E2] focus:outline-none focus:ring-2 focus:ring-[#4A8B5C] resize-none text-sm bg-white text-[#1E2A1E]"></textarea>
+                            class="w-full p-2 rounded-lg border border-[#E2E8E2] focus:outline-none focus:ring-2 focus:ring-[#4A8B5C] resize-none text-xs sm:text-sm bg-white text-[#1E2A1E]"></textarea>
                           <div class="flex justify-end gap-2 mt-2">
                             <button @click="activeReplyId = null"
-                              class="px-3 py-1 text-sm rounded-lg border border-[#E2E8E2] bg-transparent text-[#1E2A1E] transition-colors">
+                              class="px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg border border-[#E2E8E2] bg-transparent text-[#1E2A1E] transition-colors">
                               Cancelar
                             </button>
                             <button @click="addReply(comment.id)"
-                              class="px-3 py-1 text-sm rounded-lg text-white transition-colors bg-[#4A8B5C]">
+                              class="px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg text-white transition-colors bg-[#4A8B5C]">
                               Responder
                             </button>
                           </div>
                         </div>
 
                         <!-- Respuestas existentes -->
-                        <div v-if="comment.replies?.length" class="ml-8 mt-3 space-y-2">
-                          <div v-for="(reply, ridx) in comment.replies" :key="ridx" class="p-3 rounded-lg bg-[#E8F0E5]">
-                            <div class="flex items-center gap-2">
-                              <p class="text-sm font-semibold text-[#1E2A1E]">{{ reply.user_name || 'Usuario' }}</p>
-                              <p class="text-xs text-[#5A6E5A]">{{ formatDate(reply.created_at) }}</p>
+                        <div v-if="comment.replies?.length" class="ml-4 sm:ml-8 mt-3 space-y-2">
+                          <div v-for="(reply, ridx) in comment.replies" :key="ridx" class="p-2 sm:p-3 rounded-lg bg-[#E8F0E5]">
+                            <div class="flex items-center gap-1 sm:gap-2">
+                              <p class="text-xs sm:text-sm font-semibold text-[#1E2A1E]">{{ reply.user_name || 'Usuario' }}</p>
+                              <p class="text-[10px] sm:text-xs text-[#5A6E5A]">{{ formatDate(reply.created_at) }}</p>
                             </div>
-                            <p class="text-sm mt-1 text-[#1E2A1E]">{{ reply.text }}</p>
+                            <p class="text-xs sm:text-sm mt-1 text-[#1E2A1E]">{{ reply.text }}</p>
                           </div>
                         </div>
                       </div>
@@ -286,9 +284,9 @@
         </div>
 
         <div v-else class="text-center py-12">
-          <Icon icon="mdi:food-off" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 class="text-xl font-semibold text-gray-900">Receta no encontrada</h3>
-          <button @click="$router.push('/recetas')" class="mt-4 px-6 py-2 rounded-xl text-white bg-[#4A8B5C]">
+          <Icon icon="mdi:food-off" class="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
+          <h3 class="text-lg sm:text-xl font-semibold text-gray-900">Receta no encontrada</h3>
+          <button @click="$router.push('/recetas')" class="mt-4 px-4 sm:px-6 py-1.5 sm:py-2 rounded-xl text-white bg-[#4A8B5C] text-sm sm:text-base">
             Volver a recetas
           </button>
         </div>
@@ -296,7 +294,7 @@
     </div>
 
     <!-- Toast -->
-    <div v-if="showToast" class="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg">
+    <div v-if="showToast" class="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-lg text-sm sm:text-base">
       {{ toastMessage }}
     </div>
   </div>
