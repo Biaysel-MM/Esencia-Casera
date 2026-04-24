@@ -64,8 +64,10 @@
             <div v-for="recipe in displayedRecipes" :key="recipe.id" @click="goToRecipeDetail(recipe.id)"
               class="group cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white hover:shadow-xl transition-all hover:-translate-y-1">
               <div class="relative h-48 overflow-hidden">
-                <img :src="recipe.image_url || defaultImage" :alt="recipe.title"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                <img :src="getOptimizedImageUrl(recipe.image_url, 'small')" :srcset="getSrcSet(recipe.image_url)"
+                  sizes="(max-width: 640px) 300px, (max-width: 1024px) 600px, 900px" :alt="recipe.title" loading="lazy"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  @error="e => e.target.src = defaultImage">
                 <div class="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
                 <div class="absolute left-3 top-3">
                   <span class="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-medium">
@@ -135,6 +137,7 @@ import { useAuthStore } from '@/stores/auth'
 import Sidebar from '@/components/layout/Sidebar.vue'
 import Header from '@/components/layout/Header.vue'
 import { Icon } from '@iconify/vue'
+import { getOptimizedImageUrl, getSrcSet } from '@/utils/imageHelper'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -245,18 +248,18 @@ const deleteRecipeFromList = async (id, title) => {
         alert('No tienes permiso para eliminar esta receta')
         return
       }
-      
+
       const { error } = await supabase
         .from('recipes')
         .delete()
         .eq('id', id)
         .eq('created_by', authStore.user?.id)
-      
+
       if (error) throw error
-      
+
       // Recargar lista
       await loadRecipes()
-      
+
       alert('✅ Receta eliminada')
     } catch (error) {
       console.error('Error:', error)

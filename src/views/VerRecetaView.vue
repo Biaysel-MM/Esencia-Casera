@@ -38,8 +38,9 @@
           <div class="rounded-2xl shadow-xl overflow-hidden bg-white">
             <!-- Imagen principal -->
             <div class="relative h-56 sm:h-72 md:h-96 overflow-hidden">
-              <img :src="receta.image_url || defaultImage" :alt="receta.title" class="w-full h-full object-cover"
-                @error="handleImageError">
+              <img :src="getOptimizedImageUrl(receta.image_url, 'xlarge')" :srcset="getSrcSet(receta.image_url)"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 1200px" :alt="receta.title" loading="eager"
+                class="w-full h-full object-cover" @error="e => e.target.src = defaultImage">
               <div class="absolute top-3 left-3 sm:top-4 sm:left-4">
                 <span
                   class="bg-[#4A8B5C] text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-semibold capitalize">
@@ -65,9 +66,9 @@
 
                 <!-- Tarjeta del autor -->
                 <div class="flex items-center gap-3 p-3 rounded-xl bg-[#E8F0E5] w-fit">
-                  <img :src="receta.author_avatar || defaultAvatar"
-                    class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-white"
-                    @error="handleAvatarError">
+                  <img :src="getOptimizedImageUrl(receta.author_avatar || defaultAvatar, 'tiny')" alt="Avatar del autor"
+                    loading="lazy" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-white"
+                    @error="e => e.target.src = defaultAvatar">
                   <div>
                     <p class="text-[10px] sm:text-xs text-[#5A6E5A] uppercase tracking-wide">Creado por</p>
                     <p class="text-sm sm:text-base font-semibold text-[#1E2A1E]">{{ receta.author_name ||
@@ -155,8 +156,16 @@
                           <Icon icon="mdi:clock-outline" class="text-xs sm:text-sm" />
                           {{ step.time_estimate || 5 }} min
                         </p>
-                        <img v-if="step.image" :src="step.image"
-                          class="mt-2 rounded-lg w-full h-32 sm:h-40 object-cover" @error="handleStepImageError">
+                        <img v-if="step.image"
+                          :src="step.image.startsWith('data:image') ? step.image : getOptimizedImageUrl(step.image, 'medium')"
+                          :alt="'Paso ' + (step.step_number || idx + 1)" loading="lazy"
+                          class="mt-2 rounded-lg w-full h-32 sm:h-40 object-cover" @error="e => {
+                            if (step.image.startsWith('data:image')) {
+                              e.target.src = defaultImage
+                            } else {
+                              e.target.src = getOptimizedImageUrl(step.image, 'small')
+                            }
+                          }">
                       </div>
                     </div>
                   </div>
@@ -324,6 +333,7 @@ import { supabase } from '@/supabase'
 import { useAuthStore } from '@/stores/auth'
 import Sidebar from '@/components/layout/Sidebar.vue'
 import Header from '@/components/layout/Header.vue'
+import { getOptimizedImageUrl, getSrcSet } from '@/utils/imageHelper'
 
 export default {
   name: 'VerRecetaView',
@@ -343,7 +353,7 @@ export default {
       toastMessage: '',
       defaultImage: 'https://www.canadianturkey.ca/wp-content/uploads/2025/06/banner-recipe-default.jpg',
       defaultAvatar: 'https://static.vecteezy.com/system/resources/previews/026/434/409/non_2x/default-avatar-profile-icon-social-media-user-photo-vector.jpg',
-      defaultUrlVideo: 'https://www.youtube.com/embed/dQw4w9WgXcQ' 
+      defaultUrlVideo: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
     }
   },
   computed: {
@@ -368,6 +378,8 @@ export default {
       this.showToast = true
       setTimeout(() => { this.showToast = false }, 3000)
     },
+    getOptimizedImageUrl,
+    getSrcSet,
     getCategoryLabel(cat) {
       const labels = { desayuno: 'Desayuno', almuerzo: 'Almuerzo', cena: 'Cena', postre: 'Postre', snack: 'Snack' }
       return labels[cat] || cat
