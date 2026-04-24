@@ -150,3 +150,19 @@ Cocina recetas → Se registra en historia_de_la_cocina, se actualizan calificac
 Comentarios y respuestas → Interacción social en recetas con sistema de "me gusta"
 Backups temporales → Copias de seguridad automáticas con acceso irrestricto
 
+Eliminar recetas: 
+-- =====================================================
+-- OPCIÓN 2: Deshabilitar restricciones temporalmente
+-- =====================================================
+
+-- 1. Deshabilitar triggers de foreign key
+SET session_replication_role = replica;
+
+-- 2. Eliminar todas las recetas (ignora restricciones)
+DELETE FROM recipes;
+
+-- 3. Volver a habilitar triggers
+SET session_replication_role = DEFAULT;
+
+-- 4. Verificar
+SELECT COUNT(*) FROM recipes;

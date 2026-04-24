@@ -7,14 +7,22 @@
       <Header @toggle-mobile-menu="toggleMobileMenu" @logout="handleLogout" />
 
       <main class="pt-20 p-4">
-        <!-- Botón volver atrás -->
+        <!-- Botones de acción -->
         <div class="max-w-6xl mx-auto my-4 px-2 sm:px-5 flex justify-end gap-3 sm:gap-4">
-          <!-- Botón Editar (solo para el creador o admin) -->
+          <!-- Botón Editar (solo para el CREADOR - actualizado) -->
           <button v-if="canEdit" @click="goToEdit"
             class="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors text-white bg-[#4A8B5C] hover:bg-[#3D734D] text-sm sm:text-base">
             <Icon icon="mdi:pencil" class="text-lg sm:text-xl" />
             <span>Editar</span>
           </button>
+
+          <!-- ✅ NUEVO: Botón Eliminar (solo para el CREADOR) -->
+          <button v-if="canDelete" @click="confirmDelete"
+            class="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors text-white bg-red-600 hover:bg-red-700 text-sm sm:text-base">
+            <Icon icon="mdi:delete" class="text-lg sm:text-xl" />
+            <span>Eliminar</span>
+          </button>
+
           <button @click="$router.back()"
             class="flex items-center gap-1 sm:gap-2 transition-colors bg-[#4A8B5C] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-[#3D734D] text-sm sm:text-base">
             <Icon icon="mdi:arrow-left" class="text-lg sm:text-xl" />
@@ -33,7 +41,8 @@
               <img :src="receta.image_url || defaultImage" :alt="receta.title" class="w-full h-full object-cover"
                 @error="handleImageError">
               <div class="absolute top-3 left-3 sm:top-4 sm:left-4">
-                <span class="bg-[#4A8B5C] text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-semibold capitalize">
+                <span
+                  class="bg-[#4A8B5C] text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-semibold capitalize">
                   {{ getCategoryLabel(receta.category) }}
                 </span>
               </div>
@@ -57,10 +66,12 @@
                 <!-- Tarjeta del autor -->
                 <div class="flex items-center gap-3 p-3 rounded-xl bg-[#E8F0E5] w-fit">
                   <img :src="receta.author_avatar || defaultAvatar"
-                    class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-white" @error="handleAvatarError">
+                    class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-white"
+                    @error="handleAvatarError">
                   <div>
                     <p class="text-[10px] sm:text-xs text-[#5A6E5A] uppercase tracking-wide">Creado por</p>
-                    <p class="text-sm sm:text-base font-semibold text-[#1E2A1E]">{{ receta.author_name || authStore.userName || 'Chef Comunidad' }}</p>
+                    <p class="text-sm sm:text-base font-semibold text-[#1E2A1E]">{{ receta.author_name ||
+                      authStore.userName || 'Chef Comunidad' }}</p>
                   </div>
                 </div>
               </div>
@@ -144,8 +155,8 @@
                           <Icon icon="mdi:clock-outline" class="text-xs sm:text-sm" />
                           {{ step.time_estimate || 5 }} min
                         </p>
-                        <img v-if="step.image" :src="step.image" class="mt-2 rounded-lg w-full h-32 sm:h-40 object-cover"
-                          @error="handleStepImageError">
+                        <img v-if="step.image" :src="step.image"
+                          class="mt-2 rounded-lg w-full h-32 sm:h-40 object-cover" @error="handleStepImageError">
                       </div>
                     </div>
                   </div>
@@ -211,7 +222,8 @@
                       class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-[#E2E8E2] bg-transparent text-[#1E2A1E] transition-colors text-sm sm:text-base">
                       Cancelar
                     </button>
-                    <button @click="addComment" class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-white transition-colors bg-[#4A8B5C] text-sm sm:text-base">
+                    <button @click="addComment"
+                      class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-white transition-colors bg-[#4A8B5C] text-sm sm:text-base">
                       Publicar
                     </button>
                   </div>
@@ -221,11 +233,12 @@
                 <div class="space-y-4 sm:space-y-6">
                   <div v-for="comment in comments" :key="comment.id" class="border-b pb-4 border-[#E2E8E2]">
                     <div class="flex items-start gap-2 sm:gap-3">
-                      <img :src="comment.user_avatar || defaultAvatar" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
-                        @error="handleAvatarError">
+                      <img :src="comment.user_avatar || defaultAvatar"
+                        class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover" @error="handleAvatarError">
                       <div class="flex-1">
                         <div class="flex items-center gap-1 sm:gap-2 flex-wrap">
-                          <p class="text-sm sm:text-base font-semibold text-[#1E2A1E]">{{ comment.user_name || 'Usuario' }}</p>
+                          <p class="text-sm sm:text-base font-semibold text-[#1E2A1E]">{{ comment.user_name || 'Usuario'
+                          }}</p>
                           <p class="text-xs text-[#5A6E5A]">{{ formatDate(comment.created_at) }}</p>
                           <div class="flex items-center gap-0 sm:gap-0.5">
                             <Icon v-for="star in 5" :key="star"
@@ -238,7 +251,8 @@
                           <button @click="toggleLike(comment.id)"
                             class="flex items-center gap-1 text-xs sm:text-sm transition-colors hover:text-red-500"
                             :class="comment.isLiked ? 'text-red-500' : 'text-[#5A6E5A]'">
-                            <Icon :icon="comment.isLiked ? 'mdi:heart' : 'mdi:heart-outline'" class="text-sm sm:text-base" />
+                            <Icon :icon="comment.isLiked ? 'mdi:heart' : 'mdi:heart-outline'"
+                              class="text-sm sm:text-base" />
                             {{ comment.likes }} likes
                           </button>
                           <button @click="toggleReplyForm(comment.id)"
@@ -266,9 +280,11 @@
 
                         <!-- Respuestas existentes -->
                         <div v-if="comment.replies?.length" class="ml-4 sm:ml-8 mt-3 space-y-2">
-                          <div v-for="(reply, ridx) in comment.replies" :key="ridx" class="p-2 sm:p-3 rounded-lg bg-[#E8F0E5]">
+                          <div v-for="(reply, ridx) in comment.replies" :key="ridx"
+                            class="p-2 sm:p-3 rounded-lg bg-[#E8F0E5]">
                             <div class="flex items-center gap-1 sm:gap-2">
-                              <p class="text-xs sm:text-sm font-semibold text-[#1E2A1E]">{{ reply.user_name || 'Usuario' }}</p>
+                              <p class="text-xs sm:text-sm font-semibold text-[#1E2A1E]">{{ reply.user_name || 'Usuario'
+                              }}</p>
                               <p class="text-[10px] sm:text-xs text-[#5A6E5A]">{{ formatDate(reply.created_at) }}</p>
                             </div>
                             <p class="text-xs sm:text-sm mt-1 text-[#1E2A1E]">{{ reply.text }}</p>
@@ -286,7 +302,8 @@
         <div v-else class="text-center py-12">
           <Icon icon="mdi:food-off" class="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
           <h3 class="text-lg sm:text-xl font-semibold text-gray-900">Receta no encontrada</h3>
-          <button @click="$router.push('/recetas')" class="mt-4 px-4 sm:px-6 py-1.5 sm:py-2 rounded-xl text-white bg-[#4A8B5C] text-sm sm:text-base">
+          <button @click="$router.push('/recetas')"
+            class="mt-4 px-4 sm:px-6 py-1.5 sm:py-2 rounded-xl text-white bg-[#4A8B5C] text-sm sm:text-base">
             Volver a recetas
           </button>
         </div>
@@ -294,7 +311,8 @@
     </div>
 
     <!-- Toast -->
-    <div v-if="showToast" class="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-lg text-sm sm:text-base">
+    <div v-if="showToast"
+      class="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-lg text-sm sm:text-base">
       {{ toastMessage }}
     </div>
   </div>
@@ -323,8 +341,9 @@ export default {
       comments: [],
       showToast: false,
       toastMessage: '',
-      defaultImage: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=600&h=400&fit=crop',
-      defaultAvatar: 'https://randomuser.me/api/portraits/lego/1.jpg'
+      defaultImage: 'https://www.canadianturkey.ca/wp-content/uploads/2025/06/banner-recipe-default.jpg',
+      defaultAvatar: 'https://static.vecteezy.com/system/resources/previews/026/434/409/non_2x/default-avatar-profile-icon-social-media-user-photo-vector.jpg',
+      defaultUrlVideo: 'https://www.youtube.com/embed/dQw4w9WgXcQ' 
     }
   },
   computed: {
@@ -333,7 +352,14 @@ export default {
     },
     canEdit() {
       if (!this.receta) return false
-      return this.receta.created_by === this.authStore.user?.id || this.authStore.userRole === 'admin'
+      // ✅ SOLO el creador puede editar (NO otros admins)
+      return this.receta.created_by === this.authStore.user?.id
+    },
+    // ✅ NUEVO: canDelete (misma lógica que edit)
+    canDelete() {
+      if (!this.receta) return false
+      // SOLO el creador puede eliminar
+      return this.receta.created_by === this.authStore.user?.id
     }
   },
   methods: {
@@ -348,6 +374,51 @@ export default {
     },
     goToEdit() {
       this.$router.push(`/recetas/editar/${this.receta.id}`)
+    },
+    // NUEVO: Confirmar eliminación
+    confirmDelete() {
+      if (confirm(`¿Estás seguro de que deseas eliminar "${this.receta.title}"?\n\nEsta acción no se puede deshacer.`)) {
+        this.deleteRecipe()
+      }
+    },
+
+    // NUEVO: Eliminar receta
+    async deleteRecipe() {
+      if (!this.receta || !this.canDelete) {
+        this.showNotification('No tienes permiso para eliminar esta receta', 'error')
+        return
+      }
+
+      this.loading = true
+
+      try {
+        // Primero eliminar relaciones (por si acaso, aunque CASCADE debería funcionar)
+        await supabase.from('recipe_ingredients').delete().eq('recipe_id', this.receta.id)
+        await supabase.from('favorites').delete().eq('recipe_id', this.receta.id)
+        await supabase.from('recipe_comments').delete().eq('recipe_id', this.receta.id)
+
+        // Eliminar la receta
+        const { error } = await supabase
+          .from('recipes')
+          .delete()
+          .eq('id', this.receta.id)
+          .eq('created_by', this.authStore.user?.id) // Doble verificación
+
+        if (error) throw error
+
+        this.showNotification('Receta eliminada correctamente')
+
+        // Redirigir después de 1.5 segundos
+        setTimeout(() => {
+          this.$router.push('/recetas')
+        }, 1500)
+
+      } catch (error) {
+        console.error('Error eliminando receta:', error)
+        this.showNotification('Error al eliminar la receta: ' + error.message, 'error')
+      } finally {
+        this.loading = false
+      }
     },
     formatDate(dateString) {
       const date = new Date(dateString)

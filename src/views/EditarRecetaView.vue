@@ -3,9 +3,10 @@
     <Sidebar :is-mobile-open="isMobileMenuOpen" @close="closeMobileMenu" />
     <div class="md:ml-65">
       <Header @toggle-mobile-menu="toggleMobileMenu" @logout="handleLogout" />
-      <main class="pt-17.5 p-3 sm:p-4 md:p-6">
+      <main class="pt-20 p-3">
         <div class="max-w-4xl mx-auto my-3 sm:my-4 flex justify-end">
-          <button @click="$router.back()" class="flex items-center gap-1 sm:gap-2 bg-green-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base">
+          <button @click="$router.back()"
+            class="flex items-center gap-1 sm:gap-2 bg-green-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base">
             <Icon icon="mdi:arrow-left" class="text-lg sm:text-xl" />
             <span>Volver</span>
           </button>
@@ -57,7 +58,8 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                 <div>
                   <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Dificultad</label>
-                  <select v-model="form.difficulty" class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-gray-200 text-sm sm:text-base">
+                  <select v-model="form.difficulty"
+                    class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-gray-200 text-sm sm:text-base">
                     <option value="fácil">Fácil</option>
                     <option value="medio">Medio</option>
                     <option value="difícil">Difícil</option>
@@ -105,7 +107,8 @@
                   <span v-for="tag in form.tags" :key="tag"
                     class="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm bg-emerald-100 text-emerald-700 flex items-center gap-1">
                     #{{ tag }}
-                    <button type="button" @click="removeTag(tag)" class="hover:text-red-500 text-sm sm:text-base">×</button>
+                    <button type="button" @click="removeTag(tag)"
+                      class="hover:text-red-500 text-sm sm:text-base">×</button>
                   </span>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-2">
@@ -146,7 +149,8 @@
                         class="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-gray-200 text-center text-sm sm:text-base">
                     </div>
                     <div class="w-28 sm:w-32">
-                      <select v-model="ing.unit" class="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-gray-200 text-sm sm:text-base">
+                      <select v-model="ing.unit"
+                        class="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-gray-200 text-sm sm:text-base">
                         <option value="unidades">unidades</option>
                         <option value="unidad">unidad</option>
                         <option value="gramos">gramos</option>
@@ -169,7 +173,8 @@
                         <option value="hojas">hojas</option>
                       </select>
                     </div>
-                    <button type="button" @click="removeIngredient(idx)" class="text-red-500 p-1.5 sm:p-2 hover:text-red-700">
+                    <button type="button" @click="removeIngredient(idx)"
+                      class="text-red-500 p-1.5 sm:p-2 hover:text-red-700">
                       <span class="iconify w-4 h-4 sm:w-5 sm:h-5" data-icon="mdi:trash-can-outline"></span>
                     </button>
                   </div>
@@ -181,7 +186,8 @@
             <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 space-y-4 sm:space-y-5">
               <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
                 <h2 class="text-base sm:text-lg font-semibold flex items-center gap-2 text-gray-900">
-                  <span class="iconify w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" data-icon="mdi:format-list-numbered"></span>
+                  <span class="iconify w-4 h-4 sm:w-5 sm:h-5 text-emerald-600"
+                    data-icon="mdi:format-list-numbered"></span>
                   Pasos de preparación
                 </h2>
                 <button type="button" @click="addStep"
@@ -190,7 +196,8 @@
                 </button>
               </div>
 
-              <div v-for="(step, idx) in form.steps" :key="idx" class="flex flex-col sm:flex-row gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-xl">
+              <div v-for="(step, idx) in form.steps" :key="idx"
+                class="flex flex-col sm:flex-row gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-xl">
                 <div
                   class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold shrink-0 text-sm sm:text-base">
                   {{ idx + 1 }}
@@ -217,14 +224,16 @@
                   </div>
 
                   <!-- Previsualización de la imagen del paso -->
-                  <div v-if="step.image_preview" class="mt-2">
-                    <img :src="step.image_preview" class="w-24 h-20 sm:w-32 sm:h-24 object-cover rounded-lg border" />
-                    <button type="button" @click="clearStepImage(idx)" class="text-red-500 text-xs mt-1">Eliminar imagen</button>
+                  <div v-if="step.image_preview || defaultImage" class="mt-2">
+                    <img :src="step.image_preview || defaultImage" class="w-24 h-20 sm:w-32 sm:h-24 object-cover rounded-lg border" />
+                    <button type="button" @click="clearStepImage(idx)" class="text-red-500 text-xs mt-1">Eliminar
+                      imagen</button>
                   </div>
                   <div v-else-if="step.image && step.image.trim() !== ''" class="mt-2">
                     <img :src="step.image" class="w-24 h-20 sm:w-32 sm:h-24 object-cover rounded-lg border"
                       @error="handleStepImageError(idx)" />
-                    <button type="button" @click="clearStepImage(idx)" class="text-red-500 text-xs mt-1">Eliminar imagen</button>
+                    <button type="button" @click="clearStepImage(idx)" class="text-red-500 text-xs mt-1">Eliminar
+                      imagen</button>
                   </div>
                 </div>
                 <button type="button" @click="removeStep(idx)" class="text-red-500 p-1.5 sm:p-2 hover:text-red-700">
@@ -258,7 +267,8 @@
                   <span v-for="utensil in form.utensils_needed" :key="utensil"
                     class="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm bg-gray-100 text-gray-700 flex items-center gap-1">
                     {{ utensil }}
-                    <button type="button" @click="removeUtensil(utensil)" class="hover:text-red-500 text-sm sm:text-base">×</button>
+                    <button type="button" @click="removeUtensil(utensil)"
+                      class="hover:text-red-500 text-sm sm:text-base">×</button>
                   </span>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-2">
@@ -285,7 +295,7 @@
     </div>
 
     <!-- Modal de ingredientes -->
-    <div v-if="showIngredientModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 sm:p-4"
+    <div v-if="showIngredientModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-1000 p-3 sm:p-4"
       @click="showIngredientModal = false">
       <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-hidden" @click.stop>
         <div class="p-4 sm:p-5 border-b flex justify-between items-center">
@@ -296,7 +306,8 @@
         </div>
         <div class="p-4 sm:p-5">
           <div class="relative mb-3 sm:mb-4">
-            <Icon icon="mdi:magnify" class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+            <Icon icon="mdi:magnify"
+              class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
             <input type="text" v-model="ingredientSearch" placeholder="Buscar ingrediente..."
               class="w-full pl-9 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 rounded-xl border border-gray-200 text-sm sm:text-base">
           </div>
@@ -311,7 +322,8 @@
     </div>
 
     <!-- Toast -->
-    <div v-if="showToast" class="fixed top-5 right-3 sm:right-5 z-50 bg-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-lg text-sm sm:text-base">
+    <div v-if="showToast"
+      class="fixed top-5 right-3 sm:right-5 z-50 bg-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-lg text-sm sm:text-base">
       {{ toastMessage }}
     </div>
   </div>
@@ -340,7 +352,7 @@ export default {
       allIngredients: [],
       newTag: '',
       newUtensil: '',
-      defaultImage: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop',
+      defaultImage: 'https://www.canadianturkey.ca/wp-content/uploads/2025/06/banner-recipe-default.jpg',
       form: {
         title: '',
         description: '',
@@ -393,6 +405,14 @@ export default {
 
         if (error) throw error
 
+        // VERIFICACIÓN DE SEGURIDAD: Solo el creador puede editar
+        if (recipe.created_by !== this.authStore.user?.id) {
+          this.toast('❌ No tienes permiso para editar esta receta')
+          setTimeout(() => {
+            this.$router.push(`/recetas/${this.recipeId}`)
+          }, 1500)
+          return
+        }
         const { data: recipeIngredients } = await supabase
           .from('recipe_ingredients')
           .select('ingredient_id, quantity, unit, ingredient:ingredients(name, id)')
@@ -605,7 +625,7 @@ export default {
 
         this.toast('🎉 ¡Receta actualizada!');
         setTimeout(() => {
-          this.$router.push(`/recetas/${this.recipeId}`); 
+          this.$router.push(`/recetas/${this.recipeId}`);
         }, 1000);
 
       } catch (error) {
