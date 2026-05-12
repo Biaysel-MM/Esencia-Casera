@@ -1,4 +1,8 @@
 
+
+
+
+
 RESUMEN DEL PROYECTO ESENCIA CASERA (ACTUALIZADO)
 Esencia Casera es una aplicación web Vue.js integral de planificación y gestión culinaria diseñada para familias y cocineros domésticos. El sistema permite a los usuarios registrar todos los ingredientes disponibles en su despensa y, mediante algoritmos inteligentes, genera automáticamente recetas personalizadas que pueden preparar con lo que ya tienen en casa. La aplicación incluye un planificador semanal interactivo, sugerencias basadas en condiciones climáticas, sistema de votación familiar para decidir menús, gestión de lista de compras automatizada y seguimiento de fechas de vencimiento de ingredientes.
 
@@ -166,3 +170,52 @@ SET session_replication_role = DEFAULT;
 
 -- 4. Verificar
 SELECT COUNT(*) FROM recipes;
+
+
+Esencia Casera/
+├── .vscode/
+├── node_modules/
+├── src/
+│   ├── assets/
+│   │   ├── css/
+│   │   │   └── global.css
+│   │   └── images/
+│   ├── components/
+│   │   ├── ui/
+│   │   └── layout/
+│   │   │   └── Header.vue
+│   │   │   ├── Sidebar.vue
+│   ├── views/
+│   │   │   └── ConfiguracionView.vue
+│   │   │   ├── CrearRecetasView.vue
+│   │   │   ├── EditarRecetasView.vue
+│   │   │   ├── FamiliarDashboardView.vue
+│   │   │   ├── FamiliarView.vue
+│   │   │   ├── FavoritasView.vue
+│   │   │   ├── HomeView.vue
+│   │   │   ├── ListaComprasView.vue
+│   │   │   ├── LoginView.vue
+│   │   │   ├── NotFoundView.vue
+│   │   │   ├── PlanificadorView.vue
+│   │   │   ├── RecetasView.vue
+│   │   │   ├── RegisterView.vue
+│   │   │   ├── VerRecetasView.vue
+│   ├── utils/
+│   │   ├── imageHelper.js
+│   │   ├── permissions.js
+│   ├── router/
+│   │   └── index.js
+│   │   ├── recipes.js
+│   ├── stores/
+│   │   └── auth.js
+│   ├── main.js
+│   ├── supabase.js
+│   └── App.vue
+├── .gitignore
+├── index.html
+├── package-lock.json
+├── package.json
+├── README.md
+└── vite.config.js
+
+

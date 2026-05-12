@@ -291,19 +291,22 @@
             <div v-if="showShoppingListModal"
               class="fixed inset-0 z-2000 flex items-center justify-center bg-black/50 p-4"
               @click="closeShoppingListModal">
-              <div class="relative max-h-[90vh] w-full max-w-200 overflow-y-auto rounded-2xl bg-white p-8 shadow-2xl"
+              <div class="relative flex flex-col max-h-[90vh] w-full max-w-200 rounded-2xl bg-white shadow-2xl"
                 @click.stop>
-                <button
-                  class="absolute right-4 top-4 flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#F6F9F6] transition-all hover:border-[#d4183d] hover:bg-[rgba(212,24,61,0.1)]"
-                  @click="closeShoppingListModal">
-                  <span class="iconify h-5 w-5" data-icon="mdi:close"></span>
-                </button>
+                <!-- Header fijo -->
+                <div class="sticky top-0 z-10 bg-white rounded-t-2xl border-b border-[rgba(0,0,0,0.08)] p-6">
+                  <button
+                    class="absolute right-4 top-4 flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#F6F9F6] transition-all hover:border-[#d4183d] hover:bg-[rgba(212,24,61,0.1)]"
+                    @click="closeShoppingListModal">
+                    <span class="iconify h-5 w-5" data-icon="mdi:close"></span>
+                  </button>
+                  <h2 class="mb-2 text-2xl font-semibold text-[#2C2C2C] pr-8">Lista de Compras Semanal</h2>
+                  <p class="text-sm text-[#6C7A6C]">Ingredientes necesarios para la semana</p>
+                </div>
 
-                <h2 class="mb-2 text-2xl font-semibold text-[#2C2C2C]">Lista de Compras Semanal</h2>
-                <p class="mb-6 text-sm text-[#6C7A6C]">Ingredientes necesarios para la semana</p>
-
-                <div class="mb-8">
-                  <div class="mb-6 grid grid-cols-2 gap-4 rounded-xl bg-[rgba(168,213,186,0.1)] p-4">
+                <!-- Contenido con scroll -->
+                <div class="flex-1 overflow-y-auto p-6">
+                  <div class="mb-6 grid grid-cols-2 gap-4 rounded-xl bg-[rgba(168,213,186,0.1)] p-4 sticky top-0 z-5">
                     <div class="text-center">
                       <span class="block text-xs text-[#6C7A6C]">Total ingredientes</span>
                       <span class="block text-2xl font-semibold text-[#2C2C2C]">{{ shoppingList.length }}</span>
@@ -314,47 +317,58 @@
                     </div>
                   </div>
 
-                  <div class="max-h-100 overflow-y-auto rounded-xl bg-[rgba(168,213,186,0.1)] p-4">
-                    <div v-if="shoppingList.length === 0"
-                      class="flex flex-col items-center justify-center py-12 text-center text-[#6C7A6C]">
-                      <p>No hay ingredientes en la lista de compras</p>
-                    </div>
-                    <div v-else v-for="category in groupedShoppingList" :key="category.name" class="mb-6 last:mb-0">
-                      <h4 class="mb-3 border-b border-[rgba(0,0,0,0.08)] pb-2 text-base font-semibold text-[#2C2C2C]">{{
-                        category.name }}</h4>
-                      <div class="flex flex-col gap-2">
-                        <div v-for="item in category.items" :key="item.id"
-                          class="flex items-center justify-between rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-3">
-                          <label class="flex flex-1 cursor-pointer items-center gap-3">
-                            <input type="checkbox" v-model="item.purchased" class="hidden">
-                            <span
-                              class="flex h-5 w-5 items-center justify-center rounded-md border-2 border-[rgba(0,0,0,0.08)] transition-all"
-                              :class="{ 'border-[#5DA271] bg-[#5DA271]': item.purchased }">
-                              <span v-if="item.purchased" class="text-white text-xs">✓</span>
-                            </span>
-                            <span class="font-medium text-[#2C2C2C]"
-                              :class="{ 'line-through text-[#6C7A6C]': item.purchased }">{{ item.name }}</span>
-                          </label>
-                          <div class="flex items-center gap-2">
-                            <span class="font-semibold text-[#5DA271]">{{ item.quantity }}</span>
-                            <span class="text-sm text-[#6C7A6C]">{{ item.unit }}</span>
-                          </div>
+                  <div v-if="shoppingList.length === 0"
+                    class="flex flex-col items-center justify-center py-12 text-center text-[#6C7A6C]">
+                    <span class="iconify h-16 w-16 mb-4" data-icon="mdi:cart-off"></span>
+                    <p>No hay ingredientes en la lista de compras</p>
+                  </div>
+
+                  <div v-else v-for="category in groupedShoppingList" :key="category.name" class="mb-6 last:mb-0">
+                    <h4
+                      class="mb-3 border-b border-[rgba(0,0,0,0.08)] pb-2 text-base font-semibold text-[#2C2C2C] sticky top-0 bg-white py-2">
+                      {{ category.name }}
+                    </h4>
+                    <div class="flex flex-col gap-2">
+                      <div v-for="item in category.items" :key="item.id || item.name"
+                        class="flex items-center justify-between rounded-xl border border-[rgba(0,0,0,0.08)] bg-white p-3">
+                        <label class="flex flex-1 cursor-pointer items-center gap-3">
+                          <input type="checkbox" v-model="item.purchased" class="hidden">
+                          <span
+                            class="flex h-5 w-5 items-center justify-center rounded-md border-2 border-[rgba(0,0,0,0.08)] transition-all"
+                            :class="{ 'border-[#5DA271] bg-[#5DA271]': item.purchased }">
+                            <span v-if="item.purchased" class="text-white text-xs">✓</span>
+                          </span>
+                          <span class="font-medium text-[#2C2C2C]"
+                            :class="{ 'line-through text-[#6C7A6C]': item.purchased }">{{ item.name }}</span>
+                        </label>
+                        <div class="flex items-center gap-2 shrink-0">
+                          <span class="font-semibold text-[#5DA271]">{{ item.quantity }}</span>
+                          <span class="text-sm text-[#6C7A6C]">{{ item.unit }}</span>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div class="flex gap-3 max-sm:flex-col">
-                  <button
-                    class="flex-1 cursor-pointer rounded-xl border border-[rgba(0,0,0,0.08)] bg-transparent px-6 py-3 font-medium text-[#2C2C2C] transition-all hover:bg-[rgba(168,213,186,0.1)]"
-                    @click="closeShoppingListModal">Cerrar</button>
-                  <button
-                    class="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[rgba(139,177,116,0.9)] px-6 py-3 font-medium text-white transition-all hover:bg-[rgba(139,177,116,1)]"
-                    @click="exportShoppingList">
-                    <span class="iconify" data-icon="mdi:export"></span>
-                    Exportar Lista
-                  </button>
+                <!-- Footer fijo con botones -->
+                <div class="sticky bottom-0 z-10 bg-white rounded-b-2xl border-t border-[rgba(0,0,0,0.08)] p-6">
+                  <div class="flex gap-3 max-sm:flex-col">
+                    <button
+                      class="flex-1 cursor-pointer rounded-xl border border-[rgba(0,0,0,0.08)] bg-transparent px-6 py-3 font-medium text-[#2C2C2C] transition-all hover:bg-[rgba(168,213,186,0.1)]"
+                      @click="closeShoppingListModal">Cerrar</button>
+                    <button
+                      class="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#5DA271] px-6 py-3 font-medium text-white transition-all hover:bg-[rgba(93,162,113,0.9)]"
+                      :disabled="shoppingList.length === 0" @click="saveCurrentShoppingList">
+                      <span class="iconify" data-icon="mdi:content-save"></span>
+                      Guardar lista
+                    </button>
+                    <button
+                      class="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[rgba(139,177,116,0.9)] px-6 py-3 font-medium text-white transition-all hover:bg-[rgba(139,177,116,1)]"
+                      :disabled="shoppingList.length === 0" @click="exportShoppingList">
+                      <span class="iconify" data-icon="mdi:export"></span>
+                      Exportar
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -949,23 +963,52 @@ export default {
           filteredRecipes = filteredRecipes.filter(r => r.total_time <= 30)
         }
 
+        // Si no hay recetas después del filtro, mostrar error
+        if (filteredRecipes.length === 0) {
+          showNotification('error', 'Error', 'No hay recetas que cumplan con las preferencias seleccionadas')
+          return
+        }
+
         const preview = []
         for (const day of weekDays.value) {
           for (const mealType of mealTypes) {
             const existing = weekMeals.value.find(m => m.day === day.name && m.mealType === mealType.key)
-            if (existing) {
-              preview.push({ day: day.name, mealType: mealType.key, recipe: existing })
+            if (existing && existing.recipe_id) {
+              // Verificar que la receta exista en allRecipes
+              const validRecipe = allRecipes.value.find(r => r.id === existing.recipe_id)
+              if (validRecipe) {
+                preview.push({ day: day.name, mealType: mealType.key, recipe: validRecipe })
+              } else {
+                // Buscar una nueva receta si la existente no es válida
+                const suitableRecipes = filteredRecipes.filter(r => r.category === mealType.dbType)
+                if (suitableRecipes.length > 0) {
+                  const randomRecipe = suitableRecipes[Math.floor(Math.random() * suitableRecipes.length)]
+                  preview.push({ day: day.name, mealType: mealType.key, recipe: randomRecipe })
+                }
+              }
             } else {
               const suitableRecipes = filteredRecipes.filter(r => r.category === mealType.dbType)
               if (suitableRecipes.length > 0) {
                 const randomRecipe = suitableRecipes[Math.floor(Math.random() * suitableRecipes.length)]
                 preview.push({ day: day.name, mealType: mealType.key, recipe: randomRecipe })
+              } else {
+                // No hay receta disponible para este tipo
+                preview.push({ day: day.name, mealType: mealType.key, recipe: null })
               }
             }
           }
         }
-        generatedWeeklyMenu.value = preview
-        showNotification('success', 'Éxito', 'Vista previa generada')
+
+        // Filtrar previews sin receta válida
+        const validPreview = preview.filter(meal => meal.recipe && meal.recipe.id)
+
+        if (validPreview.length === 0) {
+          showNotification('error', 'Error', 'No se pudieron generar recetas válidas')
+          return
+        }
+
+        generatedWeeklyMenu.value = validPreview
+        showNotification('success', 'Éxito', `Vista previa generada con ${validPreview.length} comidas`)
       } catch (error) {
         console.error('Error generando vista previa:', error)
         showNotification('error', 'Error', 'No se pudo generar la vista previa')
@@ -974,6 +1017,18 @@ export default {
 
     const applyGeneratedWeeklyMenu = async () => {
       try {
+        // Validar que todas las recetas existan
+        const invalidRecipes = generatedWeeklyMenu.value.filter(meal => {
+          const existsInDb = allRecipes.value.some(r => r.id === meal.recipe?.id)
+          return !meal.recipe || !meal.recipe.id || !existsInDb
+        })
+
+        if (invalidRecipes.length > 0) {
+          console.warn('Recetas inválidas encontradas:', invalidRecipes)
+          showNotification('error', 'Error', `Hay ${invalidRecipes.length} recetas que no existen en la base de datos. Por favor, regenera la vista previa.`)
+          return
+        }
+
         const plannerId = await getCurrentPlannerId()
         if (!plannerId) {
           showNotification('error', 'Error', 'No se encontró el planificador')
@@ -981,11 +1036,20 @@ export default {
         }
 
         // Eliminar todas las comidas
-        await supabase.from('planned_meals').delete().eq('planner_id', plannerId)
+        const { error: deleteError } = await supabase
+          .from('planned_meals')
+          .delete()
+          .eq('planner_id', plannerId)
 
-        // Insertar nuevas
+        if (deleteError) {
+          console.error('Error eliminando comidas:', deleteError)
+          showNotification('error', 'Error', 'No se pudieron eliminar las comidas existentes')
+          return
+        }
+
+        // Preparar solo las comidas válidas
         const mealsToInsert = generatedWeeklyMenu.value
-          .filter(meal => meal.recipe)
+          .filter(meal => meal.recipe && meal.recipe.id)
           .map(meal => {
             const dayData = weekDays.value.find(d => d.name === meal.day)
             const mealTypeData = mealTypes.find(m => m.key === meal.mealType)
@@ -996,70 +1060,186 @@ export default {
               recipe_id: meal.recipe.id
             }
           })
-          .filter(meal => meal.day_of_week !== undefined && meal.meal_type)
+          .filter(meal => meal.day_of_week !== undefined && meal.meal_type && meal.recipe_id)
 
-        if (mealsToInsert.length > 0) {
-          const { error } = await supabase.from('planned_meals').insert(mealsToInsert)
-          if (error) throw error
+        if (mealsToInsert.length === 0) {
+          showNotification('error', 'Error', 'No hay comidas válidas para guardar')
+          return
         }
 
-        await loadWeekData()
-        showNotification('success', 'Éxito', 'Menú semanal aplicado')
-        closeGenerateWeeklyModal()
+        // Insertar en lotes pequeños para evitar errores
+        const batchSize = 10
+        let successCount = 0
+
+        for (let i = 0; i < mealsToInsert.length; i += batchSize) {
+          const batch = mealsToInsert.slice(i, i + batchSize)
+          const { error: insertError } = await supabase
+            .from('planned_meals')
+            .insert(batch)
+
+          if (insertError) {
+            console.error('Error en lote:', insertError)
+            // Continuar con el siguiente lote en lugar de detener todo
+            continue
+          }
+          successCount += batch.length
+        }
+
+        if (successCount > 0) {
+          await loadWeekData()
+          showNotification('success', 'Éxito', `Menú semanal aplicado (${successCount} comidas)`)
+          closeGenerateWeeklyModal()
+        } else {
+          showNotification('error', 'Error', 'No se pudo guardar ninguna comida')
+        }
 
       } catch (error) {
         console.error('Error aplicando menú:', error)
-        showNotification('error', 'Error', 'No se pudo aplicar el menú')
+        showNotification('error', 'Error', 'No se pudo aplicar el menú: ' + error.message)
+      }
+    }
+
+    const validateRecipesData = async () => {
+      const { data, error } = await supabase
+        .from('recipes')
+        .select('id, title')
+
+      if (error) {
+        console.error('Error validando recetas:', error)
+        return
+      }
+
+      console.log(`✅ Total de recetas en BD: ${data.length}`)
+      console.log('IDs de recetas:', data.map(r => ({ id: r.id, title: r.title })))
+
+      // Verificar recetas en weekMeals
+      const invalidMeals = weekMeals.value.filter(meal => {
+        return meal.recipe_id && !data.some(r => r.id === meal.recipe_id)
+      })
+
+      if (invalidMeals.length > 0) {
+        console.warn('⚠️ Comidas con recetas inválidas:', invalidMeals)
+      }
+    }
+
+    // En PlanificadorView.vue, modifica saveShoppingListToDatabase
+    const saveShoppingListToDatabase = async (shoppingItems, listName = null) => {
+      try {
+        if (!authStore.user?.id) {
+          showNotification('error', 'Error', 'Usuario no autenticado')
+          return null
+        }
+
+        const listTitle = listName || `Lista de compras - ${formatWeekRange()}`
+
+        // Crear la lista principal
+        const { data: newList, error: listError } = await supabase
+          .from('shopping_lists')
+          .insert({
+            user_id: authStore.user.id,
+            name: listTitle,
+            status: 'active'
+          })
+          .select()
+          .single()
+
+        if (listError) throw listError
+
+        // Insertar items (evitando duplicados por ingrediente)
+        const itemsToInsert = shoppingItems.map(item => ({
+          list_id: newList.id,
+          ingredient_id: item.id,
+          quantity: item.quantity,
+          unit: item.unit,
+          is_purchased: false
+        }))
+
+        if (itemsToInsert.length > 0) {
+          const { error: itemsError } = await supabase
+            .from('shopping_list_items')
+            .insert(itemsToInsert)
+
+          if (itemsError) throw itemsError
+        }
+
+        showNotification('success', 'Éxito', `Lista "${listTitle}" guardada correctamente`)
+
+        // Preguntar si quiere ver la lista
+        if (confirm('Lista guardada exitosamente. ¿Deseas ver todas tus listas de compras?')) {
+          router.push('/lista-compras')
+        }
+
+        return newList
+
+      } catch (error) {
+        console.error('Error guardando lista:', error)
+        showNotification('error', 'Error', 'No se pudo guardar la lista de compras')
+        return null
       }
     }
 
     const generateShoppingList = async () => {
       try {
         loading.shoppingList = true
-        const recipeIds = weekMeals.value.filter(m => m.recipe_id).map(m => m.recipe_id)
+
+        // Obtener IDs de recetas únicas
+        const recipeIds = [...new Set(weekMeals.value.filter(m => m.recipe_id).map(m => m.recipe_id))]
+
+        console.log('Recetas encontradas:', recipeIds)
+        console.log('Week meals:', weekMeals.value)
 
         if (recipeIds.length === 0) {
           showNotification('info', 'Información', 'No hay recetas planificadas')
-          shoppingList.value = []
           showShoppingListModal.value = true
+          shoppingList.value = []
           return
         }
 
+        // Obtener ingredientes de las recetas
         const { data, error } = await supabase
           .from('recipe_ingredients')
           .select(`
-            quantity,
-            unit,
-            ingredient:ingredients (id, name, category)
-          `)
+        quantity,
+        unit,
+        ingredient:ingredients (
+          id,
+          name,
+          category
+        )
+      `)
           .in('recipe_id', recipeIds)
 
         if (error) throw error
 
+        console.log('Ingredientes obtenidos:', data)
+
+        // Consolidar ingredientes
         const consolidated = {}
         data.forEach(item => {
           const ingredient = item.ingredient
           if (!ingredient) return
-          const key = `${ingredient.id}-${item.unit}`
+          const key = `${ingredient.id}-${item.unit || 'unidades'}`
           if (!consolidated[key]) {
             consolidated[key] = {
               id: ingredient.id,
               name: ingredient.name,
               category: ingredient.category || 'otros',
               quantity: 0,
-              unit: item.unit,
+              unit: item.unit || 'unidades',
               purchased: false
             }
           }
-          consolidated[key].quantity += parseFloat(item.quantity)
+          consolidated[key].quantity += parseFloat(item.quantity) || 1
         })
 
-        shoppingList.value = Object.values(consolidated).map(item => ({
+        const shoppingItems = Object.values(consolidated).map(item => ({
           ...item,
           quantity: Math.ceil(item.quantity * 100) / 100,
           purchased: false
         }))
 
+        console.log('Lista final:', shoppingItems)
+        shoppingList.value = shoppingItems
         showShoppingListModal.value = true
 
       } catch (error) {
@@ -1070,18 +1250,60 @@ export default {
       }
     }
 
+    // Nueva función para guardar la lista actual
+    const saveCurrentShoppingList = async () => {
+      if (shoppingList.value.length === 0) {
+        showNotification('info', 'Información', 'No hay items para guardar')
+        return
+      }
+
+      const listName = prompt('Nombre de la lista:', `Lista de compras - ${formatWeekRange()}`)
+      if (!listName) return
+
+      const savedList = await saveShoppingListToDatabase(shoppingList.value, listName)
+      if (savedList) {
+        // Preguntar si quiere ir a la vista de listas
+        if (confirm('Lista guardada exitosamente. ¿Deseas ver todas tus listas de compras?')) {
+          router.push('/lista-compras')
+        }
+      }
+    }
+
     const groupedShoppingList = computed(() => {
       const groups = {}
-      shoppingList.value.forEach(item => {
-        const category = item.category || 'otros'
-        const categoryNames = { 'verduras': 'Verduras', 'frutas': 'Frutas', 'proteínas': 'Proteínas', 'granos': 'Granos', 'lácteos': 'Lácteos', 'condimentos': 'Condimentos', 'bebidas': 'Bebidas', 'otros': 'Otros' }
-        const name = categoryNames[category] || category
-        if (!groups[name]) groups[name] = { name, items: [] }
-        groups[name].items.push(item)
-      })
-      return Object.values(groups)
-    })
+      const categoryNames = {
+        'verduras': 'Verduras',
+        'frutas': 'Frutas',
+        'proteinas': 'Proteínas',
+        'proteínas': 'Proteínas',
+        'granos': 'Granos',
+        'lacteos': 'Lácteos',
+        'lácteos': 'Lácteos',
+        'condimentos': 'Condimentos',
+        'bebidas': 'Bebidas',
+        'otros': 'Otros'
+      }
 
+      shoppingList.value.forEach(item => {
+        let category = item.category || 'otros'
+        // Normalizar categoría
+        category = category.toLowerCase()
+        const displayName = categoryNames[category] || category.charAt(0).toUpperCase() + category.slice(1)
+        if (!groups[displayName]) groups[displayName] = { name: displayName, items: [] }
+        groups[displayName].items.push(item)
+      })
+
+      // Ordenar categorías
+      const order = ['Verduras', 'Frutas', 'Proteínas', 'Granos', 'Lácteos', 'Condimentos', 'Bebidas', 'Otros']
+      return Object.values(groups).sort((a, b) => {
+        const indexA = order.indexOf(a.name)
+        const indexB = order.indexOf(b.name)
+        if (indexA === -1 && indexB === -1) return 0
+        if (indexA === -1) return 1
+        if (indexB === -1) return -1
+        return indexA - indexB
+      })
+    })
     const shoppingListStats = computed(() => ({
       recipes: new Set(weekMeals.value.filter(m => m.recipe_id).map(m => m.recipe_id)).size,
       total: shoppingList.value.length
@@ -1185,6 +1407,7 @@ export default {
         currentWeekStart.value = getWeekStart(new Date())
         weekDays.value = generateWeekDays(currentWeekStart.value)
         await Promise.all([loadAllRecipes(), loadWeekData()])
+        await validateRecipesData()
       }
     })
 

@@ -108,7 +108,7 @@
                           class="flex-1 rounded-xl bg-[#5DA271] py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white transition-all duration-200 hover:bg-[rgba(93,162,113,0.9)]">
                           Ver receta
                         </button>
-                        <button @click.stop="openChangeMealModal(meal.meal_type)"
+                        <button @click.stop="openChangeMealModal(meal.meal_type, meal)"
                           class="rounded-xl border border-[rgba(0,0,0,0.08)] bg-white px-2 sm:px-3 py-2 sm:py-2.5 transition-all duration-200 hover:bg-[#D8EBD0]"
                           title="Cambiar comida">
                           <span class="iconify h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#5DA271]" data-icon="mdi:swap-horizontal"></span>
@@ -133,6 +133,7 @@
                 </button>
               </div>
 
+              <!-- ... (Pantry content remains the same) ... -->
               <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div v-if="loadingStates.pantry && pantryItems.length === 0" class="col-span-full flex flex-col items-center justify-center py-12 text-[#5A6E5A]">
                   <div class="w-10 h-10 border-4 rounded-full animate-spin mb-4 border-[#E2E8E2] border-t-[#4A8B5C]"></div>
@@ -192,6 +193,7 @@
                   </button>
                 </div>
 
+                <!-- ... (Popular recipes content remains the same) ... -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div v-if="loadingStates.popularRecipes && popularRecipes.length === 0" class="col-span-full flex flex-col items-center justify-center py-12 text-[#5A6E5A]">
                     <div class="w-10 h-10 border-4 rounded-full animate-spin mb-4 border-[#E2E8E2] border-t-[#4A8B5C]"></div>
@@ -201,36 +203,26 @@
                   <div v-else v-for="recipe in popularRecipes.slice(0, 2)" :key="recipe.id"
                     class="group cursor-pointer overflow-hidden rounded-xl border border-[rgba(0,0,0,0.08)] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#5DA271] hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]"
                     @click="goToRecipeDetail(recipe.id)">
+                    <!-- ... -->
                     <div class="relative h-28 sm:h-32 overflow-hidden">
                       <img :src="recipe.image_url || defaultImage" :alt="recipe.title"
                         class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         @error="handleImageError" />
                       <div class="absolute inset-0 bg-linear-to-t from-black/50 to-transparent"></div>
-
                       <div class="absolute left-1.5 sm:left-2 top-1.5 sm:top-2">
                         <span class="rounded-md bg-[#5DA271] px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-medium text-white">
                           {{ getCategoryLabel(recipe.category) }}
                         </span>
                       </div>
-
                       <div class="absolute bottom-1.5 sm:bottom-2 right-1.5 sm:right-2">
                         <div class="flex items-center gap-0.5 rounded-md bg-black/50 px-1 sm:px-1.5 py-0.5 text-white text-[9px] sm:text-[10px]">
                           <span class="iconify w-2 h-2 sm:w-2.5 sm:h-2.5" data-icon="mdi:star"></span>
                           <span>Popular</span>
                         </div>
                       </div>
-
-                      <div class="absolute bottom-1.5 sm:bottom-2 left-1.5 sm:left-2 flex gap-1">
-                        <span v-for="(tag, idx) in (recipe.tags || []).slice(0, 1)" :key="idx"
-                          class="rounded px-1 sm:px-1.5 py-0.5 text-[8px] sm:text-[9px] font-medium bg-white/90 text-[#2C2C2C]">
-                          {{ tag }}
-                        </span>
-                      </div>
                     </div>
-
                     <div class="p-2 sm:p-3">
                       <h3 class="mb-1.5 sm:mb-2 text-xs sm:text-sm font-semibold text-[#2C2C2C] line-clamp-1">{{ recipe.title }}</h3>
-
                       <div class="flex flex-wrap items-center justify-between gap-1 mb-1.5 sm:mb-2">
                         <div class="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-[11px] text-[#6C7A6C]">
                           <span class="iconify h-2.5 w-2.5 sm:h-3 sm:w-3 text-[#5DA271]" data-icon="mdi:clock-outline"></span>
@@ -245,7 +237,6 @@
                           <span>{{ recipe.calories_per_serving || '--' }}</span>
                         </div>
                       </div>
-
                       <div v-if="recipe.available_ingredients !== undefined" class="mb-1.5 sm:mb-2">
                         <div class="flex justify-between text-[9px] sm:text-[10px] mb-0.5 sm:mb-1">
                           <span class="text-[#6C7A6C]">Ingredientes</span>
@@ -254,12 +245,9 @@
                           </span>
                         </div>
                         <div class="h-1 w-full overflow-hidden rounded-full bg-[#E8F0E8]">
-                          <div class="h-full rounded-full transition-all duration-300 bg-[#5DA271]" :style="{
-                            width: ((recipe.available_ingredients || 0) / (recipe.total_ingredients || 1) * 100) + '%'
-                          }"></div>
+                          <div class="h-full rounded-full transition-all duration-300 bg-[#5DA271]" :style="{ width: ((recipe.available_ingredients || 0) / (recipe.total_ingredients || 1) * 100) + '%' }"></div>
                         </div>
                       </div>
-
                       <button @click.stop="goToRecipeDetail(recipe.id)"
                         class="w-full rounded-lg bg-[#5DA271] py-1.5 text-[11px] sm:text-xs font-medium text-white transition-all duration-200 hover:bg-[rgba(93,162,113,0.9)]">
                         Ver receta
@@ -273,6 +261,7 @@
               <div class="flex flex-col gap-4 sm:gap-5 md:gap-6">
                 <!-- Weather Suggestion -->
                 <section class="rounded-2xl p-4 sm:p-5 md:p-6 text-white shadow-lg bg-linear-to-r from-[#4A8B5C] to-[#7BA86A]">
+                  <!-- ... (Weather content remains the same) ... -->
                   <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
                     <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/20 flex items-center justify-center">
                       <span class="iconify w-6 h-6 sm:w-8 sm:h-8 text-white" :data-icon="weatherIcon"></span>
@@ -311,6 +300,7 @@
 
                 <!-- Notifications -->
                 <section class="rounded-2xl p-4 sm:p-5 md:p-6 shadow-sm border bg-white border-[#E2E8E2]">
+                  <!-- ... (Notifications content remains the same) ... -->
                   <div class="flex items-center justify-between mb-3 sm:mb-4">
                     <h3 class="text-sm sm:text-base font-medium text-[#1E2A1E]">Notificaciones</h3>
                     <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full text-white text-[10px] sm:text-xs font-medium flex items-center justify-center bg-[#4A8B5C]">{{ notifications.length }}</span>
@@ -373,7 +363,7 @@
       </div>
     </div>
 
-    <!-- CHANGE MEAL MODAL -->
+    <!-- CHANGE MEAL MODAL (MEJORADO - Estilo Planificador) -->
     <div v-if="showChangeMealModal"
       class="fixed inset-0 bg-black/50 flex items-center justify-center z-2000 p-3 sm:p-4 animate-fade-in"
       @click="closeChangeMealModal">
@@ -382,21 +372,61 @@
           <span class="iconify w-4 h-4 sm:w-5 sm:h-5" data-icon="mdi:close"></span>
         </button>
         <h2 class="text-xl sm:text-2xl font-semibold text-center mb-4 sm:mb-6">Cambiar {{ getMealTypeText(currentMealType) }}</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 max-h-80 sm:max-h-100 overflow-y-auto">
-          <div v-for="meal in filteredMeals" :key="meal.id" @click="selectMeal(meal)"
-            class="rounded-xl border-2 cursor-pointer p-2 sm:p-3 transition-all" :class="{ 'border-green-600': selectedMeal?.id === meal.id }"
-            :style="{ borderColor: selectedMeal?.id === meal.id ? '#4A8B5C' : '#E2E8E2' }">
-            <h4 class="text-sm sm:text-base font-medium">{{ meal.title }}</h4>
-            <div class="flex gap-2 sm:gap-3 text-[11px] sm:text-xs mt-1">
-              <span>⏱️ {{ meal.total_time }} min</span>
-              <span>👥 {{ meal.servings }}</span>
+        
+        <!-- Input de búsqueda -->
+        <div class="mb-4 sm:mb-6">
+          <div class="relative">
+            <span class="iconify absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-[#6C7A6C] w-4 h-4 sm:w-5 sm:h-5" data-icon="mdi:magnify"></span>
+            <input type="text" v-model="recipeSearchQuery" placeholder="Buscar recetas..." 
+              class="w-full rounded-xl border border-[#E2E8E2] bg-white py-2.5 sm:py-3 pl-9 sm:pl-12 pr-4 text-sm text-[#1E2A1E] focus:border-[#5DA271] focus:outline-none focus:ring-2 focus:ring-[rgba(93,162,113,0.2)]">
+          </div>
+        </div>
+
+        <!-- Grid de recetas MEJORADO con más información -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 max-h-80 sm:max-h-100 overflow-y-auto p-1">
+          <div v-for="recipe in filteredChangeMealRecipes" :key="recipe.id" 
+            @click="selectMeal(recipe)"
+            class="cursor-pointer overflow-hidden rounded-xl border-2 transition-all hover:-translate-y-1 hover:shadow-lg"
+            :class="{ 'border-[#4A8B5C] bg-[rgba(74,139,92,0.05)]': selectedMeal?.id === recipe.id, 'border-[#E2E8E2] bg-white': selectedMeal?.id !== recipe.id }">
+            <div class="flex gap-3 p-2 sm:p-3">
+              <div class="w-16 h-16 sm:w-20 sm:h-20 shrink-0 overflow-hidden rounded-lg border border-[rgba(0,0,0,0.08)]">
+                <img :src="recipe.image_url || defaultImage" :alt="recipe.title" class="w-full h-full object-cover" @error="handleImageError">
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm sm:text-base font-semibold text-[#1E2A1E] line-clamp-1">{{ recipe.title }}</p>
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 text-[11px] sm:text-xs text-[#6C7A6C]">
+                  <span class="flex items-center gap-0.5">
+                    <span class="iconify w-3 h-3 text-[#5DA271]" data-icon="mdi:clock-outline"></span>
+                    {{ recipe.total_time }} min
+                  </span>
+                  <span class="flex items-center gap-0.5">
+                    <span class="iconify w-3 h-3 text-[#5DA271]" data-icon="mdi:account-group-outline"></span>
+                    {{ recipe.servings }} porc.
+                  </span>
+                  <span class="flex items-center gap-0.5">
+                    <span class="iconify w-3 h-3 text-red-500" data-icon="mdi:fire"></span>
+                    {{ recipe.calories_per_serving || '--' }} kcal
+                  </span>
+                </div>
+                <div class="mt-1.5 flex flex-wrap gap-1">
+                  <span class="rounded bg-[#E8F0E8] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-medium text-[#4A8B5C]">
+                    {{ getCategoryLabel(recipe.category) }}
+                  </span>
+                  <span v-for="tag in (recipe.tags || []).slice(0, 2)" :key="tag" class="rounded bg-gray-100 px-1.5 py-0.5 text-[9px] sm:text-[10px] text-[#6C7A6C]">
+                    {{ tag }}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
         <div class="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 justify-end">
           <button @click="closeChangeMealModal" class="px-4 sm:px-6 py-2 sm:py-3 rounded-xl border border-[#E2E8E2] bg-transparent text-[#1E2A1E] text-sm sm:text-base">Cancelar</button>
           <button @click="confirmMealChange" :disabled="!selectedMeal"
-            class="px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-white disabled:opacity-50 bg-[#4A8B5C] text-sm sm:text-base">Cambiar Comida</button>
+            class="px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 bg-[#4A8B5C] text-sm sm:text-base">
+            Cambiar Comida
+          </button>
         </div>
       </div>
     </div>
@@ -421,7 +451,7 @@
         </div>
         <div class="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 justify-end">
           <button @click="closeGenerateMenuModal" class="px-4 sm:px-6 py-2 sm:py-3 rounded-xl border border-[#E2E8E2] bg-transparent text-[#1E2A1E] text-sm sm:text-base">Cancelar</button>
-          <button @click="generateNewMenu" class="px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-white bg-[#8b5cf6] text-sm sm:text-base">Generar Menú</button>
+          <button @click="generateNewMenu" class="px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-white transition-all duration-200 bg-[#8b5cf6] hover:bg-[#7c3aed] text-sm sm:text-base">Generar Menú</button>
         </div>
       </div>
     </div>
@@ -583,6 +613,7 @@ export default {
     const selectedMeal = ref(null)
     const ingredientSearch = ref('')
     const selectedIngredient = ref(null)
+    const recipeSearchQuery = ref('') // Para búsqueda en modal de cambio de comida
 
     // New ingredient data
     const newIngredientData = reactive({ category: 'verduras', quantity: 1, unit: 'unidades', expiryDays: null, notes: '' })
@@ -656,10 +687,19 @@ export default {
       return 'mdi:weather-partly-cloudy'
     })
 
-    const filteredMeals = computed(() => {
+    // Recetas filtradas para el modal de cambio de comida
+    const filteredChangeMealRecipes = computed(() => {
+      let filtered = [...allRecipes.value]
+      // Filtrar por tipo de comida actual (desayuno, almuerzo, cena)
       const typeMap = { 'desayuno': 'desayuno', 'almuerzo': 'almuerzo', 'cena': 'cena' }
       const targetType = typeMap[currentMealType.value] || currentMealType.value
-      return allRecipes.value.filter(r => r.category === targetType)
+      filtered = filtered.filter(r => r.category === targetType)
+      
+      if (recipeSearchQuery.value.trim()) {
+        const query = recipeSearchQuery.value.toLowerCase()
+        filtered = filtered.filter(r => r.title.toLowerCase().includes(query))
+      }
+      return filtered
     })
 
     // Navegación a detalle de receta
@@ -806,7 +846,6 @@ export default {
 
         if (error) throw error
 
-        // Calcular disponibilidad para recetas populares
         const { data: pantry } = await supabase
           .from('user_pantry')
           .select('ingredient_id')
@@ -901,7 +940,7 @@ export default {
       try {
         const { data, error } = await supabase
           .from('recipes')
-          .select('id, title, total_time, servings, image_url, category')
+          .select('id, title, total_time, servings, image_url, category, calories_per_serving, tags')
           .eq('is_public', true)
         if (error) throw error
         allRecipes.value = data || []
@@ -922,14 +961,17 @@ export default {
     }
 
     // ========== CHANGE MEAL ==========
-    const openChangeMealModal = (mealType) => {
+    const openChangeMealModal = (mealType, currentMeal = null) => {
       currentMealType.value = mealType
       selectedMeal.value = null
+      recipeSearchQuery.value = ''
       showChangeMealModal.value = true
     }
 
     const closeChangeMealModal = () => {
       showChangeMealModal.value = false
+      selectedMeal.value = null
+      recipeSearchQuery.value = ''
     }
 
     const selectMeal = (meal) => {
@@ -954,10 +996,14 @@ export default {
           planner = newPlanner
         }
 
+        // Mapear el tipo de comida (desayuno, almuerzo, cena)
+        const mealTypeMap = { 'desayuno': 'desayuno', 'almuerzo': 'almuerzo', 'cena': 'cena' }
+        const dbMealType = mealTypeMap[currentMealType.value] || currentMealType.value
+
         await supabase.from('planned_meals').upsert({
           planner_id: planner.id,
           day_of_week: dayOfWeek,
-          meal_type: currentMealType.value,
+          meal_type: dbMealType,
           recipe_id: selectedMeal.value.id
         }, { onConflict: 'planner_id,day_of_week,meal_type' })
 
@@ -970,7 +1016,7 @@ export default {
       }
     }
 
-    // ========== GENERATE MENU ==========
+    // ========== GENERATE MENU (CORREGIDO) ==========
     const openGenerateMenuModal = () => {
       showGenerateMenuModal.value = true
     }
@@ -982,45 +1028,107 @@ export default {
     const generateNewMenu = async () => {
       try {
         const today = new Date()
+        const dayOfWeek = (today.getDay() + 6) % 7
+        
+        // Calcular el inicio de la semana (lunes)
         const weekStart = new Date(today)
         const dayDiff = today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)
         weekStart.setDate(dayDiff)
         const weekStartStr = weekStart.toISOString().split('T')[0]
 
-        let filteredRecipes = [...allRecipes.value]
-        if (menuPreferences.healthy) {
-          filteredRecipes = filteredRecipes.filter(r => (r.calories_per_serving || 500) <= 400)
-        }
-        if (menuPreferences.quick) {
-          filteredRecipes = filteredRecipes.filter(r => (r.total_time || 60) <= 30)
-        }
+        // Obtener o crear el planificador
+        let { data: planner } = await supabase
+          .from('weekly_planner')
+          .select('id')
+          .eq('user_id', authStore.user?.id)
+          .eq('week_start', weekStartStr)
+          .single()
 
-        let { data: planner } = await supabase.from('weekly_planner').select('id').eq('user_id', authStore.user?.id).eq('week_start', weekStartStr).single()
         if (!planner) {
           const weekEnd = new Date(weekStart)
           weekEnd.setDate(weekStart.getDate() + 6)
-          const { data: newPlanner } = await supabase.from('weekly_planner').insert({ user_id: authStore.user?.id, week_start: weekStartStr, week_end: weekEnd.toISOString().split('T')[0] }).select().single()
+          const { data: newPlanner } = await supabase
+            .from('weekly_planner')
+            .insert({ 
+              user_id: authStore.user?.id, 
+              week_start: weekStartStr, 
+              week_end: weekEnd.toISOString().split('T')[0],
+              preferences: menuPreferences
+            })
+            .select()
+            .single()
           planner = newPlanner
         }
 
-        const dayOfWeek = (today.getDay() + 6) % 7
-        await supabase.from('planned_meals').delete().eq('planner_id', planner.id).eq('day_of_week', dayOfWeek)
+        // Eliminar comidas existentes para el día de hoy
+        await supabase
+          .from('planned_meals')
+          .delete()
+          .eq('planner_id', planner.id)
+          .eq('day_of_week', dayOfWeek)
 
+        // Definir los tipos de comida a generar
         const mealTypes = ['desayuno', 'almuerzo', 'cena']
+        const newMeals = []
+
+        // Filtrar recetas según preferencias
+        let availableRecipes = [...allRecipes.value]
+        
+        if (menuPreferences.healthy) {
+          availableRecipes = availableRecipes.filter(r => (r.calories_per_serving || 500) <= 450)
+        }
+        if (menuPreferences.quick) {
+          availableRecipes = availableRecipes.filter(r => (r.total_time || 60) <= 30)
+        }
+
+        // Para cada tipo de comida, seleccionar una receta aleatoria de la categoría correspondiente
         for (const mealType of mealTypes) {
-          const suitable = filteredRecipes.filter(r => r.category === mealType)
-          if (suitable.length) {
-            const random = suitable[Math.floor(Math.random() * suitable.length)]
-            await supabase.from('planned_meals').insert({ planner_id: planner.id, day_of_week: dayOfWeek, meal_type: mealType, recipe_id: random.id })
+          const recipesForType = availableRecipes.filter(r => r.category === mealType)
+          
+          if (recipesForType.length === 0) {
+            console.warn(`No hay recetas disponibles para ${mealType}`)
+            // Si no hay para este tipo, intentar con cualquier categoría
+            const anyRecipe = availableRecipes[Math.floor(Math.random() * availableRecipes.length)]
+            if (anyRecipe) {
+              newMeals.push({
+                planner_id: planner.id,
+                day_of_week: dayOfWeek,
+                meal_type: mealType,
+                recipe_id: anyRecipe.id
+              })
+            }
+          } else {
+            const randomIndex = Math.floor(Math.random() * recipesForType.length)
+            const selectedRecipe = recipesForType[randomIndex]
+            newMeals.push({
+              planner_id: planner.id,
+              day_of_week: dayOfWeek,
+              meal_type: mealType,
+              recipe_id: selectedRecipe.id
+            })
           }
         }
 
+        // Insertar las nuevas comidas si hay alguna
+        if (newMeals.length > 0) {
+          const { error: insertError } = await supabase
+            .from('planned_meals')
+            .insert(newMeals)
+
+          if (insertError) {
+            console.error('Error insertando comidas:', insertError)
+            throw insertError
+          }
+        }
+
+        // Recargar las comidas del día
         await loadTodayMeals()
-        showNotification('success', 'Éxito', 'Nuevo menú generado')
+        showNotification('success', 'Éxito', '¡Menú generado exitosamente!')
         closeGenerateMenuModal()
+
       } catch (error) {
-        console.error('Error:', error)
-        showNotification('error', 'Error', 'No se pudo generar el menú')
+        console.error('Error generando menú:', error)
+        showNotification('error', 'Error', 'No se pudo generar el menú: ' + error.message)
       }
     }
 
@@ -1138,10 +1246,10 @@ export default {
       await loadNotifications()
     }
 
+    const handleImageError = (event) => { event.target.src = defaultImage }
+
     // ========== NAVIGATION ==========
     const goToRecipes = () => router.push('/recetas')
-
-    const handleImageError = (event) => { event.target.src = defaultImage }
 
     const toggleMobileMenu = () => { isMobileMenuOpen.value = !isMobileMenuOpen.value }
     const closeMobileMenu = () => { isMobileMenuOpen.value = false }
@@ -1190,10 +1298,11 @@ export default {
       selectedIngredient,
       ingredientSearch,
       filteredIngredientList,
-      filteredMeals,
+      filteredChangeMealRecipes,
       newIngredientData,
       menuPreferences,
       loadingStates,
+      recipeSearchQuery,
       defaultImage,
       getCategoryLabel,
       getMealTypeText,
